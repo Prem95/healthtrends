@@ -55,7 +55,7 @@ export function ProfileSwitcher({
 
 function Avatar({ name }: { name: string }) {
   return (
-    <span className="grid size-6 place-items-center rounded-full bg-brand text-[0.65rem] font-semibold text-paper">
+    <span className="grid size-6 place-items-center rounded-sm bg-ink text-[0.65rem] font-semibold text-paper">
       {name.slice(0, 1).toUpperCase()}
     </span>
   );

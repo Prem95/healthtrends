@@ -89,11 +89,11 @@ export function BiomarkerBrowser({
 
       <div className="mt-6 space-y-8">
         {groups.length === 0 && (
-          <p className="text-sm text-ink-3">No markers match “{query}”.</p>
+          <p className="text-sm text-ink-3">No markers match &quot;{query}&quot;.</p>
         )}
         {groups.map(({ category, items }) => (
           <section key={category}>
-            <h2 className="text-sm font-semibold tracking-wide text-ink-2 uppercase">
+            <h2 className="microlabel rule-top pt-2">
               {CATEGORY_LABEL[category]}
             </h2>
             <ul className="mt-3 divide-y divide-line rounded-lg border border-line bg-paper">

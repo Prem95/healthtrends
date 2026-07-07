@@ -7,7 +7,7 @@ export function cn(...inputs: ClassValue[]) {
 
 /** Format a number for display with sensible precision (no trailing noise). */
 export function formatNumber(n: number, maxDecimals = 2): string {
-  if (!Number.isFinite(n)) return "—";
+  if (!Number.isFinite(n)) return "n/a";
   const rounded = Number(n.toFixed(maxDecimals));
   return rounded.toLocaleString(undefined, { maximumFractionDigits: maxDecimals });
 }

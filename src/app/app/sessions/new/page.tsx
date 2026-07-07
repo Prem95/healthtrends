@@ -21,7 +21,7 @@ export default async function NewSessionPage() {
     <div className="animate-rise">
       <h1 className="font-display text-3xl text-ink">New test session</h1>
       <p className="mt-1 text-sm text-ink-2">
-        For {profile.name}. Only the date is required — add whichever markers your report
+        For {profile.name}. Only the date is required. Add whichever markers your report
         includes.
       </p>
 
@@ -30,7 +30,7 @@ export default async function NewSessionPage() {
           <p className="font-medium text-ink">Free plan limit reached</p>
           <p className="mt-1 text-sm text-ink-2">
             The Free plan includes 20 test sessions in total. Your existing data stays exactly
-            as it is — upgrade to Pro in Settings to keep adding new sessions.
+            as it is. Upgrade to Pro in Settings to keep adding new sessions.
           </p>
         </div>
       ) : (

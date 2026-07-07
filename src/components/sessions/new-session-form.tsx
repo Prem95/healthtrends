@@ -198,7 +198,7 @@ export function NewSessionForm({
 
       {/* Panel shortcuts */}
       <section>
-        <p className="text-sm font-semibold tracking-wide text-ink-2 uppercase">
+        <p className="microlabel rule-top pt-2">
           Panel shortcuts
         </p>
         <div className="mt-2 flex flex-wrap gap-2">
@@ -207,7 +207,7 @@ export function NewSessionForm({
               key={p.id}
               type="button"
               onClick={() => addPanel(p.id)}
-              className="rounded-full border border-line bg-paper px-3 py-1.5 text-sm text-ink-2 transition-colors hover:border-brand/50 hover:text-brand-strong"
+              className="cursor-pointer rounded-sm border border-line-strong bg-paper px-3 py-1.5 text-sm text-ink-2 transition-colors hover:border-rule hover:text-ink"
             >
               + {p.name}
             </button>
@@ -224,7 +224,7 @@ export function NewSessionForm({
             id="marker-search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search by name or alias — “ldl”, “a1c”, “tsh”…"
+            placeholder="Search by name or alias: ldl, a1c, tsh"
             className="pl-9"
           />
           {searchResults.length > 0 && (
@@ -291,7 +291,7 @@ export function NewSessionForm({
                             parseDecimal(row.valueText) == null &&
                             "border-out",
                         )}
-                        placeholder="—"
+                        placeholder="value"
                         aria-label={`${b.name} value`}
                       />
                     </td>
@@ -398,7 +398,7 @@ export function NewSessionForm({
               onClick={() => submit(needsConfirm.map((c) => c.biomarkerId))}
               disabled={pending}
             >
-              The values are correct — save anyway
+              The values are correct, save anyway
             </Button>
             <Button type="button" variant="ghost" size="sm" onClick={() => setServerState({})}>
               Let me edit
@@ -407,7 +407,7 @@ export function NewSessionForm({
         </section>
       )}
 
-      {/* Duplicate warning — warn, never block */}
+      {/* Duplicate warning: warn, never block */}
       {duplicates.length > 0 && (
         <section className="rounded-lg border border-borderline/30 bg-borderline-soft p-5">
           <p className="font-medium text-ink">Possible duplicates</p>
@@ -448,10 +448,10 @@ export function NewSessionForm({
           disabled={pending || !date || invalidRows.length > 0}
         >
           <Plus />
-          {pending ? "Saving…" : `Save session${filledRows.length ? ` (${filledRows.length} results)` : ""}`}
+          {pending ? "Saving..." : `Save session${filledRows.length ? ` (${filledRows.length} results)` : ""}`}
         </Button>
         {invalidRows.length > 0 && (
-          <p className="text-sm text-out">Some values aren’t numbers yet.</p>
+          <p className="text-sm text-out">Some values are not numbers yet.</p>
         )}
       </div>
     </div>

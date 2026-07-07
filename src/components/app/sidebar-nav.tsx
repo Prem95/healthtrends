@@ -23,11 +23,12 @@ export function SidebarNav() {
             key={href}
             href={href}
             className={cn(
-              "flex items-center gap-2.5 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+              "flex items-center gap-2.5 border-l-2 px-3 py-2 text-sm font-medium transition-colors",
               active
-                ? "bg-brand-soft text-brand-strong"
-                : "text-ink-2 hover:bg-paper-2 hover:text-ink",
+                ? "border-ink text-ink"
+                : "border-transparent text-ink-3 hover:border-line-strong hover:text-ink",
             )}
+            aria-current={active ? "page" : undefined}
           >
             <Icon className="size-4" />
             <span className="hidden sm:inline md:inline">{label}</span>

@@ -1,26 +1,28 @@
 import { cn } from "@/lib/utils";
 
 /**
- * Wordmark: a small hand-drawn trend line inside a rounded square, paired with
- * the serif name. The line rises then settles — "trend, not snapshot".
+ * Wordmark set like a stamp on a lab form: a square-ruled mark holding a
+ * plotted line, next to the serif name and a small ascending-trend glyph.
  */
 export function Logo({ className }: { className?: string }) {
   return (
     <span className={cn("inline-flex items-center gap-2.5 select-none", className)}>
-      <span className="grid size-8 place-items-center rounded-md bg-brand text-paper">
+      <span className="grid size-8 place-items-center rounded-sm border-2 border-ink bg-paper text-ink">
         <svg viewBox="0 0 24 24" className="size-5" fill="none" aria-hidden>
           <path
-            d="M3 16.5 8 11l3.5 3L21 5.5"
+            d="M4 16.5 9 11l3.5 3L20 6"
             stroke="currentColor"
             strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
+            strokeLinecap="square"
+            strokeLinejoin="miter"
           />
-          <circle cx="8" cy="11" r="1.4" fill="currentColor" />
-          <circle cx="11.5" cy="14" r="1.4" fill="currentColor" />
+          <rect x="7.7" y="9.7" width="2.6" height="2.6" fill="currentColor" />
+          <rect x="11.2" y="12.7" width="2.6" height="2.6" fill="currentColor" />
         </svg>
       </span>
-      <span className="font-display text-lg tracking-tight text-ink">HealthTrends</span>
+      <span className="font-display text-lg tracking-tight text-ink">
+        HealthTrends
+      </span>
     </span>
   );
 }

@@ -132,7 +132,7 @@ export function BiomarkerChart({
               domain={["dataMin", "dataMax"]}
               tickFormatter={(ts: number) => {
                 const d = new Date(ts);
-                return `${d.toLocaleString("en", { month: "short", timeZone: "UTC" })} ’${String(d.getUTCFullYear()).slice(2)}`;
+                return `${d.toLocaleString("en", { month: "short", timeZone: "UTC" })} ${String(d.getUTCFullYear()).slice(2)}`;
               }}
               tick={{ fill: "var(--ink-3)", fontSize: 11 }}
               axisLine={{ stroke: "var(--line-strong)" }}

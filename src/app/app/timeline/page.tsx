@@ -64,11 +64,11 @@ export default async function TimelinePage() {
         </Button>
       </header>
 
-      {/* Add life event — inline, no modal */}
+      {/* Add life event: inline, no modal */}
       <details className="group rounded-lg border border-line bg-paper">
         <summary className="flex cursor-pointer items-center gap-2 px-4 py-3 text-sm font-medium text-ink-2 hover:text-ink">
           <CalendarPlus className="size-4" />
-          Add a life event — “started statin”, “began keto”, “post-surgery”…
+          Add a life event: started statin, began keto, post-surgery
         </summary>
         <form action={addLifeEvent} className="flex flex-wrap items-end gap-3 border-t border-line px-4 py-4">
           <input type="hidden" name="profileId" value={profile.id} />
@@ -85,14 +85,14 @@ export default async function TimelinePage() {
       </details>
 
       {entries.length === 0 ? (
-        <p className="text-sm text-ink-3">Nothing here yet — add your first test session.</p>
+        <p className="text-sm text-ink-3">Nothing here yet. Add your first test session.</p>
       ) : (
         <ol className="relative space-y-6 border-l border-line-strong pl-6">
           {entries.map((entry) => (
             <li key={entry.kind === "session" ? entry.session.id : entry.event.id} className="relative">
               <span
                 className={
-                  "absolute -left-[1.72rem] top-1.5 size-3 rounded-full border-2 " +
+                  "absolute -left-[1.72rem] top-1.5 size-3 rounded-none border-2 " +
                   (entry.kind === "session"
                     ? "border-brand bg-paper"
                     : "border-line-strong bg-brand-soft")

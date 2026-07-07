@@ -54,7 +54,7 @@ export default async function DashboardPage() {
     <div className="animate-rise space-y-10">
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="font-display text-3xl text-ink">{profile.name}’s health picture</h1>
+          <h1 className="font-display text-3xl text-ink">Logbook: {profile.name}</h1>
           <p className="mt-1 text-sm text-ink-2">
             {sessions.length} test session{sessions.length === 1 ? "" : "s"} ·{" "}
             {summaries.length} biomarkers tracked
@@ -66,7 +66,7 @@ export default async function DashboardPage() {
       {watchedSummaries.length > 0 && (
         <section>
           <SectionHeading icon={<Eye className="size-4" />} title="Watching" />
-          <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-1 grid gap-x-12 sm:grid-cols-2">
             {watchedSummaries.map((s) => (
               <MarkerCard key={s.biomarker.id} s={s} />
             ))}
@@ -82,7 +82,7 @@ export default async function DashboardPage() {
             Nothing outside its reference range right now.
           </p>
         ) : (
-          <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-1 grid gap-x-12 sm:grid-cols-2">
             {[...outOfRange, ...borderline].map((s) => (
               <MarkerCard key={s.biomarker.id} s={s} />
             ))}
@@ -94,7 +94,7 @@ export default async function DashboardPage() {
       {trending.length > 0 && (
         <section>
           <SectionHeading title="Moving across your last 3 tests" />
-          <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-1 grid gap-x-12 sm:grid-cols-2">
             {trending.map((s) => (
               <MarkerCard key={s.biomarker.id} s={s} />
             ))}
@@ -158,11 +158,11 @@ export default async function DashboardPage() {
               <li key={s.biomarker.id}>
                 <Link
                   href={`/app/biomarkers/${s.biomarker.id}`}
-                  className="inline-flex items-center gap-2 rounded-full border border-line bg-paper px-3 py-1.5 text-sm text-ink-2 hover:border-line-strong hover:text-ink"
+                  className="inline-flex items-center gap-2 rounded-sm border border-line bg-paper px-3 py-1.5 text-sm text-ink-2 hover:border-line-strong hover:text-ink"
                 >
                   {s.biomarker.name}
                   <span className="text-xs text-ink-3">
-                    last {s.latest ? formatDate(s.latest.date) : "—"}
+                    last {s.latest ? formatDate(s.latest.date) : "n/a"}
                   </span>
                 </Link>
               </li>
@@ -176,40 +176,44 @@ export default async function DashboardPage() {
 
 function SectionHeading({ title, icon }: { title: string; icon?: React.ReactNode }) {
   return (
-    <h2 className="flex items-center gap-2 text-sm font-semibold tracking-wide text-ink-2 uppercase">
+    <h2 className="microlabel rule-top flex items-center gap-2 pt-2">
       {icon}
       {title}
     </h2>
   );
 }
 
+/* Ledger-style entry: name, dotted leader, value, status. */
 function MarkerCard({ s }: { s: BiomarkerSummary }) {
   const delta = s.trend.deltaPct;
   return (
     <Link
       href={`/app/biomarkers/${s.biomarker.id}`}
-      className="group rounded-lg border border-line bg-paper p-4 transition-colors hover:border-brand/40"
+      className="group block border-b border-line py-3 transition-colors hover:bg-paper-2"
     >
-      <div className="flex items-start justify-between gap-2">
-        <p className="text-sm font-medium text-ink group-hover:text-brand-strong">
+      <div className="flex items-baseline gap-2">
+        <p className="text-sm font-medium text-ink group-hover:underline group-hover:underline-offset-2">
           {s.biomarker.name}
         </p>
-        <StatusBadge status={s.latestStatus} />
+        <span className="leader" aria-hidden />
+        <p className="font-display text-xl text-ink tnum">
+          {s.latest ? formatNumber(s.latest.value) : "n/a"}{" "}
+          <span className="text-xs text-ink-3">{s.biomarker.canonicalUnit}</span>
+        </p>
       </div>
-      <p className="mt-3 font-display text-2xl text-ink tnum">
-        {s.latest ? formatNumber(s.latest.value) : "—"}{" "}
-        <span className="text-sm text-ink-3">{s.biomarker.canonicalUnit}</span>
-      </p>
-      <p className="mt-1 text-xs text-ink-3">
-        {TREND_LABEL[s.trend.direction]}
-        {delta != null && s.trend.direction !== "INSUFFICIENT_DATA" && (
-          <span className="tnum">
-            {" "}
-            · {delta > 0 ? "+" : ""}
-            {formatNumber(delta, 1)}% vs previous
-          </span>
-        )}
-      </p>
+      <div className="mt-1.5 flex items-center justify-between gap-2">
+        <StatusBadge status={s.latestStatus} />
+        <p className="text-xs text-ink-3">
+          {TREND_LABEL[s.trend.direction]}
+          {delta != null && s.trend.direction !== "INSUFFICIENT_DATA" && (
+            <span className="tnum">
+              {" "}
+              ({delta > 0 ? "+" : ""}
+              {formatNumber(delta, 1)}% vs previous)
+            </span>
+          )}
+        </p>
+      </div>
     </Link>
   );
 }
@@ -219,12 +223,12 @@ function EmptyDashboard({ name }: { name: string }) {
     <div className="animate-rise flex min-h-[50vh] flex-col items-center justify-center text-center">
       <div className="max-w-md">
         <h1 className="font-display text-3xl text-ink">
-          Let’s add {name}’s first test
+          The logbook for {name} is empty
         </h1>
         <p className="mt-3 leading-relaxed text-ink-2">
-          Grab any lab report — even an old one. Panel shortcuts (Lipid Panel, CBC, Thyroid…)
-          make a 20-marker report take under three minutes. The more history you add, the more
-          the trends can tell you.
+          Grab any lab report, even an old one. Panel shortcuts pre-fill the marker rows,
+          so a 20-marker report takes under three minutes to enter. Trends start showing
+          up once a marker has two or three values.
         </p>
         <Button asChild size="lg" className="mt-6">
           <Link href="/app/sessions/new">

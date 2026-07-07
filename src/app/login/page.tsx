@@ -22,26 +22,25 @@ export default async function LoginPage({
     error === "link_expired"
       ? "That sign-in link expired. Request a new one below."
       : error === "oauth_failed" || error === "oauth_unavailable"
-        ? "Google sign-in didn’t complete. Try again or use email."
+        ? "Google sign-in did not complete. Try again or use email."
         : null;
 
   return (
-    <div className="paper-grain flex min-h-full flex-col">
-      <header className="px-6 py-5">
+    <div className="flex min-h-full flex-col">
+      <header className="border-b-2 border-rule px-6 py-4">
         <Link href="/">
           <Logo />
         </Link>
       </header>
       <main className="flex flex-1 items-center justify-center px-6 pb-24">
         <div className="w-full max-w-sm animate-rise">
-          <p className="text-sm font-medium tracking-wide text-brand-strong uppercase">
-            Welcome back
-          </p>
+          <p className="microlabel">Sign in</p>
           <h1 className="mt-2 font-display text-3xl text-ink">
-            Sign in to your health history
+            Open your logbook
           </h1>
           <p className="mt-2 text-sm text-ink-2">
-            No passwords. We’ll email you a secure link — new here or returning, same door.
+            There are no passwords here. Enter your email and we send a one-time link.
+            The same form signs you up if you are new.
           </p>
 
           {errorText && (

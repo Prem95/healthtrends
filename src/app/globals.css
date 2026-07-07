@@ -1,42 +1,44 @@
 @import "tailwindcss";
 
 /*
-  HealthTrends design system — "clinical-but-warm".
-  Warm paper background, deep ink-teal text, a calm sage/teal primary,
-  amber for borderline, clay for out-of-range, moss for in-range.
-  Neutrals are tinted toward the brand hue for subconscious cohesion.
+  HealthTrends design system: "the lab logbook".
+  Print-inspired. Cream paper, near-black green ink, hairline rules instead of
+  card shadows, sharp corners, tabular figures. Statuses read like marks on a
+  typeset lab form: a small square swatch plus plain text, never a glossy pill.
 */
 
 :root {
-  /* Warm paper neutrals (tinted toward teal-green) */
-  --paper: oklch(0.985 0.006 120);
-  --paper-2: oklch(0.968 0.008 130);
-  --paper-3: oklch(0.945 0.01 135);
-  --line: oklch(0.9 0.012 140);
-  --line-strong: oklch(0.83 0.015 145);
+  /* Paper: warm cream, slightly green-cast */
+  --paper: oklch(0.975 0.008 95);
+  --paper-2: oklch(0.955 0.01 95);
+  --paper-3: oklch(0.93 0.012 95);
+  --line: oklch(0.86 0.014 100);
+  --line-strong: oklch(0.72 0.02 110);
+  --rule: oklch(0.32 0.03 165);        /* heavy typographic rule */
 
-  --ink: oklch(0.28 0.028 175);
-  --ink-2: oklch(0.44 0.024 175);
-  --ink-3: oklch(0.58 0.02 170);
+  /* Ink: near-black with a green undertone */
+  --ink: oklch(0.24 0.03 170);
+  --ink-2: oklch(0.42 0.026 170);
+  --ink-3: oklch(0.55 0.02 165);
 
-  /* Brand — deep calm teal */
-  --brand: oklch(0.52 0.075 185);
-  --brand-strong: oklch(0.44 0.08 187);
-  --brand-soft: oklch(0.93 0.03 180);
-  --brand-tint: oklch(0.965 0.018 175);
+  /* Accent: deep verdigris, used sparingly */
+  --brand: oklch(0.42 0.08 180);
+  --brand-strong: oklch(0.34 0.075 182);
+  --brand-soft: oklch(0.9 0.035 175);
+  --brand-tint: oklch(0.95 0.02 170);
 
-  /* Status */
-  --in-range: oklch(0.6 0.09 155);
-  --in-range-soft: oklch(0.94 0.04 155);
-  --borderline: oklch(0.72 0.13 75);
-  --borderline-soft: oklch(0.95 0.05 80);
-  --out: oklch(0.58 0.16 32);
-  --out-soft: oklch(0.94 0.045 35);
-  --neutral-status: oklch(0.7 0.01 160);
+  /* Status marks */
+  --in-range: oklch(0.55 0.09 155);
+  --in-range-soft: oklch(0.92 0.04 150);
+  --borderline: oklch(0.62 0.12 70);
+  --borderline-soft: oklch(0.94 0.05 85);
+  --out: oklch(0.48 0.15 30);
+  --out-soft: oklch(0.93 0.045 35);
+  --neutral-status: oklch(0.62 0.012 160);
 
   --background: var(--paper);
   --foreground: var(--ink);
-  --radius: 0.75rem;
+  --radius: 0.1875rem; /* 3px: crisp, print-like */
 }
 
 @theme inline {
@@ -45,6 +47,7 @@
   --color-paper-3: var(--paper-3);
   --color-line: var(--line);
   --color-line-strong: var(--line-strong);
+  --color-rule: var(--rule);
   --color-ink: var(--ink);
   --color-ink-2: var(--ink-2);
   --color-ink-3: var(--ink-3);
@@ -66,9 +69,9 @@
   --font-display: var(--font-fraunces);
   --font-sans: var(--font-public-sans);
 
-  --radius-lg: var(--radius);
-  --radius-md: calc(var(--radius) - 0.25rem);
-  --radius-sm: calc(var(--radius) - 0.4rem);
+  --radius-lg: calc(var(--radius) + 0.125rem);
+  --radius-md: var(--radius);
+  --radius-sm: 0.125rem;
 }
 
 * {
@@ -95,23 +98,38 @@ body {
 
 .font-display {
   font-family: var(--font-display), Georgia, serif;
-  letter-spacing: -0.015em;
+  letter-spacing: -0.01em;
 }
 
-/* Subtle warm wash — brand-tinted, not glassy */
-.paper-grain {
-  background-image:
-    radial-gradient(circle at 12% 8%, oklch(0.98 0.012 130 / 0.7) 0%, transparent 42%),
-    radial-gradient(circle at 88% 0%, var(--brand-tint) 0%, transparent 46%);
+/* Micro label: the uppercase letter-spaced caption used across the logbook */
+.microlabel {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+/* Heavy top rule, like a section rule in print */
+.rule-top {
+  border-top: 2px solid var(--rule);
+}
+
+/* Dotted leader, as in tables of contents / requisition forms */
+.leader {
+  flex: 1;
+  min-width: 1.5rem;
+  border-bottom: 1px dotted var(--line-strong);
+  transform: translateY(-0.3em);
 }
 
 @keyframes rise {
-  from { opacity: 0; transform: translateY(8px); }
+  from { opacity: 0; transform: translateY(6px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
 .animate-rise {
-  animation: rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: rise 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 @media (prefers-reduced-motion: reduce) {

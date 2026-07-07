@@ -1,13 +1,11 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 
+/* Flat, print-like surface: hairline border, no drop shadow. */
 export function Card({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div
-      className={cn(
-        "rounded-lg border border-line bg-paper shadow-[0_1px_2px_oklch(0.5_0.02_170/0.04),0_8px_24px_-16px_oklch(0.5_0.02_170/0.12)]",
-        className,
-      )}
+      className={cn("rounded-md border border-line bg-paper", className)}
       {...props}
     />
   );

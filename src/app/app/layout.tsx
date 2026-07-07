@@ -23,7 +23,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   return (
     <div className="flex min-h-full flex-col">
-      <header className="border-b border-line bg-paper">
+      <header className="border-b-2 border-rule bg-paper">
         <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
           <div className="flex items-center gap-4">
             <Link href="/app">
@@ -54,10 +54,10 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       {plan.pastDue && (
         <div className="border-b border-borderline/25 bg-borderline-soft">
           <p className="mx-auto max-w-6xl px-6 py-2 text-sm text-ink">
-            Your last payment didn’t go through. You keep Pro access until{" "}
-            {plan.currentPeriodEnd ? formatDate(plan.currentPeriodEnd) : "the period ends"} —{" "}
+            Your last payment did not go through. Pro access continues until{" "}
+            {plan.currentPeriodEnd ? formatDate(plan.currentPeriodEnd) : "the period ends"}.{" "}
             <Link href="/app/settings" className="font-medium text-brand-strong underline underline-offset-2">
-              update your card in Settings
+              Update your card in Settings
             </Link>
             .
           </p>

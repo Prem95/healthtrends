@@ -1,75 +1,108 @@
 import Link from "next/link";
-import { ArrowRight, LineChart, ShieldCheck, TrendingUp } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
 import { Button } from "@/components/ui/button";
 import { DISCLAIMER_TEXT } from "@/components/disclaimer";
 
 export default function Home() {
   return (
-    <div className="paper-grain flex min-h-full flex-col">
-      <header className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-5">
-        <Logo />
-        <nav className="flex items-center gap-2">
-          <Button asChild variant="ghost" size="sm">
-            <Link href="/login">Sign in</Link>
-          </Button>
-          <Button asChild size="sm">
-            <Link href="/login">Get started</Link>
-          </Button>
-        </nav>
+    <div className="flex min-h-full flex-col">
+      <header className="border-b-2 border-rule">
+        <div className="mx-auto flex w-full max-w-5xl items-center justify-between px-6 py-4">
+          <Logo />
+          <nav className="flex items-center gap-2">
+            <Button asChild variant="ghost" size="sm">
+              <Link href="/login">Sign in</Link>
+            </Button>
+            <Button asChild size="sm">
+              <Link href="/login">Start free</Link>
+            </Button>
+          </nav>
+        </div>
       </header>
 
-      <main className="mx-auto w-full max-w-6xl flex-1 px-6">
-        <section className="grid items-center gap-12 py-16 md:grid-cols-[1.1fr_0.9fr] md:py-24">
-          <div className="animate-rise">
-            <p className="text-sm font-medium tracking-wide text-brand-strong uppercase">
-              Personal lab-result tracker
+      <main className="mx-auto w-full max-w-5xl flex-1 px-6">
+        {/* Hero: typographic, no card, no illustration box */}
+        <section className="py-16 md:py-24">
+          <p className="microlabel animate-rise">Personal lab record, kept properly</p>
+          <h1 className="mt-5 max-w-3xl animate-rise font-display text-[clamp(2.6rem,7vw,4.75rem)] leading-[1.02] text-ink">
+            Your blood work has a history. Start reading it.
+          </h1>
+          <div className="mt-8 grid gap-10 md:grid-cols-[1fr_320px] md:items-end">
+            <p className="max-w-xl text-lg leading-relaxed text-ink-2">
+              A doctor sees the report in front of them. You have a drawer full of older
+              ones that never get compared. Type each result in once and HealthTrends
+              lines them up, so a slow five-year climb in LDL stops hiding between
+              appointments.
             </p>
-            <h1 className="mt-4 font-display text-[clamp(2.5rem,6vw,4.25rem)] leading-[1.02] text-ink">
-              See your health as a{" "}
-              <span className="italic text-brand-strong">trend</span>, not a snapshot.
-            </h1>
-            <p className="mt-6 max-w-lg text-lg leading-relaxed text-ink-2">
-              Doctors see one visit at a time. You live the whole line. Log every blood test
-              once and watch any biomarker move across the years — with its reference range,
-              direction of change, and a plain-language read on where it’s heading.
-            </p>
-            <div className="mt-8 flex flex-wrap items-center gap-3">
+            <div className="flex flex-col items-start gap-2">
               <Button asChild size="lg">
-                <Link href="/login">
-                  Start tracking free <ArrowRight />
-                </Link>
+                <Link href="/login">Start tracking free</Link>
               </Button>
               <span className="text-sm text-ink-3">
-                Free plan, no card. Your data is always exportable.
+                No card needed. Your data exports any time.
               </span>
             </div>
           </div>
-
-          <HeroChart />
         </section>
 
-        <section className="grid gap-8 border-t border-line py-16 sm:grid-cols-3">
-          <Feature
-            icon={<LineChart className="size-5" />}
-            title="Every marker, over time"
-            body="LDL, HbA1c, TSH, vitamin D — a clean line chart with the normal band shaded and out-of-range points flagged."
-          />
-          <Feature
-            icon={<TrendingUp className="size-5" />}
-            title="Drift you’d otherwise miss"
-            body="We surface markers creeping toward a boundary across your last three tests — long before they read as abnormal."
-          />
-          <Feature
-            icon={<ShieldCheck className="size-5" />}
-            title="Private, and yours"
-            body="Row-level isolation per account, one-click full export, one-click delete. Exporting and deleting your data is free forever."
-          />
+        {/* Specimen: a full-width chart drawn on the page itself */}
+        <section className="rule-top py-10">
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <p className="microlabel">Specimen: LDL cholesterol, five tests</p>
+            <p className="text-xs text-ink-3 tnum">2023.02 to 2026.01</p>
+          </div>
+          <SpecimenChart />
+          <p className="mt-4 max-w-xl text-sm leading-relaxed text-ink-2">
+            Each dot is one blood draw. The shaded band is the reference range. The last
+            three points rise 22%, the kind of slow drift this app is built to catch
+            while it is still just a question for your next appointment.
+          </p>
+        </section>
+
+        {/* Numbered feature rows, set like a requisition form */}
+        <section className="rule-top py-12">
+          <ol className="divide-y divide-line">
+            <FeatureRow
+              n="01"
+              title="Enter a 20-marker report in under three minutes"
+              body="Panel shortcuts for lipids, CBC, metabolic and thyroid pre-fill the rows. You type values, nothing else."
+            />
+            <FeatureRow
+              n="02"
+              title="Statuses come from the range on your own report"
+              body="If your lab printed 0.35 to 4.94 for TSH, that range wins over the textbook default. Sex-specific and one-sided ranges are handled correctly."
+            />
+            <FeatureRow
+              n="03"
+              title="Drift gets flagged before it becomes a problem"
+              body="Three consecutive tests moving the same way by 10% or more puts a marker on your dashboard."
+            />
+            <FeatureRow
+              n="04"
+              title="The data stays yours"
+              body="Row-level isolation per account. CSV and JSON export, plus full account deletion, are free forever."
+            />
+          </ol>
+        </section>
+
+        {/* Plain pricing line, not a pricing-card grid */}
+        <section className="rule-top flex flex-wrap items-baseline justify-between gap-4 py-10">
+          <div>
+            <p className="microlabel">Pricing</p>
+            <p className="mt-2 max-w-lg text-ink-2">
+              Free covers one profile and 20 test sessions. Pro is $4.99 a month or $39 a
+              year for six family profiles, unlimited sessions and a printable summary
+              for your doctor.
+            </p>
+          </div>
+          <Button asChild variant="secondary">
+            <Link href="/login">Create an account</Link>
+          </Button>
         </section>
       </main>
 
-      <footer className="border-t border-line bg-paper-2">
-        <div className="mx-auto max-w-6xl px-6 py-6">
+      <footer className="border-t-2 border-rule bg-paper-2">
+        <div className="mx-auto max-w-5xl px-6 py-6">
           <p className="text-xs leading-relaxed text-ink-3">{DISCLAIMER_TEXT}</p>
           <p className="mt-3 text-xs text-ink-3">© {new Date().getFullYear()} HealthTrends</p>
         </div>
@@ -78,65 +111,46 @@ export default function Home() {
   );
 }
 
-function Feature({
-  icon,
-  title,
-  body,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  body: string;
-}) {
+function FeatureRow({ n, title, body }: { n: string; title: string; body: string }) {
   return (
-    <div>
-      <div className="flex size-9 items-center justify-center rounded-md bg-brand-soft text-brand-strong">
-        {icon}
-      </div>
-      <h3 className="mt-4 font-display text-xl text-ink">{title}</h3>
-      <p className="mt-2 text-sm leading-relaxed text-ink-2">{body}</p>
-    </div>
+    <li className="grid gap-2 py-6 md:grid-cols-[64px_1fr_1.1fr] md:gap-8">
+      <span className="font-display text-2xl text-ink-3 tnum">{n}</span>
+      <h3 className="font-display text-xl leading-snug text-ink">{title}</h3>
+      <p className="text-sm leading-relaxed text-ink-2">{body}</p>
+    </li>
   );
 }
 
-function HeroChart() {
+/* A wide, flat plot drawn directly on the page. No container card. */
+function SpecimenChart() {
   const dots: [number, number, string][] = [
-    [8, 120, "var(--in-range)"],
-    [84, 110, "var(--in-range)"],
-    [160, 96, "var(--borderline)"],
-    [236, 78, "var(--borderline)"],
-    [312, 58, "var(--out)"],
+    [40, 128, "var(--in-range)"],
+    [240, 118, "var(--in-range)"],
+    [440, 102, "var(--borderline)"],
+    [640, 84, "var(--borderline)"],
+    [840, 62, "var(--out)"],
   ];
   return (
-    <div className="animate-rise rounded-xl border border-line bg-paper p-6 shadow-[0_1px_2px_oklch(0.5_0.02_170/0.05),0_24px_60px_-40px_oklch(0.45_0.05_180/0.35)]">
-      <div className="flex items-baseline justify-between gap-3">
-        <div>
-          <p className="text-xs font-medium tracking-wide text-ink-3 uppercase">
-            LDL Cholesterol
-          </p>
-          <p className="mt-1 font-display text-3xl text-ink tnum">
-            128 <span className="text-base text-ink-3">mg/dL</span>
-          </p>
-        </div>
-        <span className="inline-flex items-center gap-1.5 rounded-full border border-borderline/25 bg-borderline-soft px-2.5 py-0.5 text-xs font-medium text-borderline">
-          <span className="size-1.5 rounded-full bg-current" /> Near high boundary
-        </span>
-      </div>
-      <svg viewBox="0 0 320 150" className="mt-5 w-full" role="img" aria-label="LDL trend rising over five tests">
-        <rect x="0" y="96" width="320" height="54" fill="var(--in-range-soft)" />
-        <line x1="0" y1="96" x2="320" y2="96" stroke="var(--in-range)" strokeWidth="1" strokeDasharray="4 4" opacity="0.6" />
-        <polyline
-          points="8,120 84,110 160,96 236,78 312,58"
-          fill="none"
-          stroke="var(--brand)"
-          strokeWidth="2.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        {dots.map(([x, y, c], i) => (
-          <circle key={i} cx={x} cy={y} r="4" fill="var(--paper)" stroke={c} strokeWidth="2.5" />
-        ))}
-      </svg>
-      <p className="mt-4 text-sm text-ink-2">Rising across your last 3 tests — up 22% since 2023.</p>
-    </div>
+    <svg
+      viewBox="0 0 880 160"
+      className="mt-6 w-full"
+      role="img"
+      aria-label="Line chart of LDL cholesterol rising across five tests, ending above the reference range"
+    >
+      {/* reference band: under 100 mg/dL */}
+      <rect x="0" y="102" width="880" height="58" fill="var(--in-range-soft)" />
+      <line x1="0" y1="102" x2="880" y2="102" stroke="var(--in-range)" strokeWidth="1" strokeDasharray="5 4" opacity="0.7" />
+      <text x="8" y="152" fontSize="11" fill="var(--ink-3)">reference range</text>
+      <text x="848" y="96" fontSize="11" fill="var(--out)" textAnchor="end">128 mg/dL</text>
+      <polyline
+        points="40,128 240,118 440,102 640,84 840,62"
+        fill="none"
+        stroke="var(--ink)"
+        strokeWidth="2"
+      />
+      {dots.map(([x, y, c], i) => (
+        <rect key={i} x={x - 4} y={y - 4} width="8" height="8" fill="var(--paper)" stroke={c} strokeWidth="2.5" />
+      ))}
+    </svg>
   );
 }

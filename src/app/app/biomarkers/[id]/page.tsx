@@ -17,7 +17,7 @@ import { formatDate, formatNumber } from "@/lib/utils";
 import { TREND_LABEL, CATEGORY_LABEL, type RefRange } from "@/lib/domain";
 
 function fmtRange(r: RefRange | null | undefined): string {
-  if (!r || (r.min == null && r.max == null)) return "—";
+  if (!r || (r.min == null && r.max == null)) return "n/a";
   if (r.min != null && r.max != null) return `${formatNumber(r.min)}–${formatNumber(r.max)}`;
   if (r.max != null) return `< ${formatNumber(r.max)}`;
   return `> ${formatNumber(r.min!)}`;
@@ -115,7 +115,7 @@ export default async function BiomarkerDetailPage({
               )}
             </span>
           ) : (
-            <span className="text-ink-3">—</span>
+            <span className="text-ink-3">n/a</span>
           )}
         </Stat>
         <Stat label="Trend (last 3 tests)">
@@ -123,20 +123,20 @@ export default async function BiomarkerDetailPage({
         </Stat>
         <Stat label="Min / Avg / Max">
           <span className="font-display text-2xl text-ink tnum">
-            {min != null ? formatNumber(min) : "—"}
+            {min != null ? formatNumber(min) : "n/a"}
             <span className="text-ink-3"> / </span>
-            {avg != null ? formatNumber(avg) : "—"}
+            {avg != null ? formatNumber(avg) : "n/a"}
             <span className="text-ink-3"> / </span>
-            {max != null ? formatNumber(max) : "—"}
+            {max != null ? formatNumber(max) : "n/a"}
           </span>
         </Stat>
       </div>
 
       {s.ambiguousSex && (
         <p className="rounded-md border border-line bg-paper-2 px-3 py-2 text-sm text-ink-2">
-          This marker’s typical range differs by sex, and this profile’s sex is set to Other —
-          both bands are shown faintly and values aren’t flagged unless your lab report’s own
-          range is entered with a result.
+          The typical range for this marker differs by sex, and this profile is set to Other.
+          Both bands are drawn faintly, and values are only flagged when the range from your
+          own lab report is entered with a result.
         </p>
       )}
 
@@ -161,7 +161,7 @@ export default async function BiomarkerDetailPage({
       {/* History table */}
       {s.points.length > 0 && (
         <section>
-          <h2 className="text-sm font-semibold tracking-wide text-ink-2 uppercase">History</h2>
+          <h2 className="microlabel rule-top pt-2">History</h2>
           <div className="mt-3 overflow-x-auto rounded-lg border border-line">
             <table className="w-full min-w-[560px] text-sm">
               <thead>
@@ -190,7 +190,7 @@ export default async function BiomarkerDetailPage({
                     <td className="px-4 py-2.5">
                       <StatusBadge status={p.status} />
                     </td>
-                    <td className="px-4 py-2.5 text-ink-3">{p.labName ?? "—"}</td>
+                    <td className="px-4 py-2.5 text-ink-3">{p.labName ?? "n/a"}</td>
                     <td className="px-4 py-2.5 text-right">
                       <form action={deleteResult}>
                         <input type="hidden" name="id" value={p.resultId} />

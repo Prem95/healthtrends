@@ -18,15 +18,13 @@ export default async function OnboardingPage({
   if (profiles.length > 0) redirect("/app");
 
   return (
-    <div className="paper-grain flex min-h-full flex-col">
-      <header className="px-6 py-5">
+    <div className="flex min-h-full flex-col">
+      <header className="border-b-2 border-rule px-6 py-4">
         <Logo />
       </header>
       <main className="flex flex-1 items-center justify-center px-6 pb-20">
         <div className="w-full max-w-md animate-rise">
-          <p className="text-sm font-medium tracking-wide text-brand-strong uppercase">
-            One quick step
-          </p>
+          <p className="microlabel">One quick step</p>
           <h1 className="mt-2 font-display text-3xl text-ink">Create your first profile</h1>
           <p className="mt-2 text-sm text-ink-2">
             Sex and date of birth let us pick the right reference ranges. You can add family
@@ -35,7 +33,7 @@ export default async function OnboardingPage({
 
           {error && (
             <p className="mt-4 rounded-md border border-out/20 bg-out-soft/60 px-3 py-2 text-sm text-out">
-              Something didn’t save. Please check the fields and try again.
+              That did not save. Check the fields and try again.
             </p>
           )}
 

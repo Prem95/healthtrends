@@ -162,7 +162,7 @@ export async function createSession(
       .from("test_sessions")
       .select("id", { count: "exact", head: true });
     if ((count ?? 0) >= plan.limits.maxSessions) {
-      return { error: "You’ve reached the Free plan’s 20-session limit. Upgrade to add more." };
+      return { error: "You have reached the Free plan limit of 20 sessions. Upgrade to add more." };
     }
   }
 

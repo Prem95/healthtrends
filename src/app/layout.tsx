@@ -15,9 +15,9 @@ const publicSans = Public_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "HealthTrends — See your health as a trend, not a snapshot",
+  title: "HealthTrends | Your blood work has a history",
   description:
-    "A privacy-first personal health record tracker. Log every lab result once, then watch any biomarker move over time with reference ranges and plain-language trends.",
+    "Type each lab result in once and see every biomarker as a line over the years, with the reference range from your own report.",
 };
 
 export default function RootLayout({

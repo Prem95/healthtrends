@@ -12,7 +12,7 @@ function SubmitButton() {
   return (
     <Button type="submit" className="w-full" disabled={pending}>
       <Mail />
-      {pending ? "Sending…" : "Email me a sign-in link"}
+      {pending ? "Sending..." : "Email me a sign-in link"}
     </Button>
   );
 }
@@ -23,7 +23,7 @@ export function LoginForm({ next }: { next: string }) {
   if (state.ok) {
     return (
       <div className="rounded-lg border border-in-range/25 bg-in-range-soft/60 p-5 text-center">
-        <div className="mx-auto mb-3 flex size-10 items-center justify-center rounded-full bg-in-range/15 text-in-range">
+        <div className="mx-auto mb-3 flex size-10 items-center justify-center rounded-sm border-2 border-in-range text-in-range">
           <Check className="size-5" />
         </div>
         <p className="text-ink font-medium">Check your inbox</p>
