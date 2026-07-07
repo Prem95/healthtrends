@@ -1,26 +1,125 @@
 @import "tailwindcss";
 
+/*
+  HealthTrends design system — "clinical-but-warm".
+  Warm paper background, deep ink-teal text, a calm sage/teal primary,
+  amber for borderline, clay for out-of-range, moss for in-range.
+  Neutrals are tinted toward the brand hue for subconscious cohesion.
+*/
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Warm paper neutrals (tinted toward teal-green) */
+  --paper: oklch(0.985 0.006 120);
+  --paper-2: oklch(0.968 0.008 130);
+  --paper-3: oklch(0.945 0.01 135);
+  --line: oklch(0.9 0.012 140);
+  --line-strong: oklch(0.83 0.015 145);
+
+  --ink: oklch(0.28 0.028 175);
+  --ink-2: oklch(0.44 0.024 175);
+  --ink-3: oklch(0.58 0.02 170);
+
+  /* Brand — deep calm teal */
+  --brand: oklch(0.52 0.075 185);
+  --brand-strong: oklch(0.44 0.08 187);
+  --brand-soft: oklch(0.93 0.03 180);
+  --brand-tint: oklch(0.965 0.018 175);
+
+  /* Status */
+  --in-range: oklch(0.6 0.09 155);
+  --in-range-soft: oklch(0.94 0.04 155);
+  --borderline: oklch(0.72 0.13 75);
+  --borderline-soft: oklch(0.95 0.05 80);
+  --out: oklch(0.58 0.16 32);
+  --out-soft: oklch(0.94 0.045 35);
+  --neutral-status: oklch(0.7 0.01 160);
+
+  --background: var(--paper);
+  --foreground: var(--ink);
+  --radius: 0.75rem;
 }
 
 @theme inline {
+  --color-paper: var(--paper);
+  --color-paper-2: var(--paper-2);
+  --color-paper-3: var(--paper-3);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-brand: var(--brand);
+  --color-brand-strong: var(--brand-strong);
+  --color-brand-soft: var(--brand-soft);
+  --color-brand-tint: var(--brand-tint);
+  --color-in-range: var(--in-range);
+  --color-in-range-soft: var(--in-range-soft);
+  --color-borderline: var(--borderline);
+  --color-borderline-soft: var(--borderline-soft);
+  --color-out: var(--out);
+  --color-out-soft: var(--out-soft);
+  --color-neutral-status: var(--neutral-status);
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+
+  --font-display: var(--font-fraunces);
+  --font-sans: var(--font-public-sans);
+
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 0.25rem);
+  --radius-sm: calc(var(--radius) - 0.4rem);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  border-color: var(--line);
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Tabular figures for all numeric data */
+.tnum {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
+
+.font-display {
+  font-family: var(--font-display), Georgia, serif;
+  letter-spacing: -0.015em;
+}
+
+/* Subtle warm wash — brand-tinted, not glassy */
+.paper-grain {
+  background-image:
+    radial-gradient(circle at 12% 8%, oklch(0.98 0.012 130 / 0.7) 0%, transparent 42%),
+    radial-gradient(circle at 88% 0%, var(--brand-tint) 0%, transparent 46%);
+}
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-rise {
+  animation: rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-rise { animation: none; }
+  * { scroll-behavior: auto !important; }
+}
+
+::selection {
+  background: var(--brand-soft);
+  color: var(--brand-strong);
 }
