@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Fraunces, Public_Sans } from "next/font/google";
+import { Fraunces, Google_Sans } from "next/font/google";
 import "./globals.css";
 
 const fraunces = Fraunces({
@@ -8,8 +8,8 @@ const fraunces = Fraunces({
   display: "swap",
 });
 
-const publicSans = Public_Sans({
-  variable: "--font-public-sans",
+const googleSans = Google_Sans({
+  variable: "--font-google-sans",
   subsets: ["latin"],
   display: "swap",
 });
@@ -28,7 +28,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${fraunces.variable} ${publicSans.variable} h-full antialiased`}
+      className={`${fraunces.variable} ${googleSans.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">{children}</body>
     </html>

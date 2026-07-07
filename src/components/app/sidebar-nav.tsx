@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Activity, CalendarClock, Settings } from "lucide-react";
+import { LayoutDashboard, Activity, CalendarClock, Settings, PersonStanding } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const LINKS = [
   { href: "/app", label: "Dashboard", icon: LayoutDashboard, exact: true },
+  { href: "/app/body", label: "Body map", icon: PersonStanding, exact: false },
   { href: "/app/biomarkers", label: "Biomarkers", icon: Activity, exact: false },
   { href: "/app/timeline", label: "Timeline", icon: CalendarClock, exact: false },
   { href: "/app/settings", label: "Settings", icon: Settings, exact: false },

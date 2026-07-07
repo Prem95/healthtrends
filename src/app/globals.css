@@ -67,7 +67,7 @@
   --color-foreground: var(--foreground);
 
   --font-display: var(--font-fraunces);
-  --font-sans: var(--font-public-sans);
+  --font-sans: var(--font-google-sans);
 
   --radius-lg: calc(var(--radius) + 0.125rem);
   --radius-md: var(--radius);
