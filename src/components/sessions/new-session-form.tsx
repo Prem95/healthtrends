@@ -139,6 +139,7 @@ export function NewSessionForm({
   }
 
   const needsConfirm = serverState.needsConfirmation ?? [];
+  const duplicates = serverState.duplicateBiomarkerIds ?? [];
 
   return (
     <div className="max-w-3xl space-y-8">
@@ -398,6 +399,34 @@ export function NewSessionForm({
               disabled={pending}
             >
               The values are correct — save anyway
+            </Button>
+            <Button type="button" variant="ghost" size="sm" onClick={() => setServerState({})}>
+              Let me edit
+            </Button>
+          </div>
+        </section>
+      )}
+
+      {/* Duplicate warning — warn, never block */}
+      {duplicates.length > 0 && (
+        <section className="rounded-lg border border-borderline/30 bg-borderline-soft p-5">
+          <p className="font-medium text-ink">Possible duplicates</p>
+          <p className="mt-1 text-sm text-ink-2">
+            {duplicates
+              .map((id) => byId.get(id)?.name ?? id)
+              .join(", ")}{" "}
+            already {duplicates.length === 1 ? "has" : "have"} a value on this date. Saving
+            will add a second entry (fine for morning + afternoon draws).
+          </p>
+          <div className="mt-4 flex gap-2">
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={() => submit(duplicates)}
+              disabled={pending}
+            >
+              Save anyway
             </Button>
             <Button type="button" variant="ghost" size="sm" onClick={() => setServerState({})}>
               Let me edit

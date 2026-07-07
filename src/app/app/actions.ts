@@ -116,6 +116,8 @@ export type SessionActionState = {
     suggestion?: { unit: string; canonicalValue: number } | null;
     reason?: string;
   }[];
+  /** Markers that already have a result on this date (warn, don't block — §9.3.5). */
+  duplicateBiomarkerIds?: string[];
   sessionId?: string;
 };
 
@@ -204,6 +206,27 @@ export async function createSession(
   }
   if (needsConfirmation.length > 0) {
     return { needsConfirmation };
+  }
+
+  // Duplicate protection (§9.3.5): warn — never block — when a result for the
+  // same biomarker already exists on the same session date for this profile.
+  if (ids.length > 0) {
+    const { data: existing } = await supabase
+      .from("test_results")
+      .select("biomarker_id, test_sessions!inner(profile_id, date)")
+      .in("biomarker_id", ids)
+      .eq("test_sessions.profile_id", input.profileId)
+      .eq("test_sessions.date", input.date);
+    const dupes = [
+      ...new Set(
+        (existing ?? [])
+          .map((r) => r.biomarker_id as string)
+          .filter((id) => !confirmed.has(id)),
+      ),
+    ];
+    if (dupes.length > 0) {
+      return { duplicateBiomarkerIds: dupes };
+    }
   }
 
   // Insert the session, then the results (values converted to canonical).
