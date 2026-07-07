@@ -22,8 +22,6 @@ import {
 } from "@/lib/domain";
 import { ACTIVE_PROFILE_COOKIE } from "@/lib/data";
 
-type ActionResult = { ok: boolean; error?: string };
-
 async function requireUser() {
   const user = await getUser();
   if (!user) redirect("/login");
@@ -314,7 +312,7 @@ export async function toggleWatch(formData: FormData): Promise<void> {
 
 // -------------------- Custom biomarkers --------------------
 
-export async function createCustomBiomarker(formData: FormData): Promise<ActionResult> {
+export async function createCustomBiomarker(formData: FormData): Promise<void> {
   const user = await requireUser();
   const parsed = customBiomarkerSchema.safeParse({
     name: formData.get("name"),
@@ -323,7 +321,7 @@ export async function createCustomBiomarker(formData: FormData): Promise<ActionR
     rangeMin: numOrUndef(formData.get("rangeMin")),
     rangeMax: numOrUndef(formData.get("rangeMax")),
   });
-  if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message };
+  if (!parsed.success) redirect("/app/settings?error=invalid");
 
   const slug =
     "custom-" +
@@ -351,9 +349,8 @@ export async function createCustomBiomarker(formData: FormData): Promise<ActionR
     is_custom: true,
     user_id: user.id,
   });
-  if (error) return { ok: false, error: "Could not create the biomarker." };
+  if (error) redirect("/app/settings?error=save");
   revalidatePath("/app");
-  return { ok: true };
 }
 
 /**

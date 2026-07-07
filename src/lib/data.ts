@@ -121,7 +121,8 @@ export async function getResults(profileId: string): Promise<ResultWithSession[]
     )
     .eq("test_sessions.profile_id", profileId);
   return (data ?? []).map((r) => {
-    const session = (r as { test_sessions: { date: string; lab_name: string | null } }).test_sessions;
+    const session = (r as unknown as { test_sessions: { date: string; lab_name: string | null } })
+      .test_sessions;
     return {
       id: r.id,
       sessionId: r.session_id,
