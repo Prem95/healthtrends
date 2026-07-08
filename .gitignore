@@ -47,3 +47,7 @@ next-env.d.ts
 
 # vitest
 coverage
+
+# claude / agent skills
+.agents/
+skills-lock.json
