@@ -1,9 +1,45 @@
 # HealthTrends
 
-A privacy-first personal lab-result tracker, built as a hosted SaaS ("Target B"):
-Next.js (App Router) · Supabase (Postgres, Auth, RLS) · Stripe (Checkout + Billing
-Portal) · Tailwind · Recharts · Zod. See `PRD-health-trends.md` / `PRD-saas-layer.md`
-for the product spec.
+Turn a stack of lab PDFs into a story you can actually read. HealthTrends is a
+privacy-first personal lab-result tracker: log the numbers from each blood test,
+and it shows you each biomarker as a clear line over the years — in range,
+borderline, or out — instead of a table you have to decode.
+
+Built as a hosted SaaS: **Next.js 16** (App Router) · **React 19** · **Supabase**
+(Postgres, Auth, RLS) · **Stripe** (Checkout + Billing Portal) · **Tailwind** ·
+**Recharts** + **three.js / React Three Fiber** · **Motion** · **Zod**.
+
+See `PROJECT_CONTEXT.md` for current status, stack, and known gaps.
+
+## What's in the product
+
+Two surfaces, one codebase:
+
+- **Landing** (`/`) — a single light, editorial page. The hero *is* a real chart.
+- **The app** (`/app/**`) — a calm dark workspace for your own data.
+
+Inside the app:
+
+| Route | What it does |
+|---|---|
+| `/app` | Dashboard — watched biomarkers with their latest value, status, and trend |
+| `/app/biomarkers` · `/[id]` | Browse the full catalog (most-common markers first) and drill into one marker's full history |
+| `/app/body` | 3D body map — an interactive mannequin that pins each result category to the organ it relates to |
+| `/app/timeline` | Every test session over time, annotated with your own life events |
+| `/app/summary` | A doctor-ready printable summary (**Pro**) |
+| `/app/sessions/new` | Add a lab session and its results, with duplicate-result warnings |
+| `/app/settings` | Profiles, plan/billing, data export, and account deletion |
+
+- **Multiple profiles** — track your own results and your family's from one
+  account (`profile-switcher`).
+- **70+ built-in biomarkers** across lipids, glucose, thyroid, CBC, liver,
+  kidney, vitamins, iron, and hormones — each with sensible default ranges you
+  can override with your own lab's printed range.
+- **Status & trend are computed, never stored** — green/amber/red and
+  rising/falling/stable are derived at read time, so fixing a range retroactively
+  fixes the flags.
+- **Export (CSV/JSON) and account deletion are free forever.** The printable
+  doctor summary is the one Pro feature.
 
 ## Local development
 
@@ -18,7 +54,7 @@ Verification commands:
 
 ```bash
 npm run test    # domain unit tests (vitest)
-npm run lint    # eslint
+npm run lint    # eslint (src + scripts)
 npm run build   # production build
 ```
 
@@ -96,8 +132,6 @@ event ID (`stripe_events` table).
 
 ## Environment variables
 
-Exactly the set from the SaaS PRD §7.1 (plus the two Stripe price IDs):
-
 | Var | Scope |
 |---|---|
 | `NEXT_PUBLIC_SUPABASE_URL` | public |
@@ -107,11 +141,11 @@ Exactly the set from the SaaS PRD §7.1 (plus the two Stripe price IDs):
 | `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | public |
 | `STRIPE_WEBHOOK_SECRET` | **server-only** |
 | `NEXT_PUBLIC_APP_URL` | public |
-| `STRIPE_PRICE_PRO_MONTHLY` / `STRIPE_PRICE_PRO_YEARLY` | server-only |
+| `STRIPE_PRICE_PRO_MONTHLY` / `STRIPE_PRICE_PRO_YEARLY` | **server-only** |
 
 ## Architecture notes
 
-- **Domain rules** (unit conversion, plausibility, status, trend) live in
+- **Domain rules** (unit conversion, plausibility, status, trend, panels) live in
   `src/lib/domain/` as pure TypeScript with unit tests. Statuses/trends are
   computed at read time, never stored — editing a range retroactively fixes flags.
 - **Values are stored in canonical units only**; conversion happens at the edges.
@@ -123,7 +157,13 @@ Exactly the set from the SaaS PRD §7.1 (plus the two Stripe price IDs):
 - **Entitlements**: a single server-side `getPlan(userId)`
   (`src/lib/entitlements.ts`) backs both UI gating and API enforcement.
   Downgrades never delete data — over-limit items become read-only.
-- **Export (CSV/JSON) and account deletion are free-tier features forever.**
-  The doctor-ready printable summary is Pro.
+- **Body map** (`src/app/app/body`) is a procedural three.js figure rendered with
+  React Three Fiber; `src/lib/body-map.ts` pins each biomarker category to an
+  organ region and colors it by that category's worst current status.
+- **Catalog ordering** (`src/lib/commonality.ts`) surfaces the markers people
+  recognize (glucose, cholesterol, a CBC) ahead of niche assays.
+- **Charts** are shared, small components (`src/components/charts/` sparkline +
+  range-bar; Recharts for the larger history views) so the line reads the same
+  everywhere.
 - The built-in biomarker seed (`supabase/migrations/0003_seed_biomarkers.sql`)
   is generated — edit `scripts/biomarker-catalog.mjs` and run `npm run gen:seed`.
