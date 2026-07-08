@@ -28,7 +28,11 @@ export async function signInWithMagicLink(
   const { error } = await supabase.auth.signInWithOtp({
     email: parsed.data,
     options: {
-      emailRedirectTo: `${base}/auth/confirm?next=${encodeURIComponent(next)}`,
+      // Default (built-in) email template routes through /auth/v1/verify and
+      // returns a PKCE `code`, which /auth/callback exchanges. Same-device only.
+      // With custom SMTP + the branded token_hash template, switch this back to
+      // `/auth/confirm` for cross-device links.
+      emailRedirectTo: `${base}/auth/callback?next=${encodeURIComponent(next)}`,
     },
   });
 

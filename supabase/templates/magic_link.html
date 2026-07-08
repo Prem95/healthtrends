@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light" />
+    <meta name="supported-color-schemes" content="light" />
+    <title>Your HealthTrends sign-in link</title>
+  </head>
+  <body style="margin:0; padding:0; background-color:#fbfcfd; -webkit-font-smoothing:antialiased;">
+    <!-- preheader: hidden preview text -->
+    <div style="display:none; max-height:0; overflow:hidden; opacity:0; color:#fbfcfd; font-size:1px; line-height:1px;">
+      Your sign-in link is ready. It works on any device and expires in an hour.
+    </div>
+
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#fbfcfd;">
+      <tr>
+        <td align="center" style="padding:40px 20px;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:520px; width:100%; background-color:#ffffff; border:1px solid #e5eaee; border-radius:16px;">
+            <tr>
+              <td style="padding:40px 40px 0 40px; font-family:'Google Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+                <!-- eyebrow -->
+                <p style="margin:0 0 28px 0; font-size:11px; font-weight:600; letter-spacing:0.14em; text-transform:uppercase; color:#0284c7;">
+                  HealthTrends
+                </p>
+
+                <!-- headline: heavy, tight, one italic phrase -->
+                <h1 style="margin:0 0 16px 0; font-size:30px; line-height:1.15; font-weight:700; letter-spacing:-0.02em; color:#0f1a20;">
+                  Your sign-in link is <em style="font-style:italic; font-weight:700;">ready</em>.
+                </h1>
+
+                <p style="margin:0; font-size:16px; line-height:1.6; color:#46555f;">
+                  Tap the button below to sign in. The link works on any device you
+                  open it on, and it expires in an hour.
+                </p>
+              </td>
+            </tr>
+
+            <!-- ink pill button -->
+            <tr>
+              <td style="padding:32px 40px 8px 40px;" align="left">
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                  <tr>
+                    <td style="border-radius:999px; background-color:#0f1a20;">
+                      <a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email"
+                         style="display:inline-block; padding:14px 28px; font-family:'Google Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; font-weight:600; line-height:1; color:#ffffff; text-decoration:none; border-radius:999px;">
+                        Sign in to HealthTrends
+                      </a>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <!-- fallback link -->
+            <tr>
+              <td style="padding:16px 40px 0 40px; font-family:'Google Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+                <p style="margin:0 0 6px 0; font-size:13px; line-height:1.5; color:#626e77;">
+                  Or paste this link into your browser:
+                </p>
+                <p style="margin:0; font-size:13px; line-height:1.5; word-break:break-all;">
+                  <a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email" style="color:#0284c7; text-decoration:underline;">{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email</a>
+                </p>
+              </td>
+            </tr>
+
+            <!-- hairline rule -->
+            <tr>
+              <td style="padding:32px 40px 0 40px;">
+                <div style="height:1px; background-color:#e5eaee; line-height:1px; font-size:0;">&nbsp;</div>
+              </td>
+            </tr>
+
+            <!-- footer -->
+            <tr>
+              <td style="padding:20px 40px 40px 40px; font-family:'Google Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+                <p style="margin:0; font-size:12px; line-height:1.6; color:#626e77;">
+                  You are receiving this because someone entered this email address
+                  at HealthTrends. If it was not you, you can safely ignore this
+                  message. We never include any health data in our emails.
+                </p>
+              </td>
+            </tr>
+          </table>
+
+          <!-- outside-card wordmark -->
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:520px; width:100%;">
+            <tr>
+              <td style="padding:20px 8px 0 8px; font-family:'Google Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+                <p style="margin:0; font-size:12px; color:#8a969d;">HealthTrends &middot; your lab results, as a clear line over time</p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
