@@ -18,14 +18,19 @@ export default async function OnboardingPage({
   if (profiles.length > 0) redirect("/app");
 
   return (
-    <div className="flex min-h-full flex-col">
-      <header className="border-b-2 border-rule px-6 py-4">
+    <div
+      data-theme="light"
+      className="aurora flex min-h-[100dvh] flex-col bg-page text-ink"
+    >
+      <header className="border-b border-line bg-paper px-6 py-4">
         <Logo />
       </header>
       <main className="flex flex-1 items-center justify-center px-6 pb-20">
         <div className="w-full max-w-md animate-rise">
-          <p className="microlabel">One quick step</p>
-          <h1 className="mt-2 font-display text-3xl text-ink">Create your first profile</h1>
+          <p className="au-eyebrow">One quick step</p>
+          <h1 className="au-hl mt-2 text-4xl text-ink">
+            Create your first <span className="em">profile</span>
+          </h1>
           <p className="mt-2 text-sm text-ink-2">
             Sex and date of birth let us pick the right reference ranges. You can add family
             members later on the Pro plan.

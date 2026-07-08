@@ -40,7 +40,7 @@ export default async function SettingsPage({
   return (
     <div className="animate-rise max-w-2xl space-y-12">
       <header>
-        <h1 className="font-display text-3xl text-ink">Settings</h1>
+        <h1 className="au-hl text-3xl text-ink">Settings</h1>
         <p className="mt-1 text-sm text-ink-2">{user.email}</p>
       </header>
 

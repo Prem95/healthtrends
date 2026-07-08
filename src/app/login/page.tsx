@@ -26,17 +26,20 @@ export default async function LoginPage({
         : null;
 
   return (
-    <div className="flex min-h-full flex-col">
-      <header className="border-b-2 border-rule px-6 py-4">
+    <div
+      data-theme="light"
+      className="aurora flex min-h-[100dvh] flex-col bg-page text-ink"
+    >
+      <header className="border-b border-line bg-paper px-6 py-4">
         <Link href="/">
           <Logo />
         </Link>
       </header>
       <main className="flex flex-1 items-center justify-center px-6 pb-24">
         <div className="w-full max-w-sm animate-rise">
-          <p className="microlabel">Sign in</p>
-          <h1 className="mt-2 font-display text-3xl text-ink">
-            Open your logbook
+          <p className="au-eyebrow">Sign in</p>
+          <h1 className="au-hl mt-2 text-4xl text-ink">
+            Open your <span className="em">logbook</span>
           </h1>
           <p className="mt-2 text-sm text-ink-2">
             There are no passwords here. Enter your email and we send a one-time link.

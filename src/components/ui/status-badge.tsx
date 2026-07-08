@@ -3,22 +3,15 @@ import type { ResultStatus, TrendDirection } from "@/lib/domain";
 import { STATUS_LABEL, statusTone } from "@/lib/domain";
 
 /*
-  Statuses are typeset like marks on a lab form: a small square swatch and
-  plain text. No pills, no glow.
+  Statuses read like the landing's "Out of range" mark: a soft tinted pill
+  with the deepened status hue as text. Colour stays reserved for data.
 */
 
-const TONE_TEXT: Record<string, string> = {
-  "in-range": "text-in-range",
-  borderline: "text-borderline",
-  out: "text-out",
-  neutral: "text-ink-3",
-};
-
-const TONE_SWATCH: Record<string, string> = {
-  "in-range": "bg-in-range",
-  borderline: "bg-borderline",
-  out: "bg-out",
-  neutral: "bg-neutral-status",
+const TONE_PILL: Record<string, string> = {
+  "in-range": "bg-in-range-soft text-in-range",
+  borderline: "bg-borderline-soft text-borderline",
+  out: "bg-out-soft text-out",
+  neutral: "bg-paper-3 text-ink-2",
 };
 
 export function StatusBadge({
@@ -32,12 +25,11 @@ export function StatusBadge({
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 text-xs font-medium",
-        TONE_TEXT[tone],
+        "inline-flex items-center whitespace-nowrap rounded-full px-2 py-0.5 text-xs font-medium",
+        TONE_PILL[tone],
         className,
       )}
     >
-      <span className={cn("size-2 shrink-0", TONE_SWATCH[tone])} aria-hidden />
       {STATUS_LABEL[status]}
     </span>
   );
@@ -53,16 +45,16 @@ export function Badge({
   tone?: "neutral" | "brand" | "in-range" | "borderline" | "out";
 }) {
   const map: Record<string, string> = {
-    neutral: "text-ink-2 border-line-strong",
-    brand: "text-brand-strong border-brand/40",
-    "in-range": "text-in-range border-in-range/40",
-    borderline: "text-borderline border-borderline/40",
-    out: "text-out border-out/40",
+    neutral: "bg-paper-2 text-ink-2",
+    brand: "bg-brand-soft text-brand-strong",
+    "in-range": "bg-in-range-soft text-in-range",
+    borderline: "bg-borderline-soft text-borderline",
+    out: "bg-out-soft text-out",
   };
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1 rounded-sm border px-1.5 py-px text-[0.6875rem] font-semibold tracking-wide uppercase",
+        "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[0.6875rem] font-medium",
         map[tone],
         className,
       )}

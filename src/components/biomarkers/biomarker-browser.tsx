@@ -5,13 +5,14 @@ import Link from "next/link";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { StatusBadge, Badge } from "@/components/ui/status-badge";
+import { Sparkline } from "@/components/charts/sparkline";
 import { formatDate, formatNumber } from "@/lib/utils";
 import {
   CATEGORY_LABEL,
-  CATEGORY_ORDER,
   type BiomarkerCategory,
   type ResultStatus,
 } from "@/lib/domain";
+import { CATEGORY_COMMON_ORDER, sortByCommonality } from "@/lib/commonality";
 
 type Item = {
   id: string;
@@ -57,9 +58,9 @@ export function BiomarkerBrowser({
       if (!map.has(b.category)) map.set(b.category, []);
       map.get(b.category)!.push(b);
     }
-    return CATEGORY_ORDER.filter((c) => map.has(c)).map((c) => ({
+    return CATEGORY_COMMON_ORDER.filter((c) => map.has(c)).map((c) => ({
       category: c,
-      items: map.get(c)!,
+      items: sortByCommonality(map.get(c)!),
     }));
   }, [biomarkers, latestById, query, trackedOnly]);
 
@@ -96,7 +97,7 @@ export function BiomarkerBrowser({
             <h2 className="microlabel rule-top pt-2">
               {CATEGORY_LABEL[category]}
             </h2>
-            <ul className="mt-3 divide-y divide-line rounded-lg border border-line bg-paper">
+            <ul className="au-card mt-3 divide-y divide-line overflow-hidden">
               {items.map((b) => {
                 const latest = latestById[b.id];
                 return (
@@ -143,34 +144,5 @@ export function BiomarkerBrowser({
         ))}
       </div>
     </div>
-  );
-}
-
-/** Data-bearing mini trend for markers with ≥2 values (not decoration). */
-function Sparkline({ values }: { values: number[] }) {
-  const w = 72;
-  const h = 24;
-  const min = Math.min(...values);
-  const max = Math.max(...values);
-  const span = max - min || 1;
-  const pts = values
-    .map((v, i) => {
-      const x = (i / (values.length - 1)) * (w - 4) + 2;
-      const y = h - 3 - ((v - min) / span) * (h - 6);
-      return `${x},${y}`;
-    })
-    .join(" ");
-  return (
-    <svg width={w} height={h} className="hidden sm:block" aria-hidden>
-      <polyline
-        points={pts}
-        fill="none"
-        stroke="var(--brand)"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        opacity="0.65"
-      />
-    </svg>
   );
 }

@@ -8,37 +8,101 @@
 */
 
 :root {
-  /* Paper: warm cream, slightly green-cast */
-  --paper: oklch(0.975 0.008 95);
-  --paper-2: oklch(0.955 0.01 95);
-  --paper-3: oklch(0.93 0.012 95);
-  --line: oklch(0.86 0.014 100);
-  --line-strong: oklch(0.72 0.02 110);
-  --rule: oklch(0.32 0.03 165);        /* heavy typographic rule */
+  /* Surfaces: near-black canvas, raised charcoal cards (WHOOP-style depth) */
+  --paper: #141c22;        /* raised surface / cards */
+  --paper-2: #1c2831;      /* higher surface / hover */
+  --paper-3: #26333d;      /* highest surface */
+  --line: #2a3a44;
+  --line-strong: #3d515e;
+  --rule: #4a626f;         /* section rule */
 
-  /* Ink: near-black with a green undertone */
-  --ink: oklch(0.24 0.03 170);
-  --ink-2: oklch(0.42 0.026 170);
-  --ink-3: oklch(0.55 0.02 165);
+  /* Text: bright on dark */
+  --ink: #f3f7f8;
+  --ink-2: #a6b4bc;
+  --ink-3: #74858f;
 
-  /* Accent: deep verdigris, used sparingly */
-  --brand: oklch(0.42 0.08 180);
-  --brand-strong: oklch(0.34 0.075 182);
-  --brand-soft: oklch(0.9 0.035 175);
-  --brand-tint: oklch(0.95 0.02 170);
+  /* Accent: WHOOP strain blue — interactive / brand, kept off the status hues */
+  --brand: #0093e7;
+  --brand-strong: #35abef;
+  --brand-soft: #113140;
+  --brand-tint: #0d222c;
 
-  /* Status marks */
-  --in-range: oklch(0.55 0.09 155);
-  --in-range-soft: oklch(0.92 0.04 150);
-  --borderline: oklch(0.62 0.12 70);
-  --borderline-soft: oklch(0.94 0.05 85);
-  --out: oklch(0.48 0.15 30);
-  --out-soft: oklch(0.93 0.045 35);
-  --neutral-status: oklch(0.62 0.012 160);
+  /* Status: WHOOP recovery triad — vivid, glowing on dark */
+  --in-range: #19e60a;         /* high recovery green */
+  --in-range-soft: #123a17;
+  --borderline: #ffd400;       /* medium yellow */
+  --borderline-soft: #38310a;
+  --out: #ff2b40;              /* low red */
+  --out-soft: #3c141b;
+  --neutral-status: #7a8a93;
 
   --background: var(--paper);
   --foreground: var(--ink);
-  --radius: 0.1875rem; /* 3px: crisp, print-like */
+  --page-bg: #0b1013; /* canvas behind the app / dark landing */
+  --tint-cool: #16222b; /* soft feature-card fills (dark defaults) */
+  --tint-warm: #241a1c;
+  --radius: 0.625rem; /* 10px: soft, modern app corners */
+}
+
+/*
+  Nested dark section inside a light page (the marketing climax block). Mirrors
+  the app's dark token set so bg-page / text-ink / status utilities flip back to
+  dark for one deliberate section, as with Steep's dark "Ship metrics" block.
+*/
+[data-theme="dark"] {
+  --paper: #141c22;
+  --paper-2: #1c2831;
+  --paper-3: #26333d;
+  --line: #2a3a44;
+  --line-strong: #3d515e;
+  --rule: #4a626f;
+  --ink: #f3f7f8;
+  --ink-2: #a6b4bc;
+  --ink-3: #74858f;
+  --brand: #0093e7;
+  --brand-strong: #35abef;
+  --brand-soft: #113140;
+  --in-range: #19e60a;
+  --borderline: #ffd400;
+  --out: #ff2b40;
+  --neutral-status: #7a8a93;
+  --page-bg: #0b1013;
+}
+
+/*
+  Light theme, scoped. The product app stays dark; the marketing surfaces opt
+  in with data-theme="light". Every semantic token is redefined so utilities
+  (bg-paper, text-ink, text-out, ...) flip automatically via CSS variable
+  inheritance. Status hues are deepened for legibility on white.
+*/
+[data-theme="light"] {
+  --paper: #ffffff;
+  --paper-2: #f3f6f8;
+  --paper-3: #e8edf1;
+  --line: #e5eaee;
+  --line-strong: #ccd5db;
+  --rule: #b4c0c8;
+
+  --ink: #0f1a20;
+  --ink-2: #46555f;
+  --ink-3: #626e77;
+
+  --brand: #0284c7;
+  --brand-strong: #0369a1;
+  --brand-soft: #e0f2fe;
+  --brand-tint: #f0f9ff;
+
+  --in-range: #16a34a;
+  --in-range-soft: #dcfce7;
+  --borderline: #ca8a04;
+  --borderline-soft: #fef9c3;
+  --out: #e11d48;
+  --out-soft: #ffe4e6;
+  --neutral-status: #64748b;
+
+  --page-bg: #fbfcfd;
+  --tint-cool: #eaf1fb; /* highlighted feature card (soft blue) */
+  --tint-warm: #fbeee6; /* warm accent card (soft peach, a Steep nod) */
 }
 
 @theme inline {
@@ -65,13 +129,18 @@
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-page: var(--page-bg);
 
-  --font-display: var(--font-fraunces);
+  --font-display: var(--font-google-sans);
   --font-sans: var(--font-google-sans);
+  --font-serif: var(--font-newsreader), Georgia, "Times New Roman", serif;
 
-  --radius-lg: calc(var(--radius) + 0.125rem);
+  --color-tint-cool: var(--tint-cool);
+  --color-tint-warm: var(--tint-warm);
+
+  --radius-lg: calc(var(--radius) + 0.25rem);
   --radius-md: var(--radius);
-  --radius-sm: 0.125rem;
+  --radius-sm: 0.375rem;
 }
 
 * {
@@ -83,7 +152,11 @@ html {
 }
 
 body {
-  background: var(--paper);
+  background:
+    radial-gradient(1100px 460px at 50% -8%, rgba(0, 147, 231, 0.1), transparent 70%),
+    linear-gradient(180deg, #10181d 0%, #0b1013 100%);
+  background-attachment: fixed;
+  background-color: #0b1013;
   color: var(--ink);
   font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -97,8 +170,61 @@ body {
 }
 
 .font-display {
-  font-family: var(--font-display), Georgia, serif;
-  letter-spacing: -0.01em;
+  font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: -0.02em;
+  font-weight: 500;
+}
+
+/* Editorial display serif — used by the dark product app surface only. */
+.serif {
+  font-family: var(--font-serif);
+  font-weight: 500;
+  letter-spacing: -0.015em;
+}
+.serif em,
+.serif .em {
+  font-style: italic;
+  font-weight: 400;
+}
+
+/* Landing display headline: one grotesque (Google Sans), same-family italic
+   emphasis. Replaces the serif hero — the most-cited AI tell — on the
+   marketing page, unifying it to a single typeface. */
+.au-hl {
+  font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+}
+.au-hl .em {
+  font-style: italic;
+  font-weight: 600;
+}
+
+
+/* Status dot: a small round mark that glows in its own status colour */
+.status-dot {
+  border-radius: 9999px;
+  box-shadow: 0 0 7px -1px currentColor;
+}
+
+/* On light surfaces the glow reads as blur; keep the mark crisp instead */
+[data-theme="light"] .status-dot {
+  box-shadow: none;
+}
+
+/* Raised surface with a soft lift, for the WHOOP-style dark cards */
+.surface {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  box-shadow:
+    0 1px 0 0 rgba(255, 255, 255, 0.02) inset,
+    0 8px 24px -12px rgba(0, 0, 0, 0.6);
+}
+
+[data-theme="light"] .surface {
+  box-shadow:
+    0 1px 2px rgba(15, 26, 32, 0.04),
+    0 12px 32px -20px rgba(15, 26, 32, 0.22);
 }
 
 /* Micro label: the uppercase letter-spaced caption used across the logbook */
@@ -110,9 +236,9 @@ body {
   color: var(--ink-3);
 }
 
-/* Heavy top rule, like a section rule in print */
+/* Section top rule: a quiet hairline over each heading */
 .rule-top {
-  border-top: 2px solid var(--rule);
+  border-top: 1px solid var(--line-strong);
 }
 
 /* Dotted leader, as in tables of contents / requisition forms */
@@ -132,12 +258,348 @@ body {
   animation: rise 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
+/* --- Landing motion --- */
+.reveal {
+  opacity: 0;
+  transform: translateY(26px);
+  filter: blur(10px);
+  transition:
+    opacity 0.85s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.85s cubic-bezier(0.22, 1, 0.36, 1),
+    filter 0.85s cubic-bezier(0.22, 1, 0.36, 1);
+  transition-delay: var(--reveal-delay, 0ms);
+}
+.reveal.is-visible {
+  opacity: 1;
+  transform: none;
+  filter: none;
+}
+
+@keyframes bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+.animate-bob {
+  animation: bob 6s ease-in-out infinite;
+}
+
+@keyframes drift {
+  0% { background-position: 0 0; }
+  100% { background-position: 40px 40px; }
+}
+
+/* Draw-on: a stroke that reveals left-to-right when .is-drawn is set */
+.draw-line {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  transition: stroke-dashoffset 1.6s cubic-bezier(0.4, 0, 0.2, 1) 0.15s;
+}
+.is-drawn .draw-line { stroke-dashoffset: 0; }
+.draw-dot {
+  opacity: 0;
+  transition: opacity 0.4s ease var(--dot-delay, 0ms);
+}
+.is-drawn .draw-dot { opacity: 1; }
+
+/* Scrollytelling ("how it works"): staged panel transitions. The stage
+   itself is set from React; this class only eases the change. */
+.st-fade {
+  transition:
+    opacity 0.55s cubic-bezier(0.22, 0.61, 0.36, 1),
+    transform 0.55s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+/* Marker-wall chips: hovering a marker redraws its little line */
+@keyframes wallRedraw {
+  from { stroke-dashoffset: 1; }
+  to { stroke-dashoffset: 0; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .wall-chip:hover .draw-line {
+    animation: wallRedraw 0.9s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}
+
+/* Film grain: one fixed, non-interactive overlay for the whole landing.
+   Kills the flat plastic look of large flat fills; barely-there on purpose. */
+.au-grain {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  pointer-events: none;
+  opacity: 0.045;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 180px 180px;
+}
+
+/* Ambient colour field: a soft tone-on-tone wash that drifts and slowly
+   zooms, Ken Burns style. Static (but still coloured) under reduced motion.
+   Always paired with a `relative` content wrapper painted above it. */
+.au-field {
+  position: absolute;
+  inset: -22%;
+  pointer-events: none;
+}
+@keyframes auDrift {
+  0% { transform: translate3d(-3.5%, -2.5%, 0) scale(1); }
+  100% { transform: translate3d(3.5%, 2.5%, 0) scale(1.14); }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .au-field {
+    animation: auDrift 28s ease-in-out infinite alternate;
+    will-change: transform;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-rise { animation: none; }
+  .reveal { opacity: 1; transform: none; filter: none; transition: none; }
+  .animate-bob { animation: none; }
+  .draw-line { stroke-dashoffset: 0; transition: none; }
+  .draw-dot { opacity: 1; transition: none; }
+  .st-fade { transition: none; }
   * { scroll-behavior: auto !important; }
+}
+
+/* =========================================================================
+   Aurora landing layer — steep.app-inspired editorial-analytics language,
+   recolored from the source system's warm peach/cream into a cool clinical
+   palette. Scoped to the marketing page via `.aurora`, so the dark product
+   app is untouched. Serif display + grotesque UI, diffuse off-center aurora
+   mesh, near-black ink pill buttons, floating status-tinted metric cards.
+   Swap the tokens in this block to rebrand.
+   ========================================================================= */
+.aurora {
+  --page-bg: #eef2f1; /* cool porcelain base (was warm cream) */
+  --paper: #ffffff;
+  --paper-2: #f3f6f5;
+  --paper-3: #e7edec;
+  --line: rgba(15, 26, 32, 0.08);
+  --line-strong: rgba(15, 26, 32, 0.14);
+  --ink: #16232a;
+  --ink-2: #54636c;
+  --ink-3: #7c8a92;
+  --brand: #0e6fbf;
+  --brand-strong: #0b5a93;
+  --brand-soft: #e4f0fa;
+
+  --au-ink: #0f1a20; /* pill fill / dark chips */
+  --au-ink-hover: #0a1216;
+  --au-inv: #f6f8f8;
+  --au-ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --au-sh-card: 0 3px 16px rgba(15, 26, 32, 0.05);
+  --au-sh-float: 0 14px 34px -18px rgba(15, 26, 32, 0.2);
+
+  /* status-tinted card pairs: surface + matching darker ink for its data */
+  --au-blue: #e4f0fa;
+  --au-blue-ink: #0b5a93;
+  --au-green: #e3f2e7;
+  --au-green-ink: #12683c;
+  --au-amber: #f7edd5;
+  --au-amber-ink: #8a5a12;
+  --au-rose: #fae8ea;
+  --au-rose-ink: #a12433;
+  --au-out: #d63b4a;
+}
+
+.au-eyebrow {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--ink-3);
+}
+
+.au-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid var(--line);
+  padding: 6px 14px;
+  border-radius: 999px;
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+
+.au-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  font-family: inherit;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  line-height: 1;
+  padding: 0.8rem 1.55rem;
+  border-radius: 999px;
+  white-space: nowrap;
+  transition:
+    transform 0.2s var(--au-ease),
+    background 0.2s var(--au-ease),
+    color 0.2s var(--au-ease);
+}
+.au-btn-p {
+  background: var(--au-ink);
+  color: var(--au-inv);
+}
+.au-btn-p:hover {
+  background: var(--au-ink-hover);
+  transform: translateY(-1px);
+  color: var(--au-inv);
+}
+.au-btn-s {
+  color: var(--ink);
+}
+.au-btn-s:hover {
+  color: var(--ink-2);
+}
+
+.au-card {
+  border-radius: 20px;
+  border: 1px solid var(--line);
+  background: var(--paper);
+  box-shadow: var(--au-sh-card);
+}
+.au-card--blue {
+  background: var(--au-blue);
+  color: var(--au-blue-ink);
+  border-color: transparent;
+}
+.au-card--green {
+  background: var(--au-green);
+  color: var(--au-green-ink);
+  border-color: transparent;
+}
+.au-card--amber {
+  background: var(--au-amber);
+  color: var(--au-amber-ink);
+  border-color: transparent;
+}
+.au-card--rose {
+  background: var(--au-rose);
+  color: var(--au-rose-ink);
+  border-color: transparent;
+}
+
+.au-lift {
+  transition:
+    transform 0.24s var(--au-ease),
+    box-shadow 0.24s var(--au-ease);
+}
+.au-lift:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--au-sh-float);
+}
+.au-float {
+  box-shadow: var(--au-sh-float);
+}
+
+.au-num {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* mini bar visual — bars inherit their card's ink via currentColor */
+.au-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  height: 44px;
+}
+.au-bar {
+  flex: 1;
+  background: currentColor;
+  border-radius: 2px 2px 0 0;
+  opacity: 0.85;
+}
+
+/* donut — fill fraction set via --au-donut */
+.au-donut {
+  width: 62px;
+  height: 62px;
+  border-radius: 50%;
+  background: conic-gradient(currentColor 0 var(--au-donut, 70%), rgba(15, 26, 32, 0.08) 0 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+}
+.au-donut > span {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--au-green);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+/* -------------------------------------------------------------------------
+   Scroll-driven motion (native, dependency-free). Uses `animation-timeline:
+   view()` so animations are linked to how far an element has scrolled through
+   the viewport — richer than a one-shot reveal. Progressive enhancement:
+   where unsupported (or reduced motion), the classes do nothing and content is
+   simply visible. Keyframes are declared globally; the classes are gated.
+   ------------------------------------------------------------------------- */
+@keyframes sdLift {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+/* The page's own trend line: scroll progress under the nav */
+@keyframes sdProgress {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.au-progress {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 2px;
+  background: var(--brand);
+  transform: scaleX(0);
+  transform-origin: left;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .sd-lift {
+      animation: sdLift linear both;
+      animation-timeline: view();
+      animation-range: entry 2% cover 34%;
+    }
+    .au-progress {
+      animation: sdProgress linear both;
+      animation-timeline: scroll(root);
+    }
+  }
 }
 
 ::selection {
   background: var(--brand-soft);
   color: var(--brand-strong);
 }
+
+

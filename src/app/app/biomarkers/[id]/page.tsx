@@ -14,7 +14,14 @@ import { BiomarkerChart } from "@/components/charts/biomarker-chart";
 import { StatusBadge, Badge } from "@/components/ui/status-badge";
 import { Button } from "@/components/ui/button";
 import { formatDate, formatNumber } from "@/lib/utils";
-import { TREND_LABEL, CATEGORY_LABEL, type RefRange } from "@/lib/domain";
+import { TREND_LABEL, CATEGORY_LABEL, statusTone, type RefRange } from "@/lib/domain";
+
+const TONE_TEXT: Record<string, string> = {
+  "in-range": "text-in-range",
+  borderline: "text-borderline",
+  out: "text-out",
+  neutral: "text-ink",
+};
 
 function fmtRange(r: RefRange | null | undefined): string {
   if (!r || (r.min == null && r.max == null)) return "n/a";
@@ -71,7 +78,7 @@ export default async function BiomarkerDetailPage({
         </Link>
         <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <h1 className="font-display text-3xl text-ink">{biomarker.name}</h1>
+            <h1 className="au-hl text-3xl text-ink">{biomarker.name}</h1>
             <Badge>{CATEGORY_LABEL[biomarker.category]}</Badge>
             {biomarker.isCustom && <Badge tone="brand">Custom</Badge>}
           </div>
@@ -91,12 +98,12 @@ export default async function BiomarkerDetailPage({
       <div className="flex flex-wrap gap-x-10 gap-y-4 border-y border-line py-4">
         <Stat label="Latest">
           {s.latest ? (
-            <span className="flex items-baseline gap-2">
-              <span className="font-display text-2xl text-ink tnum">
+            <span className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+              <span className={`font-display text-4xl leading-none tnum ${TONE_TEXT[statusTone(s.latestStatus)]}`}>
                 {formatNumber(s.latest.value)}
               </span>
               <span className="text-sm text-ink-3">{biomarker.canonicalUnit}</span>
-              <StatusBadge status={s.latestStatus} />
+              <StatusBadge status={s.latestStatus} className="ml-1" />
             </span>
           ) : (
             <span className="text-ink-3">No results yet</span>
@@ -162,7 +169,50 @@ export default async function BiomarkerDetailPage({
       {s.points.length > 0 && (
         <section>
           <h2 className="microlabel rule-top pt-2">History</h2>
-          <div className="mt-3 overflow-x-auto rounded-lg border border-line">
+
+          {/* Mobile: stacked cards (a wide table would clip on a phone) */}
+          <ul className="mt-3 space-y-2 md:hidden">
+            {[...s.points].reverse().map((p) => (
+              <li key={p.resultId} className="rounded-lg border border-line bg-paper p-3">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-sm font-medium text-ink">{formatDate(p.date)}</span>
+                  <StatusBadge status={p.status} />
+                </div>
+                <dl className="mt-2 space-y-1 text-sm">
+                  <div className="flex items-baseline justify-between gap-3">
+                    <dt className="text-ink-3">Value</dt>
+                    <dd className="tnum text-ink">
+                      {formatNumber(p.value)} {biomarker.canonicalUnit}
+                      {p.enteredUnit !== biomarker.canonicalUnit && (
+                        <span className="ml-1 text-xs text-ink-3">(entered in {p.enteredUnit})</span>
+                      )}
+                    </dd>
+                  </div>
+                  <div className="flex items-baseline justify-between gap-3">
+                    <dt className="text-ink-3">Range that applied</dt>
+                    <dd className="tnum text-ink-2">{fmtRange(p.appliedRange)}</dd>
+                  </div>
+                  <div className="flex items-baseline justify-between gap-3">
+                    <dt className="text-ink-3">Lab</dt>
+                    <dd className="text-ink-2">{p.labName ?? "n/a"}</dd>
+                  </div>
+                </dl>
+                <form action={deleteResult} className="mt-2 text-right">
+                  <input type="hidden" name="id" value={p.resultId} />
+                  <button
+                    type="submit"
+                    className="text-xs text-ink-3 hover:text-out"
+                    aria-label={`Delete result from ${formatDate(p.date)}`}
+                  >
+                    Delete
+                  </button>
+                </form>
+              </li>
+            ))}
+          </ul>
+
+          {/* Desktop: full table */}
+          <div className="mt-3 hidden overflow-x-auto rounded-lg border border-line md:block">
             <table className="w-full min-w-[560px] text-sm">
               <thead>
                 <tr className="border-b border-line bg-paper-2 text-left text-xs tracking-wide text-ink-3 uppercase">

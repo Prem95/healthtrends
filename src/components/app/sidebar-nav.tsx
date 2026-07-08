@@ -2,37 +2,40 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Activity, CalendarClock, Settings, PersonStanding } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const LINKS = [
-  { href: "/app", label: "Dashboard", icon: LayoutDashboard, exact: true },
-  { href: "/app/body", label: "Body map", icon: PersonStanding, exact: false },
-  { href: "/app/biomarkers", label: "Biomarkers", icon: Activity, exact: false },
-  { href: "/app/timeline", label: "Timeline", icon: CalendarClock, exact: false },
-  { href: "/app/settings", label: "Settings", icon: Settings, exact: false },
+  { href: "/app", label: "Dashboard", exact: true },
+  { href: "/app/body", label: "Body map", exact: false },
+  { href: "/app/biomarkers", label: "Biomarkers", exact: false },
+  { href: "/app/timeline", label: "Timeline", exact: false },
+  { href: "/app/settings", label: "Settings", exact: false },
 ];
 
+/* Text-first rail, like the landing nav: no icons, an ink marker for the
+   active page. Horizontal tabs on mobile, a left rail on desktop. */
 export function SidebarNav() {
   const pathname = usePathname();
   return (
-    <nav className="flex gap-1 md:flex-col">
-      {LINKS.map(({ href, label, icon: Icon, exact }) => {
+    <nav className="flex gap-4 overflow-x-auto border-b border-line md:flex-col md:gap-0.5 md:border-b-0">
+      {LINKS.map(({ href, label, exact }) => {
         const active = exact ? pathname === href : pathname.startsWith(href);
         return (
           <Link
             key={href}
             href={href}
             className={cn(
-              "flex items-center gap-2.5 border-l-2 px-3 py-2 text-sm font-medium transition-colors",
+              // mobile: inline text tab with an active underline
+              "whitespace-nowrap border-b-2 px-1 py-2.5 text-sm transition-colors",
+              // desktop: left rail entry with an active ink marker
+              "md:border-b-0 md:border-l-2 md:px-3 md:py-1.5",
               active
-                ? "border-ink text-ink"
-                : "border-transparent text-ink-3 hover:border-line-strong hover:text-ink",
+                ? "border-ink font-medium text-ink"
+                : "border-transparent text-ink-3 hover:text-ink",
             )}
             aria-current={active ? "page" : undefined}
           >
-            <Icon className="size-4" />
-            <span className="hidden sm:inline md:inline">{label}</span>
+            {label}
           </Link>
         );
       })}

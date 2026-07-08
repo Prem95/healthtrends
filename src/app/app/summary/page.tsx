@@ -80,7 +80,7 @@ export default async function DoctorSummaryPage({
       </div>
 
       <header className="border-b-2 border-ink pb-4">
-        <h1 className="font-display text-2xl text-ink">Lab result summary: {profile.name}</h1>
+        <h1 className="au-hl text-2xl text-ink">Lab result summary: {profile.name}</h1>
         <p className="mt-1 text-sm text-ink-2">
           {profile.sex === "M" ? "Male" : profile.sex === "F" ? "Female" : "Sex not specified"}
           {profile.dateOfBirth && <> · DOB {formatDate(profile.dateOfBirth)}</>}

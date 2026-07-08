@@ -24,7 +24,7 @@ export default async function AllBiomarkersPage() {
 
   return (
     <div className="animate-rise">
-      <h1 className="font-display text-3xl text-ink">All biomarkers</h1>
+      <h1 className="au-hl text-3xl text-ink">All biomarkers</h1>
       <p className="mt-1 text-sm text-ink-2">
         The built-in catalog plus your custom markers. Anything with history links to its
         trend.

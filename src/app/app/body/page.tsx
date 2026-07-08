@@ -39,7 +39,7 @@ export default async function BodyMapPage() {
   return (
     <div className="animate-rise space-y-6">
       <header>
-        <h1 className="font-display text-3xl text-ink">Body map</h1>
+        <h1 className="au-hl text-3xl text-ink">Body map</h1>
         <p className="mt-1 text-sm text-ink-2">
           The latest result for every tracked marker, placed on the body system
           it describes.

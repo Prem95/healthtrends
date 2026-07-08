@@ -19,15 +19,17 @@ export function ProfileSwitcher({
   if (profiles.length <= 1) {
     const p = profiles[0];
     return (
-      <div className="flex items-center gap-2 rounded-md border border-line bg-paper px-3 py-1.5">
+      <div className="flex items-center gap-2 rounded-full border border-line bg-paper px-3 py-1.5">
         <Avatar name={p.name} />
-        <span className="text-sm font-medium text-ink">{p.name}</span>
+        <span className="max-w-[10rem] truncate whitespace-nowrap text-sm font-medium text-ink">
+          {p.name}
+        </span>
       </div>
     );
   }
 
   return (
-    <label className="relative flex items-center gap-2 rounded-md border border-line bg-paper px-3 py-1.5 focus-within:ring-2 focus-within:ring-brand/40">
+    <label className="relative flex items-center gap-2 rounded-full border border-line bg-paper px-3 py-1.5 focus-within:ring-2 focus-within:ring-brand/40">
       <Avatar name={profiles.find((p) => p.id === activeId)?.name ?? "?"} />
       <select
         aria-label="Active profile"
@@ -55,7 +57,7 @@ export function ProfileSwitcher({
 
 function Avatar({ name }: { name: string }) {
   return (
-    <span className="grid size-6 place-items-center rounded-sm bg-ink text-[0.65rem] font-semibold text-paper">
+    <span className="grid size-6 place-items-center rounded-full bg-ink text-[0.65rem] font-semibold text-paper">
       {name.slice(0, 1).toUpperCase()}
     </span>
   );

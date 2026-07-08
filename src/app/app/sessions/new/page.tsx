@@ -19,7 +19,7 @@ export default async function NewSessionPage() {
 
   return (
     <div className="animate-rise">
-      <h1 className="font-display text-3xl text-ink">New test session</h1>
+      <h1 className="au-hl text-3xl text-ink">New test session</h1>
       <p className="mt-1 text-sm text-ink-2">
         For {profile.name}. Only the date is required. Add whichever markers your report
         includes.

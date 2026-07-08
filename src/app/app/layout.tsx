@@ -22,17 +22,20 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const plan = await getPlan(user.id);
 
   return (
-    <div className="flex min-h-full flex-col">
-      <header className="border-b-2 border-rule bg-paper">
+    <div
+      data-theme="light"
+      className="aurora flex min-h-[100dvh] flex-col bg-page text-ink"
+    >
+      <header className="border-b border-line bg-paper">
         <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
           <div className="flex items-center gap-4">
             <Link href="/app">
               <Logo />
             </Link>
             {plan.plan === "pro" ? (
-              <Badge tone="brand">Pro</Badge>
+              <Badge tone="brand" className="hidden sm:inline-flex">Pro</Badge>
             ) : (
-              <Badge>Free</Badge>
+              <Badge className="hidden sm:inline-flex">Free</Badge>
             )}
           </div>
           <div className="flex items-center gap-2">

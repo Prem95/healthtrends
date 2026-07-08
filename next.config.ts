@@ -13,9 +13,16 @@ const supabaseOrigin = (() => {
   }
 })();
 
+// Dev needs 'unsafe-eval': React dev tooling and HMR reconstruct code with
+// eval(). Production stays strict.
+const scriptSrc =
+  process.env.NODE_ENV === "development"
+    ? "script-src 'self' 'unsafe-inline' 'unsafe-eval'"
+    : "script-src 'self' 'unsafe-inline'";
+
 const csp = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline'",
+  scriptSrc,
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob:",
   "font-src 'self' data:",
