@@ -8,7 +8,7 @@ import {
   getWatched,
 } from "@/lib/data";
 import { summarize, isOutOfRange, isBorderline, type BiomarkerSummary } from "@/lib/analytics";
-import { cn, formatDate, formatNumber, monthsSince } from "@/lib/utils";
+import { cn, formatDate, formatNumber } from "@/lib/utils";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Button } from "@/components/ui/button";
 import { RangeBar } from "@/components/charts/range-bar";
@@ -60,7 +60,6 @@ export default async function DashboardPage() {
         a.category.localeCompare(b.category),
     );
 
-  const stale = summaries.filter((s) => s.latest && monthsSince(s.latest.date) > 12);
   const recentSession = sessions[0] ?? null;
   const recentResults = recentSession
     ? summaries
@@ -111,7 +110,7 @@ export default async function DashboardPage() {
           for, so the page opens calm rather than as a wall of jargon. */}
       <section>
         <SectionHeading title="Your results by system" />
-        <div className="mt-4 space-y-3">
+        <div className="mt-4 gap-3 sm:columns-2 xl:columns-3">
           {systemGroups.map((group) => (
             <SystemGroupCard key={group.category} group={group} />
           ))}
@@ -140,28 +139,6 @@ export default async function DashboardPage() {
               View timeline <ArrowRight className="inline size-3.5" />
             </span>
           </Link>
-        </section>
-      )}
-
-      {/* Stale markers */}
-      {stale.length > 0 && (
-        <section>
-          <SectionHeading title="Not measured in over a year" />
-          <ul className="mt-3 flex flex-wrap gap-2">
-            {stale.map((s) => (
-              <li key={s.biomarker.id}>
-                <Link
-                  href={`/app/biomarkers/${s.biomarker.id}`}
-                  className="inline-flex items-center gap-2 rounded-full border border-line bg-paper px-3.5 py-1.5 text-sm text-ink-2 hover:border-line-strong hover:text-ink"
-                >
-                  {s.biomarker.name}
-                  <span className="text-xs text-ink-3">
-                    last {s.latest ? formatDate(s.latest.date) : "n/a"}
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
         </section>
       )}
     </div>
@@ -229,7 +206,7 @@ function groupRank(g: SystemGroup): number {
 function SystemGroupCard({ group }: { group: SystemGroup }) {
   const meta = SYSTEM[group.category];
   return (
-    <details className="au-card group overflow-hidden">
+    <details className="au-card group mb-3 block break-inside-avoid overflow-hidden">
       <summary className="flex cursor-pointer list-none items-center gap-4 px-5 py-4 transition-colors hover:bg-paper-2 [&::-webkit-details-marker]:hidden">
         <div className="min-w-0 flex-1">
           <p className="font-display text-base text-ink">{meta.name}</p>
