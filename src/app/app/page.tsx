@@ -88,9 +88,8 @@ export default async function DashboardPage() {
 
   return (
     <div className="animate-rise space-y-10">
-      <header>
-        <p className="au-eyebrow">Logbook · {profile.name}</p>
-        <h1 className="au-hl mt-2 text-4xl text-ink">Where things stand today</h1>
+      <header className="text-center">
+        <h1 className="au-hl text-4xl text-ink">Where things stand today</h1>
         <Summary
           inRange={inRangeCount}
           total={total}
@@ -179,12 +178,12 @@ function Summary({
   latestDate: string | null;
 }) {
   return (
-    <div className="au-card mt-6 max-w-2xl p-5 sm:p-6">
+    <div className="au-card mx-auto mt-6 max-w-2xl p-5 sm:p-6">
       <p className="font-display text-2xl leading-tight text-ink sm:text-3xl">
         <span className="text-in-range">{inRange}</span> of {total} markers in range
       </p>
       {(out > 0 || near > 0) && (
-        <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-1.5 text-sm">
+        <div className="mt-3 flex flex-wrap items-center justify-center gap-x-5 gap-y-1.5 text-sm">
           {out > 0 && (
             <span className="inline-flex items-center gap-1.5 text-out">
               <AlertCircle className="size-4 shrink-0" aria-hidden />
@@ -274,7 +273,7 @@ function AttentionCard({ group }: { group: SystemGroup }) {
   const meta = SYSTEM[group.category];
   return (
     <Link
-      href={`/app/biomarkers#${group.category}`}
+      href={`/app/biomarkers?review=${group.category}`}
       className="au-card group flex h-full flex-col gap-3 p-5 transition-colors hover:bg-paper-2"
     >
       <div className="flex items-start justify-between gap-3">

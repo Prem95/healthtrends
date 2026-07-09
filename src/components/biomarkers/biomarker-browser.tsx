@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { StatusBadge, Badge } from "@/components/ui/status-badge";
@@ -32,6 +33,11 @@ type Latest = {
   spark: number[];
 };
 
+const FLAGGED: ResultStatus[] = ["LOW", "HIGH", "BORDERLINE_LOW", "BORDERLINE_HIGH"];
+function isFlagged(latest: Latest | undefined): boolean {
+  return latest ? FLAGGED.includes(latest.status) : false;
+}
+
 export function BiomarkerBrowser({
   biomarkers,
   latestById,
@@ -42,11 +48,23 @@ export function BiomarkerBrowser({
   const [query, setQuery] = useState("");
   const [trackedOnly, setTrackedOnly] = useState(false);
 
+  // "?review=<CATEGORY>" narrows the browser to just the flagged (out-of-range
+  // or near-boundary) markers in one system, so the dashboard's "N to review"
+  // lands on exactly those markers rather than the whole group.
+  const searchParams = useSearchParams();
+  const reviewParam = searchParams.get("review");
+  const review = reviewParam && reviewParam in CATEGORY_LABEL
+    ? (reviewParam as BiomarkerCategory)
+    : null;
+
   const groups = useMemo(() => {
     const q = query.trim().toLowerCase();
     const filtered = biomarkers.filter((b) => {
       if (b.archived && !latestById[b.id]) return false;
-      if (trackedOnly && !latestById[b.id]) return false;
+      if (review) {
+        if (b.category !== review) return false;
+        if (!isFlagged(latestById[b.id])) return false;
+      } else if (trackedOnly && !latestById[b.id]) return false;
       if (!q) return true;
       return (
         b.name.toLowerCase().includes(q) ||
@@ -62,10 +80,24 @@ export function BiomarkerBrowser({
       category: c,
       items: sortByCommonality(map.get(c)!),
     }));
-  }, [biomarkers, latestById, query, trackedOnly]);
+  }, [biomarkers, latestById, query, trackedOnly, review]);
 
   return (
     <div>
+      {review && (
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-line bg-paper-2 px-4 py-3">
+          <p className="text-sm text-ink-2">
+            Showing markers to review in{" "}
+            <span className="font-medium text-ink">{CATEGORY_LABEL[review]}</span>.
+          </p>
+          <Link
+            href="/app/biomarkers"
+            className="text-sm font-medium text-brand-strong hover:underline"
+          >
+            Show all markers
+          </Link>
+        </div>
+      )}
       <div className="flex flex-wrap items-center gap-3">
         <div className="relative min-w-56 flex-1">
           <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-ink-3" />
