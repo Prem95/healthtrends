@@ -32,6 +32,7 @@
   --in-range-soft: #123a17;
   --borderline: #ffd400;       /* medium yellow */
   --borderline-soft: #38310a;
+  --borderline-ink: #ffd400;   /* amber for text (already AA on dark) */
   --out: #ff2b40;              /* low red */
   --out-soft: #3c141b;
   --neutral-status: #7a8a93;
@@ -64,6 +65,7 @@
   --brand-soft: #113140;
   --in-range: #19e60a;
   --borderline: #ffd400;
+  --borderline-ink: #ffd400;
   --out: #ff2b40;
   --neutral-status: #7a8a93;
   --page-bg: #0b1013;
@@ -96,6 +98,7 @@
   --in-range-soft: #dcfce7;
   --borderline: #ca8a04;
   --borderline-soft: #fef9c3;
+  --borderline-ink: #a16207;  /* darker amber: WCAG AA (4.9:1) as text on white */
   --out: #e11d48;
   --out-soft: #ffe4e6;
   --neutral-status: #64748b;
@@ -123,6 +126,7 @@
   --color-in-range-soft: var(--in-range-soft);
   --color-borderline: var(--borderline);
   --color-borderline-soft: var(--borderline-soft);
+  --color-borderline-ink: var(--borderline-ink);
   --color-out: var(--out);
   --color-out-soft: var(--out-soft);
   --color-neutral-status: var(--neutral-status);

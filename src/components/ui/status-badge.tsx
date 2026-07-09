@@ -9,7 +9,7 @@ import { STATUS_LABEL, statusTone } from "@/lib/domain";
 
 const TONE_PILL: Record<string, string> = {
   "in-range": "bg-in-range-soft text-in-range",
-  borderline: "bg-borderline-soft text-borderline",
+  borderline: "bg-borderline-soft text-borderline-ink",
   out: "bg-out-soft text-out",
   neutral: "bg-paper-3 text-ink-2",
 };
@@ -48,7 +48,7 @@ export function Badge({
     neutral: "bg-paper-2 text-ink-2",
     brand: "bg-brand-soft text-brand-strong",
     "in-range": "bg-in-range-soft text-in-range",
-    borderline: "bg-borderline-soft text-borderline",
+    borderline: "bg-borderline-soft text-borderline-ink",
     out: "bg-out-soft text-out",
   };
   return (

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, ChevronRight, Plus } from "lucide-react";
+import { AlertCircle, AlertTriangle, ArrowRight, Check, ChevronRight, Plus } from "lucide-react";
 import {
   getActiveProfile,
   getBiomarkers,
@@ -29,45 +29,57 @@ export default async function DashboardPage() {
   const watchedSummaries = watched
     .map((id) => byId.get(id))
     .filter((s): s is BiomarkerSummary => !!s);
-  const inRangeCount = summaries.filter((s) => s.latest && s.latestStatus === "IN_RANGE").length;
-  const outOfRange = summaries.filter((s) => isOutOfRange(s.latestStatus));
-  const borderline = summaries.filter((s) => isBorderline(s.latestStatus));
+
+  const withData = summaries.filter((s) => s.latest);
+  const total = withData.length;
+  const inRangeCount = withData.filter((s) => s.latestStatus === "IN_RANGE").length;
+  const outCount = withData.filter((s) => isOutOfRange(s.latestStatus)).length;
+  const nearCount = withData.filter((s) => isBorderline(s.latestStatus)).length;
 
   // Group every marker that has data by its body system, so a layperson meets a
   // handful of friendly systems instead of a wall of technical marker names.
   const bySystem = new Map<BiomarkerCategory, BiomarkerSummary[]>();
-  for (const s of summaries) {
-    if (!s.latest) continue;
+  for (const s of withData) {
     const list = bySystem.get(s.biomarker.category);
     if (list) list.push(s);
     else bySystem.set(s.biomarker.category, [s]);
   }
-  const systemGroups: SystemGroup[] = [...bySystem.entries()]
-    .map(([category, items]) => ({
-      category,
-      items: [...items].sort(
-        (a, b) => severity(b) - severity(a) || outDistance(b) - outDistance(a),
-      ),
-      out: items.filter((s) => isOutOfRange(s.latestStatus)).length,
-      near: items.filter((s) => isBorderline(s.latestStatus)).length,
-      total: items.length,
-    }))
-    .sort(
-      (a, b) =>
-        groupRank(b) - groupRank(a) ||
-        b.out - a.out ||
-        b.near - a.near ||
-        a.category.localeCompare(b.category),
+  const systemGroups: SystemGroup[] = [...bySystem.entries()].map(([category, items]) => {
+    const sorted = [...items].sort(
+      (a, b) => severity(b) - severity(a) || outDistance(b) - outDistance(a),
     );
+    const out = items.filter((s) => isOutOfRange(s.latestStatus)).length;
+    const near = items.filter((s) => isBorderline(s.latestStatus)).length;
+    const inRange = items.filter((s) => s.latestStatus === "IN_RANGE").length;
+    return {
+      category,
+      items: sorted,
+      out,
+      near,
+      inRange,
+      neutral: items.length - out - near - inRange,
+      total: items.length,
+    };
+  });
+
+  const byName = (a: SystemGroup, b: SystemGroup) =>
+    SYSTEM[a.category].name.localeCompare(SYSTEM[b.category].name);
+  // Most red markers first, then most amber, so the system that most warrants a
+  // look sits top-left.
+  const needsAttention = systemGroups
+    .filter((g) => g.out > 0 || g.near > 0)
+    .sort((a, b) => b.out - a.out || b.near - a.near || byName(a, b));
+  const lookingGood = systemGroups
+    .filter((g) => g.out === 0 && g.near === 0)
+    .sort(byName);
 
   const recentSession = sessions[0] ?? null;
   const recentResults = recentSession
-    ? summaries
-        .flatMap((s) =>
-          s.points
-            .filter((p) => p.sessionId === recentSession.id)
-            .map((p) => ({ summary: s, point: p })),
-        )
+    ? summaries.flatMap((s) =>
+        s.points
+          .filter((p) => p.sessionId === recentSession.id)
+          .map((p) => ({ summary: s, point: p })),
+      )
     : [];
 
   if (sessions.length === 0) {
@@ -76,25 +88,17 @@ export default async function DashboardPage() {
 
   return (
     <div className="animate-rise space-y-10">
-      {/* Header + the landing hero-card language: a white card with a
-          hairline-divided stat strip, colour only on the numbers themselves. */}
       <header>
         <p className="au-eyebrow">Logbook · {profile.name}</p>
-        <h1 className="au-hl mt-2 text-4xl text-ink">
-          Where things stand <span className="em">today</span>
-        </h1>
-        <div className="au-card mt-6 max-w-2xl overflow-hidden">
-          <dl className="grid grid-cols-3 divide-x divide-line">
-            <Stat n={outOfRange.length} label="Out of range" color="text-out" />
-            <Stat n={borderline.length} label="Near boundary" color="text-borderline" />
-            <Stat n={inRangeCount} label="In range" color="text-in-range" />
-          </dl>
-          <p className="border-t border-line px-5 py-2.5 text-xs text-ink-3">
-            {sessions.length} test{sessions.length === 1 ? "" : "s"} logged ·{" "}
-            {summaries.length} markers tracked
-            {recentSession && <> · latest {formatDate(recentSession.date)}</>}
-          </p>
-        </div>
+        <h1 className="au-hl mt-2 text-4xl text-ink">Where things stand today</h1>
+        <Summary
+          inRange={inRangeCount}
+          total={total}
+          out={outCount}
+          near={nearCount}
+          tests={sessions.length}
+          latestDate={recentSession ? formatDate(recentSession.date) : null}
+        />
       </header>
 
       {/* Watched markers pinned first */}
@@ -105,17 +109,29 @@ export default async function DashboardPage() {
         </section>
       )}
 
-      {/* Primary view: results grouped by body system, in plain language.
-          The technical marker names stay tucked inside each group until asked
-          for, so the page opens calm rather than as a wall of jargon. */}
-      <section>
-        <SectionHeading title="Your results by system" />
-        <div className="mt-4 gap-3 sm:columns-2 xl:columns-3">
-          {systemGroups.map((group) => (
-            <SystemGroupCard key={group.category} group={group} />
-          ))}
-        </div>
-      </section>
+      {/* Systems that have any out-of-range or near-boundary markers, most
+          severe first. Everything a layperson needs is on the card face; the
+          marker names and values stay tucked in the detail view. */}
+      {needsAttention.length > 0 && (
+        <section>
+          <SectionHeading title="Needs your attention" count={needsAttention.length} />
+          <div className="mt-4 grid grid-cols-1 items-start gap-3 sm:grid-cols-2 xl:grid-cols-3">
+            {needsAttention.map((group) => (
+              <AttentionCard key={group.category} group={group} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* All-in-range systems, quiet and tucked into one collapsible row. */}
+      {lookingGood.length > 0 && (
+        <section>
+          <SectionHeading title="Looking good" />
+          <div className="mt-4">
+            <LookingGoodBlock groups={lookingGood} />
+          </div>
+        </section>
+      )}
 
       {/* Latest test — a compact summary, not a technical table */}
       {recentSession && (
@@ -145,13 +161,48 @@ export default async function DashboardPage() {
   );
 }
 
-function Stat({ n, label, color }: { n: number; label: string; color: string }) {
+// Calm top-of-page read: lead with how much is in range, name the rest in plain
+// language, and keep colour to a small icon+label rather than a big red number.
+function Summary({
+  inRange,
+  total,
+  out,
+  near,
+  tests,
+  latestDate,
+}: {
+  inRange: number;
+  total: number;
+  out: number;
+  near: number;
+  tests: number;
+  latestDate: string | null;
+}) {
   return (
-    <div className="px-4 py-4 sm:px-5">
-      <dt className="microlabel">{label}</dt>
-      <dd className={cn("mt-1.5 font-display text-3xl leading-none tnum sm:text-4xl", color)}>
-        {n}
-      </dd>
+    <div className="au-card mt-6 max-w-2xl p-5 sm:p-6">
+      <p className="font-display text-2xl leading-tight text-ink sm:text-3xl">
+        <span className="text-in-range">{inRange}</span> of {total} markers in range
+      </p>
+      {(out > 0 || near > 0) && (
+        <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-1.5 text-sm">
+          {out > 0 && (
+            <span className="inline-flex items-center gap-1.5 text-out">
+              <AlertCircle className="size-4 shrink-0" aria-hidden />
+              {out} worth discussing with your doctor
+            </span>
+          )}
+          {near > 0 && (
+            <span className="inline-flex items-center gap-1.5 text-borderline-ink">
+              <AlertTriangle className="size-4 shrink-0" aria-hidden />
+              {near} near a boundary
+            </span>
+          )}
+        </div>
+      )}
+      <p className="mt-4 border-t border-line pt-3 text-xs text-ink-3">
+        {tests} test{tests === 1 ? "" : "s"} logged
+        {latestDate && <> · latest {latestDate}</>}
+      </p>
     </div>
   );
 }
@@ -172,6 +223,8 @@ type SystemGroup = {
   items: BiomarkerSummary[];
   out: number;
   near: number;
+  inRange: number;
+  neutral: number;
   total: number;
 };
 
@@ -194,55 +247,123 @@ function severity(s: BiomarkerSummary): number {
   if (isBorderline(s.latestStatus)) return 1;
   return 0;
 }
-// Group-level rank, so systems that need a look float to the top.
-function groupRank(g: SystemGroup): number {
-  if (g.out > 0) return 2;
-  if (g.near > 0) return 1;
-  return 0;
+
+// One plain-language read of a flagged system, no numbers or units. Which way
+// its off-range markers lean (above vs below normal) drives the wording.
+function insight(group: SystemGroup): string {
+  const name = SYSTEM[group.category].name;
+  let high = 0;
+  let low = 0;
+  for (const s of group.items) {
+    const st = s.latestStatus;
+    if (st === "HIGH" || st === "BORDERLINE_HIGH") high++;
+    else if (st === "LOW" || st === "BORDERLINE_LOW") low++;
+  }
+  if (high > 0 && low === 0) return `${name} markers trending high`;
+  if (low > 0 && high === 0) return `${name} markers trending low`;
+  if (high > low) return `${name} markers mostly trending high`;
+  if (low > high) return `${name} markers mostly trending low`;
+  return `${name} markers worth a closer look`;
 }
 
-// A collapsed system: friendly name, plain blurb, and a one-line status the
-// user reads without knowing a single marker name. Open it for the specifics.
-function SystemGroupCard({ group }: { group: SystemGroup }) {
+// A flagged system as an equal-height card: name, one-line blurb, a plain
+// insight, a segmented in-range/near/out meter, and a normalized status label.
+// Marker names + values live in the collapsible detail view, never the face.
+function AttentionCard({ group }: { group: SystemGroup }) {
   const meta = SYSTEM[group.category];
   return (
-    <details className="au-card group mb-3 block break-inside-avoid overflow-hidden">
-      <summary className="flex cursor-pointer list-none items-center gap-4 px-5 py-4 transition-colors hover:bg-paper-2 [&::-webkit-details-marker]:hidden">
-        <div className="min-w-0 flex-1">
-          <p className="font-display text-base text-ink">{meta.name}</p>
-          <p className="mt-0.5 text-xs text-ink-3">{meta.blurb}</p>
+    <details className="au-card group overflow-hidden">
+      <summary className="flex cursor-pointer list-none flex-col gap-3 p-5 transition-colors hover:bg-paper-2 [&::-webkit-details-marker]:hidden">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <p className="font-display text-base text-ink">{meta.name}</p>
+            <p className="mt-0.5 truncate text-xs text-ink-3">{meta.blurb}</p>
+          </div>
+          <ChevronRight className="mt-0.5 size-4 shrink-0 text-ink-3 transition-transform group-open:rotate-90" />
         </div>
-        <GroupStatus out={group.out} near={group.near} total={group.total} />
-        <ChevronRight className="size-4 shrink-0 text-ink-3 transition-transform group-open:rotate-90" />
+        <p className="truncate text-sm text-ink-2">{insight(group)}</p>
+        <StatusMeter group={group} />
+        <CardStatus out={group.out} near={group.near} />
       </summary>
-      <ul className="divide-y divide-line border-t border-line">
-        {group.items.map((s) => (
-          <li key={s.biomarker.id}>
-            <MarkerRow s={s} />
-          </li>
-        ))}
-      </ul>
+      <div className="border-t border-line">
+        <p className="px-5 pt-3 text-xs text-ink-3">
+          {group.total} marker{group.total === 1 ? "" : "s"} in this group
+        </p>
+        <ul className="mt-1 divide-y divide-line">
+          {group.items.map((s) => (
+            <li key={s.biomarker.id}>
+              <MarkerRow s={s} />
+            </li>
+          ))}
+        </ul>
+      </div>
     </details>
   );
 }
 
-function GroupStatus({ out, near, total }: { out: number; near: number; total: number }) {
-  const [dot, txt, text] =
-    out > 0
-      ? ["bg-out", "text-out", `${out} need${out === 1 ? "s" : ""} a look`]
-      : near > 0
-        ? ["bg-borderline", "text-borderline", `${near} near a boundary`]
-        : ["bg-in-range", "text-in-range", "All in range"];
+// Thin segmented bar: the ratio of in-range / near-boundary / out-of-range (and
+// any marker without a range). Colour is backed by a worded aria-label/tooltip
+// so the meaning never rides on colour alone.
+function StatusMeter({ group }: { group: SystemGroup }) {
+  const segs = [
+    { n: group.inRange, cls: "bg-in-range", label: `${group.inRange} in range` },
+    { n: group.near, cls: "bg-borderline", label: `${group.near} near a boundary` },
+    { n: group.out, cls: "bg-out", label: `${group.out} out of range` },
+    { n: group.neutral, cls: "bg-neutral-status", label: `${group.neutral} without a range` },
+  ].filter((s) => s.n > 0);
+  const desc = segs.map((s) => s.label).join(", ");
   return (
-    <span className="flex shrink-0 flex-col items-end gap-0.5 text-right">
-      <span className={cn("flex items-center gap-1.5 text-sm font-medium", txt)}>
-        <span className={cn("size-2 rounded-full", dot)} />
-        {text}
-      </span>
-      <span className="text-xs text-ink-3">
-        {total} marker{total === 1 ? "" : "s"}
-      </span>
+    <div
+      role="img"
+      aria-label={desc}
+      title={desc}
+      className="flex h-1.5 w-full overflow-hidden rounded-full bg-paper-3"
+    >
+      {segs.map((s) => (
+        <span key={s.cls} className={s.cls} style={{ flexGrow: s.n }} />
+      ))}
+    </div>
+  );
+}
+
+// Normalized status label — "N to review" reads the same for 1 or many, and the
+// icon carries the meaning alongside the colour (never colour alone).
+function CardStatus({ out, near }: { out: number; near: number }) {
+  const count = out > 0 ? out : near;
+  const Icon = out > 0 ? AlertCircle : AlertTriangle;
+  const color = out > 0 ? "text-out" : "text-borderline-ink";
+  return (
+    <span className={cn("inline-flex items-center gap-1.5 text-sm font-medium", color)}>
+      <Icon className="size-4 shrink-0" aria-hidden />
+      {count} to review
     </span>
+  );
+}
+
+// All-in-range systems, collapsed into one quiet row of check-marked chips.
+function LookingGoodBlock({ groups }: { groups: SystemGroup[] }) {
+  return (
+    <details className="au-card group overflow-hidden">
+      <summary className="flex cursor-pointer list-none items-center gap-3 px-5 py-4 transition-colors hover:bg-paper-2 [&::-webkit-details-marker]:hidden">
+        <Check className="size-4 shrink-0 text-in-range" aria-hidden />
+        <span className="flex-1 text-sm font-medium text-ink">All in range</span>
+        <span className="text-xs text-ink-3">
+          {groups.length} system{groups.length === 1 ? "" : "s"}
+        </span>
+        <ChevronRight className="size-4 shrink-0 text-ink-3 transition-transform group-open:rotate-90" />
+      </summary>
+      <div className="flex flex-wrap gap-2 border-t border-line p-4">
+        {groups.map((g) => (
+          <span
+            key={g.category}
+            className="inline-flex items-center gap-1.5 rounded-full border border-line bg-paper px-3 py-1.5 text-sm text-ink-2"
+          >
+            <Check className="size-3.5 shrink-0 text-in-range" aria-hidden />
+            {SYSTEM[g.category].name}
+          </span>
+        ))}
+      </div>
+    </details>
   );
 }
 
