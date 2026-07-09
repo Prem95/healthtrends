@@ -6,7 +6,6 @@ import { cn } from "@/lib/utils";
 
 const LINKS = [
   { href: "/app", label: "Dashboard", exact: true },
-  { href: "/app/body", label: "Body map", exact: false },
   { href: "/app/biomarkers", label: "Biomarkers", exact: false },
   { href: "/app/timeline", label: "Timeline", exact: false },
   { href: "/app/settings", label: "Settings", exact: false },
