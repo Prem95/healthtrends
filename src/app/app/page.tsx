@@ -13,8 +13,6 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { Button } from "@/components/ui/button";
 import { RangeBar } from "@/components/charts/range-bar";
 import { TREND_LABEL, type BiomarkerCategory } from "@/lib/domain";
-import { worstStatus, type RegionData } from "@/lib/body-map";
-import { BodyMapView } from "@/components/body/body-map-view";
 
 export default async function DashboardPage() {
   const profile = (await getActiveProfile())!;
@@ -27,27 +25,6 @@ export default async function DashboardPage() {
 
   const summaries = summarize(results, biomarkers, profile.sex);
   const byId = new Map(summaries.map((s) => [s.biomarker.id, s]));
-
-  // Group latest results by body system for the body map section.
-  const grouped = new Map<BiomarkerCategory, RegionData>();
-  for (const s of summaries) {
-    if (!s.latest) continue;
-    const category = s.biomarker.category;
-    if (!grouped.has(category)) {
-      grouped.set(category, { category, worst: "NO_RANGE", markers: [] });
-    }
-    grouped.get(category)!.markers.push({
-      id: s.biomarker.id,
-      name: s.biomarker.name,
-      value: s.latest.value,
-      unit: s.biomarker.canonicalUnit,
-      status: s.latestStatus,
-    });
-  }
-  for (const region of grouped.values()) {
-    region.worst = worstStatus(region.markers.map((m) => m.status));
-  }
-  const regions = [...grouped.values()];
 
   const watchedSummaries = watched
     .map((id) => byId.get(id))
@@ -107,9 +84,6 @@ export default async function DashboardPage() {
         <h1 className="au-hl mt-2 text-4xl text-ink">
           Where things stand <span className="em">today</span>
         </h1>
-        <p className="mt-3 max-w-xl leading-relaxed text-ink-2">
-          {standSummary(outOfRange.length, borderline.length, inRangeCount)}
-        </p>
         <div className="au-card mt-6 max-w-2xl overflow-hidden">
           <dl className="grid grid-cols-3 divide-x divide-line">
             <Stat n={outOfRange.length} label="Out of range" color="text-out" />
@@ -137,26 +111,12 @@ export default async function DashboardPage() {
           for, so the page opens calm rather than as a wall of jargon. */}
       <section>
         <SectionHeading title="Your results by system" />
-        <p className="mt-2 max-w-xl text-sm text-ink-2">
-          Grouped the way a doctor reads them. Open any group to see the
-          individual markers behind it.
-        </p>
         <div className="mt-4 space-y-3">
           {systemGroups.map((group) => (
             <SystemGroupCard key={group.category} group={group} />
           ))}
         </div>
       </section>
-
-      {/* The same grouping, explorable on the figure */}
-      {regions.length > 0 && (
-        <section>
-          <SectionHeading title="Or explore on the body" />
-          <div className="mt-3">
-            <BodyMapView regions={regions} />
-          </div>
-        </section>
-      )}
 
       {/* Latest test — a compact summary, not a technical table */}
       {recentSession && (
@@ -317,20 +277,6 @@ function outDistance(s: BiomarkerSummary): number {
   if (r.max != null && v > r.max) return (v - r.max) / (Math.abs(r.max) || 1);
   if (r.min != null && v < r.min) return (r.min - v) / (Math.abs(r.min) || 1);
   return 0;
-}
-
-// A plain-language read of where things stand, in the brand's calm voice.
-function standSummary(out: number, near: number, inRange: number): string {
-  const m = (n: number) => `${n} marker${n === 1 ? "" : "s"}`;
-  if (out > 0) {
-    const tail = near > 0 ? ` and ${m(near)} sit near a boundary` : "";
-    return `${m(out)} outside their range${tail}. The rest are where they should be.`;
-  }
-  if (near > 0) {
-    return `Nothing is out of range. ${m(near)} worth a glance near a boundary.`;
-  }
-  if (inRange > 0) return "Everything is within range right now.";
-  return "Add a test session to start seeing where things stand.";
 }
 
 /* Ledger rows in a white card, as on the landing's panel table: name + trend
