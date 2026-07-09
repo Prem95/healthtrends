@@ -115,7 +115,7 @@ export default async function DashboardPage() {
       {needsAttention.length > 0 && (
         <section>
           <SectionHeading title="Needs your attention" count={needsAttention.length} />
-          <div className="mt-4 grid grid-cols-1 items-start gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {needsAttention.map((group) => (
               <AttentionCard key={group.category} group={group} />
             ))}
@@ -248,10 +248,10 @@ function severity(s: BiomarkerSummary): number {
   return 0;
 }
 
-// One plain-language read of a flagged system, no numbers or units. Which way
-// its off-range markers lean (above vs below normal) drives the wording.
+// One plain-language read of a flagged system, no numbers or units. The card
+// title already names the system, so the insight just states the lean. Which
+// way its off-range markers sit (above vs below normal) drives the wording.
 function insight(group: SystemGroup): string {
-  const name = SYSTEM[group.category].name;
   let high = 0;
   let low = 0;
   for (const s of group.items) {
@@ -259,45 +259,37 @@ function insight(group: SystemGroup): string {
     if (st === "HIGH" || st === "BORDERLINE_HIGH") high++;
     else if (st === "LOW" || st === "BORDERLINE_LOW") low++;
   }
-  if (high > 0 && low === 0) return `${name} markers trending high`;
-  if (low > 0 && high === 0) return `${name} markers trending low`;
-  if (high > low) return `${name} markers mostly trending high`;
-  if (low > high) return `${name} markers mostly trending low`;
-  return `${name} markers worth a closer look`;
+  if (high > 0 && low === 0) return "Trending high";
+  if (low > 0 && high === 0) return "Trending low";
+  if (high > low) return "Mostly trending high";
+  if (low > high) return "Mostly trending low";
+  return "Worth a closer look";
 }
 
 // A flagged system as an equal-height card: name, one-line blurb, a plain
 // insight, a segmented in-range/near/out meter, and a normalized status label.
-// Marker names + values live in the collapsible detail view, never the face.
+// The whole card links into the Biomarkers browser at this system; individual
+// marker names and values live there, never on the dashboard face.
 function AttentionCard({ group }: { group: SystemGroup }) {
   const meta = SYSTEM[group.category];
   return (
-    <details className="au-card group overflow-hidden">
-      <summary className="flex cursor-pointer list-none flex-col gap-3 p-5 transition-colors hover:bg-paper-2 [&::-webkit-details-marker]:hidden">
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <p className="font-display text-base text-ink">{meta.name}</p>
-            <p className="mt-0.5 truncate text-xs text-ink-3">{meta.blurb}</p>
-          </div>
-          <ChevronRight className="mt-0.5 size-4 shrink-0 text-ink-3 transition-transform group-open:rotate-90" />
+    <Link
+      href={`/app/biomarkers#${group.category}`}
+      className="au-card group flex h-full flex-col gap-3 p-5 transition-colors hover:bg-paper-2"
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="font-display text-base text-ink">{meta.name}</p>
+          <p className="mt-0.5 truncate text-xs text-ink-3">{meta.blurb}</p>
         </div>
-        <p className="truncate text-sm text-ink-2">{insight(group)}</p>
+        <ChevronRight className="mt-0.5 size-4 shrink-0 text-ink-3 transition-transform group-hover:translate-x-0.5" />
+      </div>
+      <p className="text-sm text-ink-2">{insight(group)}</p>
+      <div className="mt-auto space-y-2 pt-1">
         <StatusMeter group={group} />
         <CardStatus out={group.out} near={group.near} />
-      </summary>
-      <div className="border-t border-line">
-        <p className="px-5 pt-3 text-xs text-ink-3">
-          {group.total} marker{group.total === 1 ? "" : "s"} in this group
-        </p>
-        <ul className="mt-1 divide-y divide-line">
-          {group.items.map((s) => (
-            <li key={s.biomarker.id}>
-              <MarkerRow s={s} />
-            </li>
-          ))}
-        </ul>
       </div>
-    </details>
+    </Link>
   );
 }
 
@@ -354,13 +346,14 @@ function LookingGoodBlock({ groups }: { groups: SystemGroup[] }) {
       </summary>
       <div className="flex flex-wrap gap-2 border-t border-line p-4">
         {groups.map((g) => (
-          <span
+          <Link
             key={g.category}
-            className="inline-flex items-center gap-1.5 rounded-full border border-line bg-paper px-3 py-1.5 text-sm text-ink-2"
+            href={`/app/biomarkers#${g.category}`}
+            className="inline-flex items-center gap-1.5 rounded-full border border-line bg-paper px-3 py-1.5 text-sm text-ink-2 hover:border-line-strong hover:text-ink"
           >
             <Check className="size-3.5 shrink-0 text-in-range" aria-hidden />
             {SYSTEM[g.category].name}
-          </span>
+          </Link>
         ))}
       </div>
     </details>
