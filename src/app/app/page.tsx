@@ -33,8 +33,6 @@ export default async function DashboardPage() {
   const withData = summaries.filter((s) => s.latest);
   const total = withData.length;
   const inRangeCount = withData.filter((s) => s.latestStatus === "IN_RANGE").length;
-  const outCount = withData.filter((s) => isOutOfRange(s.latestStatus)).length;
-  const nearCount = withData.filter((s) => isBorderline(s.latestStatus)).length;
 
   // Group every marker that has data by its body system, so a layperson meets a
   // handful of friendly systems instead of a wall of technical marker names.
@@ -90,14 +88,7 @@ export default async function DashboardPage() {
     <div className="animate-rise space-y-10">
       <header className="text-center">
         <h1 className="au-hl text-4xl text-ink">Where things stand today</h1>
-        <Summary
-          inRange={inRangeCount}
-          total={total}
-          out={outCount}
-          near={nearCount}
-          tests={sessions.length}
-          latestDate={recentSession ? formatDate(recentSession.date) : null}
-        />
+        <Summary inRange={inRangeCount} total={total} />
       </header>
 
       {/* Watched markers pinned first */}
@@ -160,47 +151,12 @@ export default async function DashboardPage() {
   );
 }
 
-// Calm top-of-page read: lead with how much is in range, name the rest in plain
-// language, and keep colour to a small icon+label rather than a big red number.
-function Summary({
-  inRange,
-  total,
-  out,
-  near,
-  tests,
-  latestDate,
-}: {
-  inRange: number;
-  total: number;
-  out: number;
-  near: number;
-  tests: number;
-  latestDate: string | null;
-}) {
+// Calm top-of-page read: one plain line on how much is in range.
+function Summary({ inRange, total }: { inRange: number; total: number }) {
   return (
     <div className="au-card mx-auto mt-6 max-w-2xl p-5 sm:p-6">
       <p className="font-display text-2xl leading-tight text-ink sm:text-3xl">
         <span className="text-in-range">{inRange}</span> of {total} markers in range
-      </p>
-      {(out > 0 || near > 0) && (
-        <div className="mt-3 flex flex-wrap items-center justify-center gap-x-5 gap-y-1.5 text-sm">
-          {out > 0 && (
-            <span className="inline-flex items-center gap-1.5 text-out">
-              <AlertCircle className="size-4 shrink-0" aria-hidden />
-              {out} worth discussing with your doctor
-            </span>
-          )}
-          {near > 0 && (
-            <span className="inline-flex items-center gap-1.5 text-borderline-ink">
-              <AlertTriangle className="size-4 shrink-0" aria-hidden />
-              {near} near a boundary
-            </span>
-          )}
-        </div>
-      )}
-      <p className="mt-4 border-t border-line pt-3 text-xs text-ink-3">
-        {tests} test{tests === 1 ? "" : "s"} logged
-        {latestDate && <> · latest {latestDate}</>}
       </p>
     </div>
   );
