@@ -31,8 +31,6 @@ export default async function DashboardPage() {
     .filter((s): s is BiomarkerSummary => !!s);
 
   const withData = summaries.filter((s) => s.latest);
-  const total = withData.length;
-  const inRangeCount = withData.filter((s) => s.latestStatus === "IN_RANGE").length;
 
   // Group every marker that has data by its body system, so a layperson meets a
   // handful of friendly systems instead of a wall of technical marker names.
@@ -86,11 +84,6 @@ export default async function DashboardPage() {
 
   return (
     <div className="animate-rise space-y-10">
-      <header className="text-center">
-        <h1 className="au-hl text-4xl text-ink">Where things stand today</h1>
-        <Summary inRange={inRangeCount} total={total} />
-      </header>
-
       {/* Watched markers pinned first */}
       {watchedSummaries.length > 0 && (
         <section>
@@ -147,17 +140,6 @@ export default async function DashboardPage() {
           </Link>
         </section>
       )}
-    </div>
-  );
-}
-
-// Calm top-of-page read: one plain line on how much is in range.
-function Summary({ inRange, total }: { inRange: number; total: number }) {
-  return (
-    <div className="au-card mx-auto mt-6 max-w-2xl p-5 sm:p-6">
-      <p className="font-display text-2xl leading-tight text-ink sm:text-3xl">
-        <span className="text-in-range">{inRange}</span> of {total} markers in range
-      </p>
     </div>
   );
 }
