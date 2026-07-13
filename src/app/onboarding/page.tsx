@@ -5,6 +5,7 @@ import { Logo } from "@/components/brand/logo";
 import { Button } from "@/components/ui/button";
 import { Input, Label, Select } from "@/components/ui/input";
 import { Disclaimer } from "@/components/disclaimer";
+import { Reveal } from "@/components/motion/reveal";
 
 export default async function OnboardingPage({
   searchParams,
@@ -19,30 +20,51 @@ export default async function OnboardingPage({
 
   return (
     <div
-      data-theme="light"
-      className="aurora flex min-h-[100dvh] flex-col bg-page text-ink"
+      data-theme="dark"
+      className="aurora relative flex min-h-[100dvh] flex-col overflow-hidden bg-page text-ink"
     >
-      <header className="border-b border-line bg-paper px-6 py-4">
+      <div className="au-media" aria-hidden />
+
+      <header className="relative z-10 border-b border-line px-6 py-4">
         <Logo />
       </header>
-      <main className="flex flex-1 items-center justify-center px-6 pb-20">
-        <div className="w-full max-w-md animate-rise">
-          <p className="au-eyebrow">One quick step</p>
-          <h1 className="au-hl mt-2 text-4xl text-ink">
-            Create your first <span className="em">profile</span>
+      <main className="relative z-10 flex flex-1 items-center justify-center px-4 py-12 sm:px-6">
+        <Reveal effect="none" className="au-glass w-full max-w-md p-8 sm:p-10">
+          <p
+            className="au-eyebrow au-reveal inview"
+            style={{ "--rv-delay": "100ms" } as React.CSSProperties}
+          >
+            One quick step
+          </p>
+          <h1 className="au-hl mt-3 text-4xl text-ink">
+            <span className="au-lmask">
+              <span style={{ transitionDelay: "250ms" }}>Create your first</span>
+            </span>
+            <span className="au-lmask">
+              <span style={{ transitionDelay: "350ms" }}>
+                <span className="em">profile</span>.
+              </span>
+            </span>
           </h1>
-          <p className="mt-2 text-sm text-ink-2">
+          <p
+            className="au-reveal inview mt-4 max-w-[400px] text-sm leading-relaxed text-ink-2"
+            style={{ "--rv-delay": "500ms" } as React.CSSProperties}
+          >
             Sex and date of birth let us pick the right reference ranges. You can add family
             members later on the Pro plan.
           </p>
 
           {error && (
-            <p className="mt-4 rounded-md border border-out/20 bg-out-soft/60 px-3 py-2 text-sm text-out">
+            <p className="mt-4 rounded-[8px] border border-out/25 bg-out-soft px-3 py-2 text-sm text-out">
               That did not save. Check the fields and try again.
             </p>
           )}
 
-          <form action={createProfile} className="mt-6 space-y-4">
+          <form
+            action={createProfile}
+            className="au-reveal inview mt-8 space-y-4"
+            style={{ "--rv-delay": "650ms" } as React.CSSProperties}
+          >
             <div>
               <Label htmlFor="name">Profile name</Label>
               <Input id="name" name="name" required placeholder="e.g. Myself" autoFocus />
@@ -62,14 +84,14 @@ export default async function OnboardingPage({
               </div>
             </div>
             <Button type="submit" className="w-full">
-              Continue to dashboard
+              Continue to markers
             </Button>
           </form>
 
           <div className="mt-8">
             <Disclaimer variant="inline" />
           </div>
-        </div>
+        </Reveal>
       </main>
     </div>
   );

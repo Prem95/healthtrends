@@ -2,7 +2,6 @@
 
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
-import { Mail, Check } from "lucide-react";
 import { signInWithMagicLink, signInWithGoogle, type AuthState } from "@/app/login/actions";
 import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/input";
@@ -11,8 +10,7 @@ function SubmitButton() {
   const { pending } = useFormStatus();
   return (
     <Button type="submit" className="w-full" disabled={pending}>
-      <Mail />
-      {pending ? "Sending..." : "Email me a sign-in link"}
+      {pending ? "Sending…" : "Email me a sign-in link"}
     </Button>
   );
 }
@@ -22,22 +20,20 @@ export function LoginForm({ next }: { next: string }) {
 
   if (state.ok) {
     return (
-      <div className="rounded-lg border border-in-range/25 bg-in-range-soft/60 p-5 text-center">
-        <div className="mx-auto mb-3 flex size-10 items-center justify-center rounded-sm border-2 border-in-range text-in-range">
-          <Check className="size-5" />
-        </div>
-        <p className="text-ink font-medium">Check your inbox</p>
-        <p className="mt-1 text-sm text-ink-2">
-          We sent a sign-in link to <span className="text-ink">{state.email}</span>. It works on
-          any device.
+      <div className="au-card p-6">
+        <p className="au-eyebrow text-brand">Link sent</p>
+        <p className="mt-3 font-medium text-ink">Check your inbox</p>
+        <p className="mt-1 text-sm leading-relaxed text-ink-2">
+          We sent a sign-in link to <span className="text-ink">{state.email}</span>. It works
+          on any device.
         </p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-4">
-      <form action={formAction} className="space-y-3">
+    <div className="space-y-5">
+      <form action={formAction} className="space-y-4">
         <input type="hidden" name="next" value={next} />
         <div>
           <Label htmlFor="email">Email address</Label>
@@ -54,10 +50,10 @@ export function LoginForm({ next }: { next: string }) {
         <SubmitButton />
       </form>
 
-      <div className="flex items-center gap-3 text-xs text-ink-3">
-        <span className="h-px flex-1 bg-line" />
+      <div className="au-mono flex items-center gap-3 text-[10px] text-ink-3">
+        <span className="h-px flex-1 bg-line-strong" />
         or
-        <span className="h-px flex-1 bg-line" />
+        <span className="h-px flex-1 bg-line-strong" />
       </div>
 
       <form action={signInWithGoogle}>
