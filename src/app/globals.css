@@ -563,6 +563,298 @@ body {
   .au-media::after { animation: auBlobB 52s linear infinite; will-change: transform; }
 }
 
+/* =========================================================================
+   Alethia dark — the product app surface. Same extracted system as the light
+   landing (one accent, uppercase mono metadata, hairlines, no shadows, one
+   easing), flipped to the handoff's near-black canvas: #070707, warm
+   off-white ink, teal #5EEAD4 reserved for data + interaction, status hues
+   on data only. Scoped via .aurora[data-theme="dark"] on the app root; this
+   must out-rank both the generic [data-theme="dark"] block and .aurora.
+   ========================================================================= */
+.aurora[data-theme="dark"] {
+  --page-bg: #070707; /* canvas — near-black, never pure #000 */
+  --paper: #111110; /* solid card */
+  --paper-2: #141412; /* inset surface (notes, seg track, inputs) */
+  --paper-3: #1c1c1a; /* highest surface */
+  --line: #1b1b19; /* hairline row divider */
+  --line-strong: #222220; /* hairline on cards */
+  --rule: #2a2a28; /* hairline on buttons */
+  --ink: #f2f2ee; /* warm off-white, never pure #fff */
+  --ink-2: #b7b7b0; /* body copy */
+  --ink-3: #8a8a84; /* metadata, mono labels */
+
+  --brand: #5eead4; /* the single clinical-teal accent (data + interaction) */
+  --brand-strong: #8df2e2;
+  --brand-soft: rgba(94, 234, 212, 0.13);
+  --brand-tint: rgba(94, 234, 212, 0.06);
+
+  /* status data triad — vivid on near-black, data only, never decoration */
+  --in-range: #63d97e;
+  --in-range-soft: rgba(99, 217, 126, 0.12);
+  --borderline: #eec95e;
+  --borderline-soft: rgba(238, 201, 94, 0.13);
+  --borderline-ink: #eec95e;
+  --out: #f37c7c;
+  --out-soft: rgba(243, 124, 124, 0.14);
+  --neutral-status: #6f6f68;
+
+  --au-olive: #1c231a; /* the olive-tinted summary card from the handoff */
+  --au-olive-line: #2a3324;
+  --au-olive-label: #7d8a6d;
+  --au-seg-on: #26261f;
+  --au-inv: #0a0a0a;
+
+  --background: var(--page-bg);
+  background: var(--page-bg);
+  color: var(--ink);
+}
+
+/* Light-theme values for tokens the dark block introduces */
+.aurora {
+  --au-olive: #e8e7e0;
+  --au-olive-line: rgba(17, 17, 15, 0.12);
+  --au-olive-label: #6b6b60;
+  --au-seg-on: #ffffff;
+}
+
+/* au-* components that hard-code light fills, flipped for the dark surface */
+.aurora[data-theme="dark"] .au-arrowbtn {
+  background: #0d0d0c;
+  border-color: var(--rule);
+  color: var(--ink);
+}
+.aurora[data-theme="dark"] .au-arrowbtn:hover {
+  border-color: var(--brand);
+  color: var(--ink);
+}
+.aurora[data-theme="dark"] .au-glass {
+  background: rgba(20, 20, 18, 0.62);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+@supports not (backdrop-filter: blur(1px)) {
+  .aurora[data-theme="dark"] .au-glass {
+    background: rgba(17, 17, 16, 0.95);
+  }
+}
+.aurora[data-theme="dark"] .au-media {
+  background: #0a0a0a;
+}
+.aurora[data-theme="dark"] .au-media::before {
+  background: radial-gradient(circle, rgba(94, 234, 212, 0.09) 0%, transparent 62%);
+}
+.aurora[data-theme="dark"] .au-media::after {
+  background: radial-gradient(circle, rgba(35, 43, 30, 0.85) 0%, transparent 65%);
+}
+.au-card--olive {
+  background: var(--au-olive);
+  border-color: var(--au-olive-line);
+}
+
+/* ---- App-layer anatomy (both themes; token-driven) ---- */
+
+/* Status pill: mono uppercase 10px, 5px radius — the handoff's exact spec */
+.au-pill {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 4px 9px;
+  border-radius: 5px;
+}
+
+/* Marker row: hairline-topped; hover indents 12px and tints the title —
+   the numbered-list interaction from the handoff, applied to data rows. */
+.au-row {
+  transition: padding-left 0.4s var(--au-ease);
+}
+.au-row .au-row-title {
+  transition: color 0.25s var(--au-ease);
+}
+@media (hover: hover) {
+  .au-row:hover {
+    padding-left: 12px;
+  }
+  .au-row:hover .au-row-title {
+    color: var(--brand);
+  }
+}
+
+/* Segmented range control (1Y/3Y/8Y/All): dark inset track, mono labels */
+.au-seg {
+  display: inline-flex;
+  gap: 4px;
+  background: var(--paper-2);
+  border-radius: 8px;
+  padding: 3px;
+}
+.au-seg button {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 6px 14px;
+  border-radius: 6px;
+  color: var(--ink-3);
+  cursor: pointer;
+  transition:
+    color 0.25s var(--au-ease),
+    background-color 0.25s var(--au-ease);
+}
+.au-seg button:hover {
+  color: var(--ink);
+}
+.au-seg button[aria-pressed="true"] {
+  background: var(--au-seg-on);
+  color: var(--ink);
+}
+
+/* App fade-up reveal (Tier B): opacity + transform only, fires once */
+.au-reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition:
+    opacity 0.8s var(--au-ease),
+    transform 0.8s var(--au-ease);
+  transition-delay: var(--rv-delay, 0ms);
+}
+.au-reveal.inview {
+  opacity: 1;
+  transform: none;
+}
+/* Draw-on strokes and dots inside a revealed block */
+.inview .draw-line {
+  stroke-dashoffset: 0;
+}
+.inview .draw-dot {
+  opacity: 1;
+}
+
+/* Chart choreography: line draws L→R, dots pop sequentially (--d per dot) */
+@keyframes mkDraw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes mkPop {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.mk-line {
+  stroke-dasharray: 1;
+  animation: mkDraw 0.9s var(--au-ease) both;
+}
+.mk-line--fast {
+  animation-duration: 0.55s;
+}
+.mk-dot {
+  opacity: 0;
+  animation: mkPop 0.3s var(--au-ease) both;
+  animation-delay: var(--d, 0ms);
+  transform-box: fill-box;
+  transform-origin: center;
+}
+/* Same pop for HTML elements that land last in a chart's choreography */
+.mk-pop {
+  display: inline-flex;
+  opacity: 0;
+  animation: mkPop 0.3s var(--au-ease) both;
+  animation-delay: var(--d, 0ms);
+}
+
+/* Accordion (details): height animated where the platform supports it,
+   instant elsewhere. The + marker rotates to × when open. */
+.aurora {
+  interpolate-size: allow-keywords;
+}
+.au-acc::details-content {
+  block-size: 0;
+  overflow-y: clip;
+  transition:
+    content-visibility 0.55s allow-discrete,
+    block-size 0.55s var(--au-ease);
+}
+.au-acc[open]::details-content {
+  block-size: auto;
+}
+.au-acc-plus {
+  display: inline-block;
+  transition: transform 0.35s var(--au-ease);
+}
+.au-acc[open] .au-acc-plus {
+  transform: rotate(45deg);
+}
+.au-acc summary {
+  list-style: none;
+}
+.au-acc summary::-webkit-details-marker {
+  display: none;
+}
+
+/* Mobile tab bar: frost over the scrolling canvas */
+.au-tabbar {
+  background: color-mix(in srgb, var(--page-bg) 86%, transparent);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .au-reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  .au-row,
+  .au-row .au-row-title,
+  .au-seg button,
+  .au-acc::details-content,
+  .au-acc-plus {
+    transition: none;
+  }
+  .mk-line,
+  .mk-dot,
+  .mk-pop {
+    animation: none;
+    opacity: 1;
+    stroke-dashoffset: 0;
+  }
+}
+
+/* The doctor summary prints from the dark app: flip to ink-on-paper */
+@media print {
+  .aurora[data-theme="dark"] {
+    --page-bg: #ffffff;
+    --paper: #ffffff;
+    --paper-2: #f4f3ee;
+    --paper-3: #e8e7e0;
+    --line: rgba(17, 17, 15, 0.16);
+    --line-strong: rgba(17, 17, 15, 0.24);
+    --rule: rgba(17, 17, 15, 0.35);
+    --ink: #16160f;
+    --ink-2: #3d3d37;
+    --ink-3: #5f5f57;
+    --brand: #0d9488;
+    --in-range: #16a34a;
+    --borderline: #ca8a04;
+    --borderline-ink: #a16207;
+    --out: #e11d48;
+    background: #ffffff;
+  }
+}
+
 /* -------------------------------------------------------------------------
    Scroll-driven motion (native, dependency-free). Uses `animation-timeline:
    view()` so animations are linked to how far an element has scrolled through
