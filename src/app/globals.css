@@ -400,18 +400,6 @@ body {
   border-radius: 4px;
 }
 
-/* Data chip: accent bg + hexagon glyph + a live reading */
-.au-datachip {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-family: var(--font-mono);
-  font-size: 0.8125rem;
-  color: var(--au-inv);
-  background: var(--brand);
-  border-radius: 6px;
-  padding: 5px 12px;
-}
 .au-hex {
   width: 12px;
   height: 12px;

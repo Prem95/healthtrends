@@ -334,44 +334,6 @@ function ScrubReadout({
 
 /* --- feature-card visuals --- */
 
-// "Log it once": a pre-filled entry panel with one row being typed.
-function EntryPanel() {
-  const rows: [string, string, string][] = [
-    ["LDL cholesterol", "142", "mg/dL"],
-    ["HDL cholesterol", "51", "mg/dL"],
-    ["Triglycerides", "128", "mg/dL"],
-  ];
-  return (
-    <div>
-      <div className="flex items-center justify-between border-b border-line pb-2">
-        <span className="font-display text-sm text-ink">Lipid panel</span>
-        <span className="text-xs text-ink-3">5 markers</span>
-      </div>
-      <div className="flex flex-col divide-y divide-line">
-        {rows.map(([label, val, unit]) => (
-          <div key={label} className="flex items-center justify-between py-2">
-            <span className="text-sm text-ink-2">{label}</span>
-            <span className="flex items-baseline gap-1">
-              <span className="font-display text-sm text-ink tnum">{val}</span>
-              <span className="text-[0.7rem] text-ink-3">{unit}</span>
-            </span>
-          </div>
-        ))}
-        {/* the most recent row, just entered */}
-        <div className="flex items-center justify-between py-2">
-          <span className="text-sm text-ink">Fasting glucose</span>
-          <span className="flex items-baseline gap-1">
-            <span className="font-display text-sm text-brand-strong tnum">
-              <CountUp to={98} />
-            </span>
-            <span className="text-[0.7rem] text-ink-3">mg/dL</span>
-          </span>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 // Inline sparkline used by the family tile and the marker wall.
 function sparkPts(values: number[], w = 80, h = 24) {
   const min = Math.min(...values);
@@ -1937,81 +1899,56 @@ function OliveStat({
   );
 }
 
-function DataChip({ children }: { children: React.ReactNode }) {
-  return (
-    <span className="au-datachip">
-      <span className="au-hex" />
-      {children}
-    </span>
-  );
-}
-
-/* Floating collage / parallax cluster. The "scattered" look is secretly a
-   grid: elements sit on hand-tuned positions with shared edge alignments
-   (olive stat & chart card tops align; chart & family right edges align), 0°
-   rotation, ONE deliberate ~28px overlap (entry panel clips the olive stat),
-   and a protected clear zone around the centered headline so drift never
-   collides with the text. Speeds: largest slowest, chips fastest, adjacent
-   elements never share a speed, mixed directions. Damped in Parallax. */
+/* Floating collage / parallax cluster — four instrument tiles anchored to the
+   four corners around a narrow, vertically-centred headline. The headline
+   column (max-w-sm) clears the side cards horizontally, so drift never
+   collides with the text. Larger cards drift slower, mixed directions,
+   adjacent speeds differ; damped in Parallax. Calm, not scattered. */
 function FloatingCollage() {
   return (
     <section className="relative overflow-hidden border-t border-line py-20 sm:py-28 md:py-40">
       <div className="relative mx-auto max-w-6xl px-5 sm:px-6">
-        {/* scattered layer — large screens only, fixed-height stage */}
+        {/* corner tiles — large screens only */}
         <div className="pointer-events-none absolute inset-x-5 inset-y-0 hidden lg:block">
-          {/* top band */}
-          <Parallax amount={18} className="absolute left-0 top-[40px] w-[240px]">
+          <Parallax amount={20} className="absolute left-0 top-[48px] w-[224px]">
             <OliveStat
               label="Readings in range"
               countTo={31}
               foot="of 34 tracked · +6 this year"
             />
           </Parallax>
-          <Parallax
-            amount={34}
-            className="absolute left-[212px] top-[48px] z-[2] w-[220px]"
-          >
-            <div className="au-card au-card--olive rounded-2xl p-4">
-              <EntryPanel />
-            </div>
-          </Parallax>
-          <Parallax
-            amount={14}
-            className="pointer-events-auto absolute right-0 top-[40px] w-[340px]"
-          >
-            <div className="au-card rounded-2xl p-4">
-              <RecoveryDemo />
-            </div>
-          </Parallax>
-          {/* side + bottom band */}
-          <Parallax amount={-56} className="absolute left-[36px] top-[430px]">
-            <DataChip>72 bpm resting</DataChip>
-          </Parallax>
-          <Parallax amount={40} className="absolute bottom-[48px] left-[132px] w-[200px]">
+          <Parallax amount={-28} className="absolute bottom-[48px] left-[24px] w-[204px]">
             <div className="au-card au-card--accent rounded-2xl p-5">
               <p className="au-mono text-[0.6875rem] opacity-70">Latest HbA1c</p>
               <p className="au-num mt-2 text-[2.5rem] leading-none">5.6</p>
               <p className="au-mono mt-3 text-[0.6875rem] opacity-70">back in range</p>
             </div>
           </Parallax>
-          <Parallax amount={-26} className="absolute bottom-[24px] right-0 w-[300px]">
+          <Parallax
+            amount={12}
+            className="pointer-events-auto absolute right-0 top-[48px] w-[320px]"
+          >
+            <div className="au-card rounded-2xl p-4">
+              <RecoveryDemo />
+            </div>
+          </Parallax>
+          <Parallax amount={-18} className="absolute bottom-[48px] right-[24px] w-[288px]">
             <div className="au-card au-card--olive rounded-2xl p-5">
               <FamilyPanel />
             </div>
           </Parallax>
         </div>
 
-        {/* centered headline block (native scroll rate) — the ONE centered
-            element on the page; sized to stay inside the clear zone */}
-        <div className="relative z-10 mx-auto max-w-lg py-8 text-center lg:h-[780px] lg:py-0">
+        {/* narrow centred headline — the one centred block; clears the corners */}
+        <div className="relative z-10 mx-auto max-w-sm py-8 text-center lg:h-[600px] lg:py-0">
           <ScrubIn y={36} className="lg:absolute lg:inset-x-0 lg:top-1/2 lg:-translate-y-1/2">
             <span className="au-eyebrow">↗ One quiet home</span>
             <h2 className="au-hl mt-4 text-[clamp(1.9rem,1.2rem+2.6vw,3.1rem)] leading-[1.08] text-ink">
               Your whole history, laid out like <span className="em">instruments</span>.
             </h2>
-            <p className="mx-auto mt-5 max-w-md text-base leading-relaxed text-ink-2">
-              Panels, readings and people — every number you have ever logged,
-              arranged so the trends read at a glance.
+            <p className="mx-auto mt-5 max-w-xs text-base leading-relaxed text-ink-2">
+              Every number you have ever logged, arranged so the trends read at
+              a glance.
             </p>
           </ScrubIn>
         </div>
@@ -2026,6 +1963,9 @@ function FloatingCollage() {
           </div>
           <div className="au-card rounded-2xl p-4 sm:col-span-2">
             <RecoveryDemo />
+          </div>
+          <div className="au-card au-card--olive rounded-2xl p-5 sm:col-span-2">
+            <FamilyPanel />
           </div>
         </div>
       </div>
@@ -2102,15 +2042,14 @@ function ProductSplit() {
   );
 }
 
-/* CTA — frosted panel over the moving media. Left-aligned (the centered
-   hero + twin pill buttons is a kill-list trope); label → headline → body
-   3-beat; one primary arrow button. */
+/* CTA — a single frosted panel centred over the moving media (content stays
+   left-aligned inside); label → headline → body 3-beat; one arrow button. */
 function FinalCTA() {
   return (
     <section id="pricing" className="relative scroll-mt-20 overflow-hidden border-t border-line">
       <Media />
-      <div className="relative mx-auto max-w-6xl px-5 py-20 sm:px-6 sm:py-28 md:py-40">
-        <div className="au-glass max-w-2xl rounded-[20px] px-7 py-12 sm:px-12 sm:py-14">
+      <div className="relative mx-auto max-w-6xl px-5 py-20 sm:px-6 sm:py-24 md:py-32">
+        <div className="au-glass mx-auto max-w-2xl rounded-[20px] px-7 py-12 sm:px-14 sm:py-16">
           <Reveal>
             <span className="au-eyebrow">Pricing</span>
           </Reveal>
@@ -2140,40 +2079,38 @@ function FinalCTA() {
   );
 }
 
-/* Footer: lowercase mono sitemap columns + back-to-top, over the hairline. */
-const FOOTER_COLS: { head: string; links: string[] }[] = [
-  { head: "product", links: ["how it works", "the product", "markers", "pricing"] },
-  { head: "company", links: ["about", "privacy", "terms", "contact"] },
-  { head: "account", links: ["sign in", "start free"] },
-];
-
+/* Footer: kept simple — wordmark + the real section links, one hairline row
+   for copyright / back-to-top, then the disclaimer. */
 function Footer() {
   return (
     <footer className="border-t border-line">
-      <div className="mx-auto max-w-6xl px-5 py-16 sm:px-6">
-        <div className="grid gap-10 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
+      <div className="mx-auto max-w-6xl px-5 py-14 sm:px-6">
+        <div className="flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
           <div>
             <Logo />
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-ink-2">
               A decade of blood tests, read as a line.
             </p>
           </div>
-          {FOOTER_COLS.map((c) => (
-            <div key={c.head}>
-              <p className="au-mono text-[0.6875rem] text-ink-3">{c.head}</p>
-              <ul className="mt-4 space-y-2.5">
-                {c.links.map((l) => (
-                  <li key={l}>
-                    <a href="#" className="au-mono text-[0.72rem] normal-case tracking-[0.02em] text-ink-2 transition-colors hover:text-brand">
-                      {l}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+          <nav className="flex flex-wrap gap-x-6 gap-y-2.5">
+            {NAV_LINKS.map(([label, href]) => (
+              <a
+                key={href}
+                href={href}
+                className="au-mono text-[0.72rem] tracking-[0.04em] text-ink-2 transition-colors hover:text-brand"
+              >
+                {label}
+              </a>
+            ))}
+            <a
+              href="/login"
+              className="au-mono text-[0.72rem] tracking-[0.04em] text-ink-2 transition-colors hover:text-brand"
+            >
+              Sign in
+            </a>
+          </nav>
         </div>
-        <div className="mt-14 flex items-center justify-between border-t border-line pt-6">
+        <div className="mt-12 flex items-center justify-between border-t border-line pt-6">
           <p className="au-mono text-[0.6875rem] text-ink-3">
             © {new Date().getFullYear()} bbiom
           </p>
