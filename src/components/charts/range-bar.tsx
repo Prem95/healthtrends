@@ -82,7 +82,7 @@ export function RangeBar({
       />
       <div
         className={cn(
-          "absolute top-1/2 size-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full ring-2 ring-paper",
+          "absolute top-1/2 size-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full ring-2 ring-page transition-[left] duration-300",
           DOT_TONE[tone],
         )}
         style={{ left: `${dot}%` }}
