@@ -20,7 +20,7 @@ export default async function OnboardingPage({
 
   return (
     <div
-      data-theme="dark"
+      data-theme="light"
       className="aurora relative flex min-h-[100dvh] flex-col overflow-hidden bg-page text-ink"
     >
       <div className="au-media" aria-hidden />

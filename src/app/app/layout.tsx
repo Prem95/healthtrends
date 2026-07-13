@@ -22,7 +22,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   return (
     <div
-      data-theme="dark"
+      data-theme="light"
       className="aurora flex min-h-[100dvh] flex-col bg-page text-ink"
     >
       {/* Nav bar: frosted over the scrolling canvas, hairline below */}

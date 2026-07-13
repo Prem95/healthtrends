@@ -54,6 +54,8 @@ chrome, default easings (`ease`, `ease-in-out`, `linear` — except the marquee)
 
 > Landing implementation lives in `src/app/page.tsx`; the Alethia token +
 > component layer is the scoped `.aurora` block in `src/app/globals.css` (swap
-> those tokens to rebrand). The landing runs the light theme top to bottom
-> (dual-theme system; flip the `.aurora` token values to go dark). The dark
-> product app is a separate surface and unaffected.
+> those tokens to rebrand). The landing runs the light theme top to bottom.
+> The product app (`/app`, `/login`, `/onboarding`) runs the same light theme
+> on the "Marker" screen anatomy; the dark variant is fully tokenized in the
+> `.aurora[data-theme="dark"]` block — set `data-theme="dark"` on a surface
+> root to flip it.

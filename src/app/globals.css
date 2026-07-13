@@ -339,6 +339,8 @@ body {
   --paper-3: #e8e7e0; /* muted warm-gray tile / data card */
   --line: rgba(17, 17, 15, 0.1); /* hairline divider */
   --line-strong: rgba(17, 17, 15, 0.16); /* hairline on buttons/surfaces */
+  --rule: rgba(17, 17, 15, 0.26); /* hairline on controls (chips, ghost buttons) */
+  --neutral-status: #77776f; /* no-range data marks */
   --ink: #16160f; /* near-black, never pure #000 */
   --ink-2: #3d3d37; /* lead / body copy */
   --ink-3: #5f5f57; /* metadata / mono labels — kept dark enough to read on off-white */

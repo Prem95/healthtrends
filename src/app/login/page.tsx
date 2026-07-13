@@ -28,7 +28,7 @@ export default async function LoginPage({
 
   return (
     <div
-      data-theme="dark"
+      data-theme="light"
       className="aurora relative flex min-h-[100dvh] flex-col overflow-hidden bg-page text-ink"
     >
       {/* Drifting media layer — the frost below is only alive because this moves */}

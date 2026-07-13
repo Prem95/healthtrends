@@ -96,7 +96,7 @@ export default async function DashboardPage() {
           <SummaryStat
             n={drifting.length}
             label="Drifting"
-            color={drifting.length ? "var(--borderline)" : undefined}
+            color={drifting.length ? "var(--borderline-ink)" : undefined}
             delay={350}
           />
           <SummaryStat
