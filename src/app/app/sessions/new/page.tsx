@@ -18,15 +18,15 @@ export default async function NewSessionPage() {
     Number.isFinite(plan.limits.maxSessions) && sessionCount >= plan.limits.maxSessions;
 
   return (
-    <div className="animate-rise">
-      <h1 className="au-hl text-3xl text-ink">New test session</h1>
-      <p className="mt-1 text-sm text-ink-2">
-        For {profile.name}. Only the date is required. Add whichever markers your report
-        includes.
+    <div className="max-w-3xl">
+      <h1 className="au-mono text-[13px] text-ink">Log a test</h1>
+      <p className="au-mono mt-2 text-[11px] text-ink-3">
+        {profile.name} · only the date is required · add whichever markers your report
+        includes
       </p>
 
       {overLimit ? (
-        <div className="mt-6 max-w-lg rounded-lg border border-borderline/25 bg-borderline-soft p-5">
+        <div className="au-card mt-8 max-w-lg border-borderline/25 bg-borderline-soft p-5">
           <p className="font-medium text-ink">Free plan limit reached</p>
           <p className="mt-1 text-sm text-ink-2">
             The Free plan includes 20 test sessions in total. Your existing data stays exactly
@@ -34,7 +34,7 @@ export default async function NewSessionPage() {
           </p>
         </div>
       ) : (
-        <div className="mt-6">
+        <div className="mt-8">
           <NewSessionForm
             profileId={profile.id}
             profileSex={profile.sex}

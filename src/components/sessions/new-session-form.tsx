@@ -2,7 +2,6 @@
 
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Search, Trash2 } from "lucide-react";
 import { createSession, type SessionActionState } from "@/app/app/actions";
 import { Button } from "@/components/ui/button";
 import { Input, Label, Select, Textarea } from "@/components/ui/input";
@@ -198,16 +197,14 @@ export function NewSessionForm({
 
       {/* Panel shortcuts */}
       <section>
-        <p className="microlabel rule-top pt-2">
-          Panel shortcuts
-        </p>
-        <div className="mt-2 flex flex-wrap gap-2">
+        <p className="au-eyebrow border-t border-line pt-3">Panel shortcuts</p>
+        <div className="mt-3 flex flex-wrap gap-2">
           {PANELS.map((p) => (
             <button
               key={p.id}
               type="button"
               onClick={() => addPanel(p.id)}
-              className="cursor-pointer rounded-sm border border-line-strong bg-paper px-3 py-1.5 text-sm text-ink-2 transition-colors hover:border-rule hover:text-ink"
+              className="cursor-pointer rounded-[6px] border border-rule px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.05em] text-ink-2 transition-colors duration-300 hover:border-brand hover:text-ink"
             >
               + {p.name}
             </button>
@@ -219,16 +216,14 @@ export function NewSessionForm({
       <section>
         <Label htmlFor="marker-search">Add a single marker</Label>
         <div className="relative">
-          <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-ink-3" />
           <Input
             id="marker-search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search by name or alias: ldl, a1c, tsh"
-            className="pl-9"
           />
           {searchResults.length > 0 && (
-            <ul className="absolute z-10 mt-1 w-full overflow-hidden rounded-md border border-line bg-paper shadow-lg">
+            <ul className="absolute z-10 mt-1 w-full overflow-hidden rounded-[8px] border border-line-strong bg-paper">
               {searchResults.map((b) => (
                 <li key={b.id}>
                   <button
@@ -248,17 +243,17 @@ export function NewSessionForm({
 
       {/* Value grid */}
       {rows.length > 0 && (
-        <section className="overflow-x-auto rounded-lg border border-line">
+        <section className="au-card overflow-x-auto">
           <table className="w-full min-w-[640px] text-sm">
             <thead>
-              <tr className="border-b border-line bg-paper-2 text-left text-xs tracking-wide text-ink-3 uppercase">
-                <th className="px-3 py-2 font-medium">Marker</th>
-                <th className="px-3 py-2 font-medium">Value</th>
-                <th className="px-3 py-2 font-medium">Unit</th>
-                <th className="px-3 py-2 font-medium" colSpan={2}>
+              <tr className="border-b border-line bg-paper-2 text-left font-mono text-[10px] uppercase tracking-[0.07em] text-ink-3">
+                <th className="px-3 py-2.5 font-medium">Marker</th>
+                <th className="px-3 py-2.5 font-medium">Value</th>
+                <th className="px-3 py-2.5 font-medium">Unit</th>
+                <th className="px-3 py-2.5 font-medium" colSpan={2}>
                   Lab range (from your report, optional)
                 </th>
-                <th className="px-3 py-2" />
+                <th className="px-3 py-2.5" />
               </tr>
             </thead>
             <tbody className="divide-y divide-line">
@@ -273,7 +268,7 @@ export function NewSessionForm({
                       : `> ${formatNumber(resolved.range.min!)}`
                   : null;
                 return (
-                  <tr key={row.biomarkerId} className="bg-paper">
+                  <tr key={row.biomarkerId}>
                     <td className="px-3 py-2">
                       <p className="font-medium text-ink">{b.name}</p>
                       {hint && (
@@ -342,7 +337,7 @@ export function NewSessionForm({
                         onClick={() => removeRow(i)}
                         aria-label={`Remove ${b.name}`}
                       >
-                        <Trash2 className="size-4 text-ink-3" />
+                        ×
                       </Button>
                     </td>
                   </tr>
@@ -355,7 +350,7 @@ export function NewSessionForm({
 
       {/* Plausibility confirmation */}
       {needsConfirm.length > 0 && (
-        <section className="rounded-lg border border-borderline/30 bg-borderline-soft p-5">
+        <section className="au-card border-borderline/30 bg-borderline-soft p-5">
           <p className="font-medium text-ink">Double-check these values</p>
           <ul className="mt-2 space-y-2 text-sm text-ink-2">
             {needsConfirm.map((c) => {
@@ -409,7 +404,7 @@ export function NewSessionForm({
 
       {/* Duplicate warning: warn, never block */}
       {duplicates.length > 0 && (
-        <section className="rounded-lg border border-borderline/30 bg-borderline-soft p-5">
+        <section className="au-card border-borderline/30 bg-borderline-soft p-5">
           <p className="font-medium text-ink">Possible duplicates</p>
           <p className="mt-1 text-sm text-ink-2">
             {duplicates
@@ -436,7 +431,7 @@ export function NewSessionForm({
       )}
 
       {serverState.error && (
-        <p className="rounded-md border border-out/20 bg-out-soft/60 px-3 py-2 text-sm text-out">
+        <p className="rounded-[8px] border border-out/25 bg-out-soft px-3 py-2 text-sm text-out">
           {serverState.error}
         </p>
       )}
@@ -447,8 +442,7 @@ export function NewSessionForm({
           onClick={() => submit()}
           disabled={pending || !date || invalidRows.length > 0}
         >
-          <Plus />
-          {pending ? "Saving..." : `Save session${filledRows.length ? ` (${filledRows.length} results)` : ""}`}
+          ＋ {pending ? "Saving…" : `Save session${filledRows.length ? ` (${filledRows.length} results)` : ""}`}
         </Button>
         {invalidRows.length > 0 && (
           <p className="text-sm text-out">Some values are not numbers yet.</p>
