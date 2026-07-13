@@ -2,8 +2,9 @@
 
 Personal lab-test history tracker as hosted SaaS. Specs: `~/Downloads/PRD-health-trends.md` (product) + `~/Downloads/PRD-saas-layer.md` (this layer).
 
-## Status (2026-07-07)
+## Status (2026-07-13)
 S1–S4 code-complete, built locally, NOT deployed. Verified: build/lint/tsc clean, 28/28 domain vitest, RLS tests pass on local Supabase stack, live E2E smoke (auth redirect, magic link, onboarding, dashboard trend/range flags, export gates, webhook signature rejection, security headers).
+Design: landing = light Alethia; product app + login/onboarding rebuilt to the DARK Alethia system (2026-07-13, `design_handoff_alethia_design_system 6` "Marker" screens) — `.aurora[data-theme="dark"]` token layer in globals.css, custom SVG marker chart (recharts now landing-only), mono control language, mobile bottom tab bar. Screenshot-verified against the handoff mocks.
 
 ## Stack
 Next.js 16 (App Router, TS) · Supabase (Postgres/Auth/RLS, @supabase/ssr) · Stripe (Checkout + Portal + webhook, Free/Pro $4.99mo|$39yr) · Tailwind + shadcn/ui · Recharts · Zod · vitest.
