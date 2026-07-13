@@ -23,13 +23,13 @@ export default async function AllBiomarkersPage() {
   );
 
   return (
-    <div className="animate-rise">
-      <h1 className="au-hl text-3xl text-ink">All biomarkers</h1>
-      <p className="mt-1 text-sm text-ink-2">
-        The built-in catalog plus your custom markers. Anything with history links to its
-        trend.
+    <div className="max-w-3xl">
+      <h1 className="au-mono text-[13px] text-ink">Browse</h1>
+      <p className="au-mono mt-2 text-[11px] text-ink-3">
+        The built-in catalog plus your custom markers · anything with history links to its
+        trend
       </p>
-      <div className="mt-6">
+      <div className="mt-8">
         <BiomarkerBrowser
           biomarkers={biomarkers.map((b) => ({
             id: b.id,

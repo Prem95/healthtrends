@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { AlertCircle, AlertTriangle, ArrowRight, Check, ChevronRight, Plus } from "lucide-react";
 import {
   getActiveProfile,
   getBiomarkers,
@@ -8,11 +7,26 @@ import {
   getWatched,
 } from "@/lib/data";
 import { summarize, isOutOfRange, isBorderline, type BiomarkerSummary } from "@/lib/analytics";
-import { cn, formatDate, formatNumber } from "@/lib/utils";
+import { formatDate, formatNumber } from "@/lib/utils";
+import { statusTone } from "@/lib/domain";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Button } from "@/components/ui/button";
-import { RangeBar } from "@/components/charts/range-bar";
-import { TREND_LABEL, type BiomarkerCategory } from "@/lib/domain";
+import { Sparkline } from "@/components/charts/sparkline";
+import { Reveal, CountUp } from "@/components/motion/reveal";
+
+/*
+  Markers overview, per the handoff's home screen: triage first — the olive
+  summary card counts in range / drifting / out, then a "needs attention"
+  list, then the A–Z ledger. Colour appears only on data (sparklines, pills,
+  stat values); everything else is grayscale mono metadata.
+*/
+
+const TONE_VAR: Record<string, string> = {
+  "in-range": "var(--in-range)",
+  borderline: "var(--borderline)",
+  out: "var(--out)",
+  neutral: "var(--neutral-status)",
+};
 
 export default async function DashboardPage() {
   const profile = (await getActiveProfile())!;
@@ -28,273 +42,205 @@ export default async function DashboardPage() {
 
   const watchedSummaries = watched
     .map((id) => byId.get(id))
-    .filter((s): s is BiomarkerSummary => !!s);
+    .filter((s): s is BiomarkerSummary => !!s && !!s.latest);
 
   const withData = summaries.filter((s) => s.latest);
 
-  // Group every marker that has data by its body system, so a layperson meets a
-  // handful of friendly systems instead of a wall of technical marker names.
-  const bySystem = new Map<BiomarkerCategory, BiomarkerSummary[]>();
-  for (const s of withData) {
-    const list = bySystem.get(s.biomarker.category);
-    if (list) list.push(s);
-    else bySystem.set(s.biomarker.category, [s]);
-  }
-  const systemGroups: SystemGroup[] = [...bySystem.entries()].map(([category, items]) => {
-    const sorted = [...items].sort(
-      (a, b) => severity(b) - severity(a) || outDistance(b) - outDistance(a),
-    );
-    const out = items.filter((s) => isOutOfRange(s.latestStatus)).length;
-    const near = items.filter((s) => isBorderline(s.latestStatus)).length;
-    const inRange = items.filter((s) => s.latestStatus === "IN_RANGE").length;
-    return {
-      category,
-      items: sorted,
-      out,
-      near,
-      inRange,
-      neutral: items.length - out - near - inRange,
-      total: items.length,
-    };
-  });
+  const out = withData.filter((s) => isOutOfRange(s.latestStatus));
+  const drifting = withData.filter((s) => isBorderline(s.latestStatus));
+  const inRange = withData.filter((s) => s.latestStatus === "IN_RANGE");
 
-  const byName = (a: SystemGroup, b: SystemGroup) =>
-    SYSTEM[a.category].name.localeCompare(SYSTEM[b.category].name);
-  // Most red markers first, then most amber, so the system that most warrants a
-  // look sits top-left.
-  const needsAttention = systemGroups
-    .filter((g) => g.out > 0 || g.near > 0)
-    .sort((a, b) => b.out - a.out || b.near - a.near || byName(a, b));
-  const lookingGood = systemGroups
-    .filter((g) => g.out === 0 && g.near === 0)
-    .sort(byName);
+  const attention = [...out, ...drifting].sort(
+    (a, b) => severity(b) - severity(a) || outDistance(b) - outDistance(a),
+  );
+  const attentionIds = new Set(attention.map((s) => s.biomarker.id));
+  const others = withData
+    .filter((s) => !attentionIds.has(s.biomarker.id))
+    .sort((a, b) => a.biomarker.name.localeCompare(b.biomarker.name));
 
   const recentSession = sessions[0] ?? null;
-  const recentResults = recentSession
-    ? summaries.flatMap((s) =>
-        s.points
-          .filter((p) => p.sessionId === recentSession.id)
-          .map((p) => ({ summary: s, point: p })),
+  const recentCount = recentSession
+    ? withData.reduce(
+        (n, s) => n + s.points.filter((p) => p.sessionId === recentSession.id).length,
+        0,
       )
-    : [];
+    : 0;
 
   if (sessions.length === 0) {
     return <EmptyDashboard name={profile.name} />;
   }
 
   return (
-    <div className="animate-rise space-y-10">
-      {/* Watched markers pinned first */}
+    <div className="max-w-3xl space-y-12">
+      {/* Header: mono title + the one accent action */}
+      <Reveal as="header">
+        <div className="flex items-baseline justify-between gap-4">
+          <h1 className="au-mono text-[13px] text-ink">Markers</h1>
+          <Link
+            href="/app/sessions/new"
+            className="au-mono text-[12px] text-brand transition-colors duration-300 hover:text-brand-strong"
+          >
+            + Add
+          </Link>
+        </div>
+        <p className="au-mono mt-2 text-[11px] text-ink-3">
+          {profile.name} · {withData.length} markers
+          {recentSession && <> · updated {formatDate(recentSession.date)}</>}
+        </p>
+      </Reveal>
+
+      {/* Olive summary card: the triage read */}
+      <Reveal delay={80}>
+        <div className="au-card au-card--olive flex gap-4 rounded-2xl p-6">
+          <SummaryStat n={inRange.length} label="In range" delay={250} />
+          <SummaryStat
+            n={drifting.length}
+            label="Drifting"
+            color={drifting.length ? "var(--borderline)" : undefined}
+            delay={350}
+          />
+          <SummaryStat
+            n={out.length}
+            label="Out of range"
+            color={out.length ? "var(--out)" : undefined}
+            delay={450}
+          />
+        </div>
+      </Reveal>
+
       {watchedSummaries.length > 0 && (
-        <section>
-          <SectionHeading title="Watching" count={watchedSummaries.length} />
-          <MarkerList items={watchedSummaries} />
-        </section>
+        <MarkerSection title="Watching" items={watchedSummaries} showValue />
       )}
 
-      {/* Systems that have any out-of-range or near-boundary markers, most
-          severe first. Everything a layperson needs is on the card face; the
-          marker names and values stay tucked in the detail view. */}
-      {needsAttention.length > 0 && (
-        <section>
-          <SectionHeading title="Needs your attention" count={needsAttention.length} />
-          <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
-            {needsAttention.map((group) => (
-              <AttentionCard key={group.category} group={group} />
-            ))}
-          </div>
-        </section>
+      {attention.length > 0 && (
+        <MarkerSection title="Needs attention" items={attention} />
       )}
 
-      {/* All-in-range systems, quiet and tucked into one collapsible row. */}
-      {lookingGood.length > 0 && (
-        <section>
-          <SectionHeading title="Looking good" />
-          <div className="mt-4">
-            <LookingGoodBlock groups={lookingGood} />
-          </div>
-        </section>
+      {others.length > 0 && (
+        <MarkerSection title="All other markers · A–Z" items={others} showValue quietSpark />
       )}
 
-      {/* Latest test — a compact summary, not a technical table */}
       {recentSession && (
-        <section>
-          <SectionHeading title="Latest test" />
+        <Reveal as="section">
+          <h2 className="au-eyebrow">Latest test</h2>
           <Link
             href="/app/timeline"
-            className="au-card mt-3 flex items-center justify-between gap-4 px-5 py-4 transition-colors hover:bg-paper-2"
+            className="au-row group mt-1 flex items-center gap-4 border-t border-line py-4"
           >
-            <div className="min-w-0">
-              <p className="font-medium text-ink">
+            <div className="min-w-0 flex-1">
+              <p className="au-row-title text-[15px] font-medium text-ink">
                 {formatDate(recentSession.date)}
                 {recentSession.labName ? ` · ${recentSession.labName}` : ""}
               </p>
-              <p className="mt-0.5 text-xs text-ink-3">
-                {recentResults.length} result{recentResults.length === 1 ? "" : "s"} added
+              <p className="au-mono mt-1 text-[11px] text-ink-3">
+                {recentCount} result{recentCount === 1 ? "" : "s"}
                 {recentSession.fasting ? " · fasting" : ""}
               </p>
             </div>
-            <span className="shrink-0 text-sm font-medium text-brand-strong">
-              View timeline <ArrowRight className="inline size-3.5" />
+            <span className="au-mono text-[12px] text-ink-3 transition-colors duration-300 group-hover:text-brand">
+              Timeline →
             </span>
           </Link>
-        </section>
+        </Reveal>
       )}
     </div>
   );
 }
 
-function SectionHeading({ title, count }: { title: string; count?: number }) {
+function SummaryStat({
+  n,
+  label,
+  color,
+  delay,
+}: {
+  n: number;
+  label: string;
+  color?: string;
+  delay: number;
+}) {
   return (
-    <h2 className="au-eyebrow flex items-baseline gap-2 border-t border-line pt-3">
-      {title}
-      {count != null && <span className="tnum text-ink-3">{count}</span>}
-    </h2>
+    <div className="flex-1">
+      <div
+        className="au-num text-[26px] leading-none sm:text-[30px]"
+        style={color ? { color } : undefined}
+      >
+        <CountUp value={n} startDelay={delay} duration={700} />
+      </div>
+      <p className="au-mono mt-2 text-[10px] text-[color:var(--au-olive-label)]">{label}</p>
+    </div>
   );
 }
 
-// Friendly, plain-language name + one-liner for each body system, so the
-// grouped view never leads with clinical jargon.
-type SystemGroup = {
-  category: BiomarkerCategory;
+function MarkerSection({
+  title,
+  items,
+  showValue = false,
+  quietSpark = false,
+}: {
+  title: string;
   items: BiomarkerSummary[];
-  out: number;
-  near: number;
-  inRange: number;
-  neutral: number;
-  total: number;
-};
-
-const SYSTEM: Record<BiomarkerCategory, { name: string; blurb: string }> = {
-  LIPIDS: { name: "Cholesterol", blurb: "Blood fats that affect your heart" },
-  GLUCOSE: { name: "Blood sugar", blurb: "How your body handles sugar" },
-  THYROID: { name: "Thyroid", blurb: "The gland that sets your metabolism" },
-  CBC: { name: "Blood count", blurb: "Your red and white blood cells" },
-  LIVER: { name: "Liver", blurb: "How your liver is doing" },
-  KIDNEY: { name: "Kidneys", blurb: "Kidney function and body salts" },
-  VITAMINS: { name: "Vitamins", blurb: "Vitamin and mineral levels" },
-  IRON: { name: "Iron", blurb: "Iron in your blood and stores" },
-  HORMONES: { name: "Hormones", blurb: "Your hormone levels" },
-  OTHER: { name: "Inflammation & other", blurb: "General and inflammation markers" },
-};
-
-// Marker-level severity (out > near > in range) for sorting within a group.
-function severity(s: BiomarkerSummary): number {
-  if (isOutOfRange(s.latestStatus)) return 2;
-  if (isBorderline(s.latestStatus)) return 1;
-  return 0;
+  showValue?: boolean;
+  quietSpark?: boolean;
+}) {
+  return (
+    <Reveal as="section">
+      <h2 className="au-eyebrow">{title}</h2>
+      <ul className="mt-1">
+        {items.map((s) => (
+          <li key={s.biomarker.id}>
+            <MarkerRow s={s} showValue={showValue} quietSpark={quietSpark} />
+          </li>
+        ))}
+      </ul>
+    </Reveal>
+  );
 }
 
-// One plain-language read of a flagged system, no numbers or units. The card
-// title already names the system, so the insight just states the lean. Which
-// way its off-range markers sit (above vs below normal) drives the wording.
-function insight(group: SystemGroup): string {
-  let high = 0;
-  let low = 0;
-  for (const s of group.items) {
-    const st = s.latestStatus;
-    if (st === "HIGH" || st === "BORDERLINE_HIGH") high++;
-    else if (st === "LOW" || st === "BORDERLINE_LOW") low++;
-  }
-  if (high > 0 && low === 0) return "Trending high";
-  if (low > 0 && high === 0) return "Trending low";
-  if (high > low) return "Mostly trending high";
-  if (low > high) return "Mostly trending low";
-  return "Worth a closer look";
-}
-
-// A flagged system as an equal-height card: name, one-line blurb, a plain
-// insight, a segmented in-range/near/out meter, and a normalized status label.
-// The whole card links into the Biomarkers browser at this system; individual
-// marker names and values live there, never on the dashboard face.
-function AttentionCard({ group }: { group: SystemGroup }) {
-  const meta = SYSTEM[group.category];
+/* One marker as a hairline row: name · sparkline · (value) · status pill.
+   Hover indents and tints the name — the handoff's row interaction. */
+function MarkerRow({
+  s,
+  showValue,
+  quietSpark,
+}: {
+  s: BiomarkerSummary;
+  showValue: boolean;
+  quietSpark: boolean;
+}) {
+  const tone = statusTone(s.latestStatus);
+  const spark = s.points.slice(-8).map((p) => p.value);
   return (
     <Link
-      href={`/app/biomarkers?review=${group.category}`}
-      className="au-card group flex h-full flex-col gap-3 p-5 transition-colors hover:bg-paper-2"
+      href={`/app/biomarkers/${s.biomarker.id}`}
+      className="au-row flex items-center gap-4 border-t border-line py-3.5"
     >
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="font-display text-base text-ink">{meta.name}</p>
-          <p className="mt-0.5 truncate text-xs text-ink-3">{meta.blurb}</p>
-        </div>
-        <ChevronRight className="mt-0.5 size-4 shrink-0 text-ink-3 transition-transform group-hover:translate-x-0.5" />
-      </div>
-      <p className="text-sm text-ink-2">{insight(group)}</p>
-      <div className="mt-auto space-y-2 pt-1">
-        <StatusMeter group={group} />
-        <CardStatus out={group.out} near={group.near} />
-      </div>
+      <span className="au-row-title min-w-0 flex-1 truncate text-[15px] font-medium text-ink">
+        {s.biomarker.name}
+      </span>
+      {spark.length >= 2 && (
+        <Sparkline
+          values={spark}
+          stroke={quietSpark ? "var(--neutral-status)" : TONE_VAR[tone]}
+          draw
+          className="hidden shrink-0 sm:block"
+        />
+      )}
+      {showValue && s.latest && (
+        <span className="au-num shrink-0 text-[13px] text-ink-3">
+          {formatNumber(s.latest.value)}{" "}
+          <span className="text-ink-3/70">{s.biomarker.canonicalUnit}</span>
+        </span>
+      )}
+      <StatusBadge status={s.latestStatus} className="shrink-0" />
     </Link>
   );
 }
 
-// Thin segmented bar: the ratio of in-range / near-boundary / out-of-range (and
-// any marker without a range). Colour is backed by a worded aria-label/tooltip
-// so the meaning never rides on colour alone.
-function StatusMeter({ group }: { group: SystemGroup }) {
-  const segs = [
-    { n: group.inRange, cls: "bg-in-range", label: `${group.inRange} in range` },
-    { n: group.near, cls: "bg-borderline", label: `${group.near} near a boundary` },
-    { n: group.out, cls: "bg-out", label: `${group.out} out of range` },
-    { n: group.neutral, cls: "bg-neutral-status", label: `${group.neutral} without a range` },
-  ].filter((s) => s.n > 0);
-  const desc = segs.map((s) => s.label).join(", ");
-  return (
-    <div
-      role="img"
-      aria-label={desc}
-      title={desc}
-      className="flex h-1.5 w-full overflow-hidden rounded-full bg-paper-3"
-    >
-      {segs.map((s) => (
-        <span key={s.cls} className={s.cls} style={{ flexGrow: s.n }} />
-      ))}
-    </div>
-  );
-}
-
-// Normalized status label — "N to review" reads the same for 1 or many, and the
-// icon carries the meaning alongside the colour (never colour alone).
-function CardStatus({ out, near }: { out: number; near: number }) {
-  const count = out > 0 ? out : near;
-  const Icon = out > 0 ? AlertCircle : AlertTriangle;
-  const color = out > 0 ? "text-out" : "text-borderline-ink";
-  return (
-    <span className={cn("inline-flex items-center gap-1.5 text-sm font-medium", color)}>
-      <Icon className="size-4 shrink-0" aria-hidden />
-      {count} to review
-    </span>
-  );
-}
-
-// All-in-range systems, collapsed into one quiet row of check-marked chips.
-function LookingGoodBlock({ groups }: { groups: SystemGroup[] }) {
-  return (
-    <details className="au-card group overflow-hidden">
-      <summary className="flex cursor-pointer list-none items-center gap-3 px-5 py-4 transition-colors hover:bg-paper-2 [&::-webkit-details-marker]:hidden">
-        <Check className="size-4 shrink-0 text-in-range" aria-hidden />
-        <span className="flex-1 text-sm font-medium text-ink">All in range</span>
-        <span className="text-xs text-ink-3">
-          {groups.length} system{groups.length === 1 ? "" : "s"}
-        </span>
-        <ChevronRight className="size-4 shrink-0 text-ink-3 transition-transform group-open:rotate-90" />
-      </summary>
-      <div className="flex flex-wrap gap-2 border-t border-line p-4">
-        {groups.map((g) => (
-          <Link
-            key={g.category}
-            href={`/app/biomarkers#${g.category}`}
-            className="inline-flex items-center gap-1.5 rounded-full border border-line bg-paper px-3 py-1.5 text-sm text-ink-2 hover:border-line-strong hover:text-ink"
-          >
-            <Check className="size-3.5 shrink-0 text-in-range" aria-hidden />
-            {SYSTEM[g.category].name}
-          </Link>
-        ))}
-      </div>
-    </details>
-  );
+// Marker-level severity (out > drifting) for sorting the attention list.
+function severity(s: BiomarkerSummary): number {
+  if (isOutOfRange(s.latestStatus)) return 2;
+  if (isBorderline(s.latestStatus)) return 1;
+  return 0;
 }
 
 // How far past its range a marker sits, as a fraction, for severity sorting.
@@ -307,77 +253,23 @@ function outDistance(s: BiomarkerSummary): number {
   return 0;
 }
 
-/* Ledger rows in a white card, as on the landing's panel table: name + trend
-   left; a range bar showing where the value sits in its normal range, the
-   value, and a status label right. Hairline dividers, colour only on data. */
-function MarkerList({ items }: { items: BiomarkerSummary[] }) {
-  return (
-    <ul className="au-card mt-3 divide-y divide-line overflow-hidden">
-      {items.map((s) => (
-        <li key={s.biomarker.id}>
-          <MarkerRow s={s} />
-        </li>
-      ))}
-    </ul>
-  );
-}
-
-function MarkerRow({ s }: { s: BiomarkerSummary }) {
-  const delta = s.trend.deltaPct;
-  return (
-    <Link
-      href={`/app/biomarkers/${s.biomarker.id}`}
-      className="flex items-center gap-4 px-5 py-3.5 transition-colors hover:bg-paper-2"
-    >
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium text-ink">{s.biomarker.name}</p>
-        <p className="mt-0.5 text-xs text-ink-3">
-          {TREND_LABEL[s.trend.direction]}
-          {delta != null && s.trend.direction !== "INSUFFICIENT_DATA" && (
-            <span className="tnum">
-              {" "}
-              ({delta > 0 ? "+" : ""}
-              {formatNumber(delta, 1)}% vs previous)
-            </span>
-          )}
-        </p>
-      </div>
-      {s.latest && s.bandRange && (s.bandRange.min != null || s.bandRange.max != null) && (
-        <RangeBar
-          value={s.latest.value}
-          min={s.bandRange.min}
-          max={s.bandRange.max}
-          status={s.latestStatus}
-          className="hidden w-24 shrink-0 sm:block md:w-36"
-        />
-      )}
-      <span className="tnum w-20 shrink-0 text-right text-sm font-medium text-ink sm:w-24">
-        {s.latest ? formatNumber(s.latest.value) : "n/a"}{" "}
-        <span className="font-normal text-ink-3">{s.biomarker.canonicalUnit}</span>
-      </span>
-      <StatusBadge status={s.latestStatus} className="shrink-0" />
-    </Link>
-  );
-}
-
 function EmptyDashboard({ name }: { name: string }) {
   return (
-    <div className="animate-rise flex min-h-[50vh] flex-col items-center justify-center text-center">
+    <Reveal className="flex min-h-[50vh] flex-col items-center justify-center text-center">
       <div className="max-w-md">
-        <h1 className="au-hl text-4xl text-ink">
+        <p className="au-eyebrow">First entry</p>
+        <h1 className="au-hl mt-3 text-4xl text-ink">
           The logbook for {name} is <span className="em">empty</span>
         </h1>
-        <p className="mt-3 leading-relaxed text-ink-2">
+        <p className="mt-4 leading-relaxed text-ink-2">
           Grab any lab report, even an old one. Panel shortcuts pre-fill the marker rows,
           so a 20-marker report takes under three minutes to enter. Trends start showing
           up once a marker has two or three values.
         </p>
-        <Button asChild size="lg" className="mt-6">
-          <Link href="/app/sessions/new">
-            <Plus /> Add a test session
-          </Link>
+        <Button asChild size="lg" className="mt-8">
+          <Link href="/app/sessions/new">＋ Add a test session</Link>
         </Button>
       </div>
-    </div>
+    </Reveal>
   );
 }

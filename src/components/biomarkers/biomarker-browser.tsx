@@ -3,13 +3,13 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { StatusBadge, Badge } from "@/components/ui/status-badge";
 import { Sparkline } from "@/components/charts/sparkline";
 import { formatDate, formatNumber } from "@/lib/utils";
 import {
   CATEGORY_LABEL,
+  statusTone,
   type BiomarkerCategory,
   type ResultStatus,
 } from "@/lib/domain";
@@ -33,6 +33,13 @@ type Latest = {
   spark: number[];
 };
 
+const TONE_VAR: Record<string, string> = {
+  "in-range": "var(--in-range)",
+  borderline: "var(--borderline)",
+  out: "var(--out)",
+  neutral: "var(--neutral-status)",
+};
+
 const FLAGGED: ResultStatus[] = ["LOW", "HIGH", "BORDERLINE_LOW", "BORDERLINE_HIGH"];
 function isFlagged(latest: Latest | undefined): boolean {
   return latest ? FLAGGED.includes(latest.status) : false;
@@ -49,8 +56,7 @@ export function BiomarkerBrowser({
   const [trackedOnly, setTrackedOnly] = useState(false);
 
   // "?review=<CATEGORY>" narrows the browser to just the flagged (out-of-range
-  // or near-boundary) markers in one system, so the dashboard's "N to review"
-  // lands on exactly those markers rather than the whole group.
+  // or near-boundary) markers in one system.
   const searchParams = useSearchParams();
   const reviewParam = searchParams.get("review");
   const review = reviewParam && reviewParam in CATEGORY_LABEL
@@ -85,31 +91,28 @@ export function BiomarkerBrowser({
   return (
     <div>
       {review && (
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-line bg-paper-2 px-4 py-3">
+        <div className="au-card mb-6 flex flex-wrap items-center justify-between gap-3 px-4 py-3">
           <p className="text-sm text-ink-2">
             Showing markers to review in{" "}
             <span className="font-medium text-ink">{CATEGORY_LABEL[review]}</span>.
           </p>
           <Link
             href="/app/biomarkers"
-            className="text-sm font-medium text-brand-strong hover:underline"
+            className="au-mono text-[12px] text-brand transition-colors duration-300 hover:text-brand-strong"
           >
-            Show all markers
+            Show all →
           </Link>
         </div>
       )}
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="relative min-w-56 flex-1">
-          <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-ink-3" />
-          <Input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search markers and aliases"
-            className="pl-9"
-            aria-label="Search biomarkers"
-          />
-        </div>
-        <label className="flex cursor-pointer items-center gap-2 text-sm text-ink-2">
+      <div className="flex flex-wrap items-center gap-4">
+        <Input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search markers and aliases"
+          className="min-w-56 flex-1"
+          aria-label="Search biomarkers"
+        />
+        <label className="au-mono flex cursor-pointer items-center gap-2 text-[11px] text-ink-2">
           <input
             type="checkbox"
             checked={trackedOnly}
@@ -120,53 +123,61 @@ export function BiomarkerBrowser({
         </label>
       </div>
 
-      <div className="mt-6 space-y-8">
+      <div className="mt-8 space-y-10">
         {groups.length === 0 && (
           <p className="text-sm text-ink-3">No markers match &quot;{query}&quot;.</p>
         )}
-        {groups.map(({ category, items }) => (
+        {groups.map(({ category, items }, gi) => (
           <section key={category} id={category} className="scroll-mt-24">
-            <h2 className="microlabel rule-top pt-2">
+            <h2 className="au-eyebrow flex items-baseline gap-2">
+              <span className="au-num text-ink-3/70">
+                {String(gi + 1).padStart(2, "0")}.
+              </span>
               {CATEGORY_LABEL[category]}
             </h2>
-            <ul className="au-card mt-3 divide-y divide-line overflow-hidden">
+            <ul className="mt-1">
               {items.map((b) => {
                 const latest = latestById[b.id];
+                const tone = latest ? statusTone(latest.status) : "neutral";
                 return (
                   <li key={b.id}>
                     <Link
                       href={`/app/biomarkers/${b.id}`}
-                      className="flex items-center justify-between gap-4 px-4 py-3 hover:bg-paper-2"
+                      className="au-row flex items-center gap-4 border-t border-line py-3.5"
                     >
-                      <div className="min-w-0">
-                        <p className="flex items-center gap-2 truncate text-sm font-medium text-ink">
+                      <div className="min-w-0 flex-1">
+                        <p className="au-row-title flex items-center gap-2 truncate text-[15px] font-medium text-ink">
                           {b.name}
                           {b.isCustom && <Badge tone="brand">Custom</Badge>}
                           {b.archived && <Badge>Archived</Badge>}
                         </p>
                         {latest?.date && (
-                          <p className="text-xs text-ink-3">
+                          <p className="au-mono mt-1 text-[10px] text-ink-3">
                             {latest.count} value{latest.count === 1 ? "" : "s"} · last{" "}
                             {formatDate(latest.date)}
                           </p>
                         )}
                       </div>
-                      <div className="flex shrink-0 items-center gap-3">
-                        {latest?.spark && latest.spark.length >= 2 && (
-                          <Sparkline values={latest.spark} />
-                        )}
-                        {latest?.value != null ? (
-                          <>
-                            <span className="tnum text-sm text-ink-2">
-                              {formatNumber(latest.value)}{" "}
-                              <span className="text-ink-3">{b.canonicalUnit}</span>
-                            </span>
-                            <StatusBadge status={latest.status} />
-                          </>
-                        ) : (
-                          <span className="text-xs text-ink-3">no data</span>
-                        )}
-                      </div>
+                      {latest?.spark && latest.spark.length >= 2 && (
+                        <Sparkline
+                          values={latest.spark}
+                          stroke={TONE_VAR[tone]}
+                          className="hidden shrink-0 sm:block"
+                        />
+                      )}
+                      {latest?.value != null ? (
+                        <>
+                          <span className="au-num shrink-0 text-[13px] text-ink-3">
+                            {formatNumber(latest.value)}{" "}
+                            <span className="text-ink-3/70">{b.canonicalUnit}</span>
+                          </span>
+                          <StatusBadge status={latest.status} className="shrink-0" />
+                        </>
+                      ) : (
+                        <span className="au-mono shrink-0 text-[10px] text-ink-3/70">
+                          No data
+                        </span>
+                      )}
                     </Link>
                   </li>
                 );

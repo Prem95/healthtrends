@@ -1,11 +1,10 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Plus, LogOut } from "lucide-react";
 import { getUser, listProfiles, getActiveProfile } from "@/lib/data";
 import { getPlan } from "@/lib/entitlements";
 import { signOut } from "@/app/login/actions";
 import { Logo } from "@/components/brand/logo";
-import { SidebarNav } from "@/components/app/sidebar-nav";
+import { AppNav, TabBar } from "@/components/app/sidebar-nav";
 import { ProfileSwitcher } from "@/components/app/profile-switcher";
 import { Disclaimer } from "@/components/disclaimer";
 import { Button } from "@/components/ui/button";
@@ -23,31 +22,30 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   return (
     <div
-      data-theme="light"
+      data-theme="dark"
       className="aurora flex min-h-[100dvh] flex-col bg-page text-ink"
     >
-      <header className="border-b border-line bg-paper">
-        <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
-          <div className="flex items-center gap-4">
-            <Link href="/app">
+      {/* Nav bar: frosted over the scrolling canvas, hairline below */}
+      <header className="sticky top-0 z-40 border-b border-line bg-page/85 backdrop-blur-md">
+        <div className="mx-auto flex w-full max-w-6xl items-center gap-4 px-4 py-3 sm:px-6">
+          <div className="flex items-center gap-3">
+            <Link href="/app" aria-label="Markers overview">
               <Logo />
             </Link>
-            {plan.plan === "pro" ? (
-              <Badge tone="brand" className="hidden sm:inline-flex">Pro</Badge>
-            ) : (
-              <Badge className="hidden sm:inline-flex">Free</Badge>
-            )}
+            <Badge tone={plan.plan === "pro" ? "brand" : "neutral"} className="hidden sm:inline-flex">
+              {plan.plan === "pro" ? "Pro" : "Free"}
+            </Badge>
           </div>
-          <div className="flex items-center gap-2">
+
+          <div className="ml-auto flex items-center gap-5">
+            <AppNav />
             <ProfileSwitcher profiles={profiles} activeId={active.id} />
-            <Button asChild size="sm" variant="primary">
-              <Link href="/app/sessions/new">
-                <Plus /> <span className="hidden sm:inline">New test</span>
-              </Link>
+            <Button asChild size="sm" className="hidden md:inline-flex">
+              <Link href="/app/sessions/new">＋ New test</Link>
             </Button>
-            <form action={signOut}>
-              <Button type="submit" variant="ghost" size="icon" aria-label="Sign out" title="Sign out">
-                <LogOut />
+            <form action={signOut} className="hidden md:block">
+              <Button type="submit" variant="ghost" size="sm" title="Sign out">
+                Sign out
               </Button>
             </form>
           </div>
@@ -59,7 +57,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           <p className="mx-auto max-w-6xl px-6 py-2 text-sm text-ink">
             Your last payment did not go through. Pro access continues until{" "}
             {plan.currentPeriodEnd ? formatDate(plan.currentPeriodEnd) : "the period ends"}.{" "}
-            <Link href="/app/settings" className="font-medium text-brand-strong underline underline-offset-2">
+            <Link href="/app/settings" className="text-brand underline underline-offset-2 hover:text-brand-strong">
               Update your card in Settings
             </Link>
             .
@@ -67,14 +65,14 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         </div>
       )}
 
-      <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-4 py-6 sm:px-6 md:flex-row md:gap-10 md:py-8">
-        <aside className="md:w-44 md:shrink-0">
-          <SidebarNav />
-        </aside>
-        <main className="min-w-0 flex-1">{children}</main>
-      </div>
+      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8 pb-28 sm:px-6 md:pb-12">
+        {children}
+      </main>
 
-      <Disclaimer />
+      <div className="pb-16 md:pb-0">
+        <Disclaimer />
+      </div>
+      <TabBar />
     </div>
   );
 }
