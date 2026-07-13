@@ -1530,23 +1530,6 @@ function ArrowLink({
   );
 }
 
-function PillLink({
-  href,
-  children,
-  className,
-}: {
-  href: string;
-  children: React.ReactNode;
-  className?: string;
-}) {
-  return (
-    <Link href={href} className={cn("au-pill", className)}>
-      {children}
-      <span className="au-pill-arrow">→</span>
-    </Link>
-  );
-}
-
 /* --- scroll state for the nav (transparent over the hero, bar on scroll) --- */
 function useScrolled(threshold = 16) {
   const [scrolled, setScrolled] = useState(false);
@@ -1594,9 +1577,6 @@ function Nav() {
           <Link href="/login" className="au-ghost hidden text-[0.75rem] sm:inline-flex">
             Sign in
           </Link>
-          <PillLink href="/login" className="!py-2.5 text-[0.72rem]">
-            Start free
-          </PillLink>
           {/* mobile menu toggle — functional glyph, ≥44px hit area */}
           <button
             type="button"

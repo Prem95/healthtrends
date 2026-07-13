@@ -361,8 +361,6 @@ body {
   --au-out: #e11d48;
 
   --au-inv: #0a0a0a; /* text on the teal accent (accent is always light-ish) */
-  --au-pill-bg: #16160f; /* dark ink pill on the light canvas */
-  --au-pill-fg: #f4f3ee;
   --au-ease: cubic-bezier(0.22, 1, 0.36, 1); /* the one easing curve */
 
   background: var(--page-bg);
@@ -458,45 +456,6 @@ body {
   transition: transform 0.35s var(--au-ease);
 }
 .au-arrowbtn:hover .au-arrow {
-  transform: translateX(4px);
-}
-
-/* Pill CTA — dark ink on light canvas; inverts to accent on hover */
-.au-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.75rem;
-  background: var(--au-pill-bg);
-  color: var(--au-pill-fg);
-  border-radius: 10px;
-  padding: 0.75rem 1.05rem;
-  font-family: var(--font-mono);
-  font-size: 0.8125rem;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  white-space: nowrap;
-  transition:
-    background 0.3s var(--au-ease),
-    color 0.3s var(--au-ease);
-}
-.au-pill:hover {
-  background: var(--brand);
-  color: var(--au-inv);
-}
-.au-pill-arrow {
-  width: 26px;
-  height: 26px;
-  flex: none;
-  border-radius: 8px;
-  background: var(--au-pill-fg);
-  color: var(--au-pill-bg);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  transition: transform 0.35s var(--au-ease);
-}
-.au-pill:hover .au-pill-arrow {
   transform: translateX(4px);
 }
 
