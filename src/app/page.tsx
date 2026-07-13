@@ -2,11 +2,10 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, ArrowUpRight, ArrowDownRight } from "lucide-react";
+import { ArrowUpRight, ArrowDownRight } from "lucide-react";
 import {
   motion,
   AnimatePresence,
-  useMotionValue,
   useReducedMotion,
   useScroll,
   useSpring,
@@ -84,7 +83,8 @@ function CountUp({ to, suffix = "" }: { to: number; suffix?: string }) {
     const dur = 1300;
     const tick = (t: number) => {
       const p = Math.min(1, (t - start) / dur);
-      setN(Math.round((1 - Math.pow(1 - p, 3)) * to));
+      // linear count (count-ups and the marquee are the only linear motion)
+      setN(Math.round(p * to));
       if (p < 1) raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
@@ -99,7 +99,8 @@ function CountUp({ to, suffix = "" }: { to: number; suffix?: string }) {
 }
 
 /* --- motion primitives --- */
-const EASE_OUT_CUBIC = [0.215, 0.61, 0.355, 1] as const;
+/* The one easing curve, everywhere: expo-out. Nothing bounces or overshoots. */
+const EASE_OUT_CUBIC = [0.22, 1, 0.36, 1] as const;
 
 /* Scroll-scrubbed entrance: element slides from (x, y) to rest as it crosses
    the lower half of the viewport. Motion-driven, so it works in every
@@ -135,7 +136,9 @@ function ScrubIn({
   );
 }
 
-/* Depth: the wrapped panel travels slower than the page around it. */
+/* Scroll-scrubbed parallax layer (Tier A: position-linked, reversible).
+   Damped with a spring: the lagged settle is most of the "expensive" feel —
+   raw scroll mapping reads cheap. */
 function Parallax({
   children,
   amount = 30,
@@ -151,7 +154,8 @@ function Parallax({
     target: ref,
     offset: ["start end", "end start"],
   });
-  const y = useTransform(scrollYProgress, [0, 1], [amount, -amount]);
+  const raw = useTransform(scrollYProgress, [0, 1], [amount, -amount]);
+  const y = useSpring(raw, { stiffness: 120, damping: 28, mass: 0.6 });
   return (
     <motion.div ref={ref} className={className} style={reduce ? undefined : { y }}>
       {children}
@@ -159,95 +163,59 @@ function Parallax({
   );
 }
 
-/* The hero asset leans gently toward the pointer (mouse only, spring-smoothed). */
-function TiltCard({ children, max = 3.5 }: { children: React.ReactNode; max?: number }) {
-  const reduce = useReducedMotion();
-  const rx = useSpring(useMotionValue(0), { stiffness: 180, damping: 22 });
-  const ry = useSpring(useMotionValue(0), { stiffness: 180, damping: 22 });
-  return (
-    <motion.div
-      style={{ rotateX: rx, rotateY: ry, transformPerspective: 1200 }}
-      onPointerMove={(e) => {
-        if (reduce || e.pointerType !== "mouse") return;
-        const r = e.currentTarget.getBoundingClientRect();
-        rx.set(-((e.clientY - r.top) / r.height - 0.5) * 2 * max);
-        ry.set(((e.clientX - r.left) / r.width - 0.5) * 2 * max);
-      }}
-      onPointerLeave={() => {
-        rx.set(0);
-        ry.set(0);
-      }}
-    >
-      {children}
-    </motion.div>
-  );
-}
-
-/* CTA buttons pull a few pixels toward the cursor and spring back. */
-function Magnetic({ children, strength = 0.22 }: { children: React.ReactNode; strength?: number }) {
-  const reduce = useReducedMotion();
-  const mx = useMotionValue(0);
-  const my = useMotionValue(0);
-  const x = useSpring(mx, { stiffness: 220, damping: 16 });
-  const y = useSpring(my, { stiffness: 220, damping: 16 });
-  return (
-    <motion.div
-      className="inline-flex"
-      style={reduce ? undefined : { x, y }}
-      onPointerMove={(e) => {
-        if (reduce || e.pointerType !== "mouse") return;
-        const r = e.currentTarget.getBoundingClientRect();
-        mx.set((e.clientX - r.left - r.width / 2) * strength);
-        my.set((e.clientY - r.top - r.height / 2) * strength);
-      }}
-      onPointerLeave={() => {
-        mx.set(0);
-        my.set(0);
-      }}
-    >
-      {children}
-    </motion.div>
-  );
-}
-
-/* Hero orchestration: one timeline staggers headline words, sub copy and
-   CTAs; the panel arrives on its own spring a beat later. */
-const H1_WORDS: { t: string; em?: boolean }[] = [
-  { t: "See" },
-  { t: "how" },
-  { t: "your" },
-  { t: "body" },
-  { t: "has" },
-  { t: "changed" },
-  { t: "over", em: true },
-  { t: "the", em: true },
-  { t: "years.", em: true },
+/* Hero headline: hand-broken lines (mask per LINE, not per word or block —
+   line breaks land on phrase boundaries, never wherever the container wraps). */
+const H1_LINES: { t: string; em?: boolean }[] = [
+  { t: "See how your body" },
+  { t: "has changed" },
+  { t: "over the years.", em: true },
 ];
-const HERO_STAGE: Variants = {
-  hidden: {},
-  show: { transition: { staggerChildren: 0.1, delayChildren: 0.05 } },
-};
-const HERO_LINE: Variants = {
-  hidden: {},
-  show: { transition: { staggerChildren: 0.055 } },
-};
-const HERO_WORD: Variants = {
-  hidden: { opacity: 0, y: 24, filter: "blur(8px)" },
-  show: {
-    opacity: 1,
-    y: 0,
-    filter: "blur(0px)",
-    transition: { duration: 0.6, ease: EASE_OUT_CUBIC },
-  },
-};
+
+/* Line-mask headline block: each line in its own overflow-hidden wrapper,
+   sliding up 0.9s expo-out, staggered 100ms. Fires on viewport entry, once. */
+function MaskLines({
+  lines,
+  className,
+  delay = 0,
+  as: Tag = "h2",
+}: {
+  lines: { t: string; em?: boolean }[];
+  className?: string;
+  delay?: number;
+  as?: "h1" | "h2";
+}) {
+  const reduce = useReducedMotion();
+  const { ref, inView } = useInView<HTMLHeadingElement>(0.4);
+  return (
+    <Tag ref={ref} className={className}>
+      {lines.map((l, i) => (
+        <span key={i} className="block overflow-hidden pb-[0.08em] -mb-[0.08em]">
+          <span
+            className={cn("block", l.em && "em")}
+            style={{
+              transform: reduce || inView ? "none" : "translateY(112%)",
+              transition: reduce
+                ? "none"
+                : `transform 0.9s cubic-bezier(0.22, 1, 0.36, 1) ${delay + i * 100}ms`,
+            }}
+          >
+            {l.t}
+          </span>
+        </span>
+      ))}
+    </Tag>
+  );
+}
+
+/* 3-beat hero entry: eyebrow leads (~150ms before the headline), body copy
+   and CTAs trail. Same beat order used site-wide. */
 const HERO_ITEM: Variants = {
-  hidden: { opacity: 0, y: 26, filter: "blur(8px)" },
-  show: {
+  hidden: { opacity: 0, y: 26 },
+  show: (delay: number) => ({
     opacity: 1,
     y: 0,
-    filter: "blur(0px)",
-    transition: { duration: 0.7, ease: EASE_OUT_CUBIC },
-  },
+    transition: { duration: 0.8, ease: EASE_OUT_CUBIC, delay },
+  }),
 };
 
 /* --- shared status semantics: colour of a reading -> pill --- */
@@ -661,7 +629,6 @@ function RecoveryDemo() {
       </div>
       <div className="mt-1 h-[196px] w-full">
         <TrendChart
-          id="bento"
           data={data}
           domain={[10, 60]}
           band={[RECOVER_LO, RECOVER_HI]}
@@ -682,7 +649,7 @@ function RecoveryDemo() {
         />
       </div>
       <p className="mt-1 px-1 text-xs text-ink-3">
-        Try it - drag a reading up or down and watch its colour follow the range.
+        Try it — drag a reading up or down and watch its colour follow the range.
       </p>
     </div>
   );
@@ -720,7 +687,6 @@ const renderNoTooltip = () => null;
 // annotation. Pass `onScrub` to make it readable by hover or touch: a dashed
 // time cursor follows the pointer and the hovered reading is highlighted.
 function TrendChart({
-  id,
   data,
   domain,
   band,
@@ -728,11 +694,11 @@ function TrendChart({
   animate = true,
   annotation,
   yWidth = 40,
+  tickFontSize = 11,
   renderDot,
   onScrub,
   scrubIndex,
 }: {
-  id: string;
   data: TrendPoint[];
   domain: [number, number];
   band: [number, number];
@@ -740,6 +706,7 @@ function TrendChart({
   animate?: boolean;
   annotation?: { x: string; label: string };
   yWidth?: number;
+  tickFontSize?: number;
   /** Custom dot element (e.g. a draggable reading); defaults to the static dot. */
   renderDot?: React.ReactElement;
   onScrub?: (index: number | null) => void;
@@ -760,12 +727,6 @@ function TrendChart({
         onTouchMove={onScrub ? readIndex : undefined}
         onTouchEnd={onScrub ? () => onScrub(null) : undefined}
       >
-        <defs>
-          <linearGradient id={id} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="var(--brand)" stopOpacity={0.24} />
-            <stop offset="100%" stopColor="var(--brand)" stopOpacity={0} />
-          </linearGradient>
-        </defs>
         <ReferenceArea
           y1={band[0]}
           y2={band[1]}
@@ -791,14 +752,14 @@ function TrendChart({
         ) : null}
         <XAxis
           dataKey="y"
-          tick={{ fill: "var(--ink-3)", fontSize: 11 }}
+          tick={{ fill: "var(--ink-3)", fontSize: tickFontSize }}
           axisLine={{ stroke: "var(--line-strong)" }}
           tickLine={false}
           padding={{ left: 10, right: 10 }}
         />
         <YAxis
           domain={domain}
-          tick={{ fill: "var(--ink-3)", fontSize: 11 }}
+          tick={{ fill: "var(--ink-3)", fontSize: tickFontSize }}
           axisLine={false}
           tickLine={false}
           width={yWidth}
@@ -815,7 +776,8 @@ function TrendChart({
           dataKey="v"
           stroke="var(--brand)"
           strokeWidth={2.5}
-          fill={`url(#${id})`}
+          fill="var(--brand)"
+          fillOpacity={0.06}
           isAnimationActive={animate}
           animationDuration={1500}
           dot={renderDot ?? <DemoDot activeIndex={scrubIndex ?? null} />}
@@ -867,7 +829,7 @@ function ProductWindow() {
   const m = MARKERS[mk];
   const { idx, setIdx, i } = useScrub(m.data);
   return (
-    <div ref={ref} className="au-card au-float overflow-hidden rounded-[20px]">
+    <div ref={ref} className="au-card overflow-hidden rounded-[20px]">
       <div className="flex items-center gap-2 border-b border-line px-5 py-3">
         <span className="flex gap-1.5">
           <span className="size-2.5 rounded-full bg-paper-3" />
@@ -917,7 +879,6 @@ function ProductWindow() {
         </div>
         <div className="mt-4 h-52 w-full">
           <TrendChart
-            id={`pw-${m.key}`}
             data={m.data}
             domain={m.domain}
             band={m.band}
@@ -981,7 +942,7 @@ function HeroPanel() {
     ["Your range", "40-130"],
   ];
   return (
-    <div ref={ref} className="au-card au-float overflow-hidden rounded-[24px]">
+    <div ref={ref} className="au-glass overflow-hidden rounded-[20px]">
       <div className="px-6 pt-6">
         <p className="au-eyebrow">
           LDL cholesterol · mg/dL
@@ -993,10 +954,10 @@ function HeroPanel() {
           <ScrubReadout data={DEMO} idx={idx} i={i} size="lg" />
         </div>
       </div>
-      <div className="mt-5 grid grid-cols-3 gap-px overflow-hidden border-y border-line bg-line">
+      <div className="mt-5 grid grid-cols-3 gap-px overflow-hidden border-y border-line bg-line/60">
         {stats.map(([label, val]) => (
-          <div key={label} className="bg-paper px-6 py-3">
-            <p className="text-[0.68rem] uppercase tracking-[0.1em] text-ink-3">
+          <div key={label} className="bg-white/40 px-6 py-3">
+            <p className="au-mono text-[0.6875rem] tracking-[0.08em] text-ink-3">
               {label}
             </p>
             <p className="au-num mt-0.5 text-sm text-ink">{val}</p>
@@ -1005,7 +966,6 @@ function HeroPanel() {
       </div>
       <div className="h-[236px] w-full pr-3 pt-1">
         <TrendChart
-          id="hero"
           data={DEMO}
           domain={[60, 190]}
           band={[40, 130]}
@@ -1138,7 +1098,7 @@ function ReportStack({ show, exit }: { show: boolean; exit: boolean }) {
           initial={reduce ? false : "hidden"}
           animate={state}
           transition={reduce ? { duration: 0 } : undefined}
-          className="absolute w-[220px] rounded-xl border border-line bg-paper p-3.5 shadow-[0_6px_18px_-12px_rgba(15,26,32,0.25)]"
+          className="absolute w-[220px] rounded-2xl border border-line bg-paper p-3.5"
           style={{
             left: REPORT_POSE[i].left,
             top: REPORT_POSE[i].top,
@@ -1242,7 +1202,7 @@ function MiniTrendGrid({ stage }: { stage: number }) {
                 ? { duration: 0 }
                 : { type: "spring", duration: 0.65, bounce: 0.2 }
             }
-            className="relative rounded-xl border bg-paper p-3 transition-[opacity,border-color,box-shadow] duration-500 motion-reduce:transition-none"
+            className="relative rounded-2xl border bg-paper p-3 transition-[opacity,border-color,box-shadow] duration-500 motion-reduce:transition-none"
             style={{
               borderColor: flagged ? m.flag!.color : "var(--line)",
               boxShadow: flagged ? `0 0 0 3px ${m.flag!.soft}` : "none",
@@ -1377,7 +1337,7 @@ function ScrollStory() {
       : null;
 
   return (
-    <section id="how" className="scroll-mt-20 border-t border-line py-20 md:py-28">
+    <section id="how" className="scroll-mt-20 border-t border-line py-32 md:py-40">
       <div className="mx-auto max-w-6xl px-5 sm:px-6">
         <ScrubIn y={36}>
           <span className="au-eyebrow">How it works</span>
@@ -1393,7 +1353,7 @@ function ScrollStory() {
               in its own column on desktop. */}
           <div className="sticky top-[4.25rem] z-10 md:static md:col-start-2 md:row-start-1">
             <div className="md:sticky md:top-[max(6rem,calc(50vh_-_16rem))]">
-              <div ref={panelRef} className="au-card au-float rounded-[24px] p-5 sm:p-6">
+              <div ref={panelRef} className="au-card rounded-[20px] p-5 sm:p-6">
                 <div className="flex items-center justify-between px-1 pb-3">
                   <p className="au-eyebrow">
                     {stage === 0 ? "Your lab reports" : "Your markers · 8 years"}
@@ -1472,26 +1432,19 @@ const WALL: { n: string; vals: number[] }[] = [
 function MarkerWall() {
   const { ref, inView } = useInView<HTMLDivElement>(0.15);
   return (
-    <section className="border-t border-line py-20 md:py-28">
+    <section className="border-t border-line py-32 md:py-40">
       <div className="mx-auto max-w-6xl px-5 sm:px-6">
         <ScrubIn y={48}>
-        <div
-          className="relative overflow-hidden rounded-[28px] px-6 py-12 sm:px-10 md:py-16"
-          style={{ background: "var(--au-blue)", color: "var(--au-blue-ink)" }}
-        >
-          <div
-            aria-hidden
-            className="au-field"
-            style={{
-              background:
-                "radial-gradient(560px 420px at 85% 10%, rgba(11, 90, 147, 0.16), transparent 66%), radial-gradient(480px 380px at 8% 100%, rgba(14, 111, 191, 0.12), transparent 70%)",
-            }}
-          />
+        <div className="au-card au-card--olive relative overflow-hidden rounded-[20px] px-6 py-12 text-ink sm:px-10 md:py-16">
           <div className="relative">
-          <h2 className="au-hl max-w-xl text-[clamp(1.7rem,1.1rem+2.2vw,2.75rem)] leading-[1.14]">
-            70+ markers, ready on day one.
+          <span className="au-chip">
+            <span className="au-hex" />
+            70+ markers
+          </span>
+          <h2 className="au-hl mt-5 max-w-xl text-[clamp(1.7rem,1.1rem+2.2vw,2.75rem)] leading-[1.14] text-ink">
+            Every reading, ready on day one.
           </h2>
-          <p className="mt-3 max-w-md text-base opacity-75">
+          <p className="mt-3 max-w-md text-base text-ink-2">
             Lipids, metabolic, thyroid, vitamins, blood count. Pick a panel,
             type the numbers, done.
           </p>
@@ -1513,14 +1466,13 @@ function MarkerWall() {
                   transitionTimingFunction: "var(--au-ease)",
                 }}
               >
-                <div
-                  className="wall-chip rounded-xl border p-3 transition-[transform,background-color] duration-200 hover:-translate-y-0.5 hover:bg-white/40"
-                  style={{ borderColor: "rgba(11, 90, 147, 0.22)" }}
-                >
-                  <p className="truncate text-[0.8rem] font-medium">{m.n}</p>
+                <div className="wall-chip rounded-md border border-line bg-paper p-3 transition-[border-color] duration-300 hover:border-brand/60">
+                  <p className="au-mono truncate text-[0.7rem] tracking-[0.04em] text-ink-2">
+                    {m.n}
+                  </p>
                   <svg
                     viewBox="0 0 80 24"
-                    className="mt-2 h-6 w-full"
+                    className="mt-2 h-6 w-full text-brand"
                     preserveAspectRatio="none"
                     aria-hidden
                   >
@@ -1530,7 +1482,7 @@ function MarkerWall() {
                       points={sparkPts(m.vals)}
                       fill="none"
                       stroke="currentColor"
-                      strokeOpacity="0.65"
+                      strokeOpacity="0.8"
                       strokeWidth="1.5"
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -1541,16 +1493,15 @@ function MarkerWall() {
               </div>
             ))}
             <div
-              className="grid place-items-center rounded-xl border border-dashed p-3 text-[0.8rem] font-medium transition-[transform,opacity] duration-500 motion-reduce:transition-none"
+              className="au-mono grid place-items-center rounded-md border border-dashed border-line-strong p-3 text-[0.7rem] tracking-[0.04em] text-ink-3 transition-[transform,opacity] duration-500 motion-reduce:transition-none"
               style={{
-                borderColor: "rgba(11, 90, 147, 0.35)",
-                opacity: inView ? 0.8 : 0,
+                opacity: inView ? 1 : 0,
                 transform: inView ? undefined : "translateY(20px)",
                 transitionDelay: `${WALL.length * 45}ms`,
                 transitionTimingFunction: "var(--au-ease)",
               }}
             >
-              and 54 more
+              + 54 more
             </div>
           </div>
           </div>
@@ -1561,371 +1512,674 @@ function MarkerWall() {
   );
 }
 
-/* Kinetic-type moment reserved for the CTA: each word rises from behind a
-   line mask on a spring, the italic emphasis landing last. */
-function StaggerWords({
-  words,
-  className,
-}: {
-  words: { t: string; em?: boolean }[];
-  className?: string;
-}) {
-  const reduce = useReducedMotion();
-  return (
-    <motion.h2
-      className={className}
-      variants={{ hidden: {}, show: { transition: { staggerChildren: 0.075 } } }}
-      initial={reduce ? false : "hidden"}
-      whileInView="show"
-      viewport={{ once: true, amount: 0.6 }}
-    >
-      {words.map((w, i) => (
-        <span key={i}>
-          <span className="inline-block overflow-hidden pb-[0.1em] align-bottom">
-            <motion.span
-              className={cn("inline-block", w.em && "em")}
-              variants={{
-                hidden: { y: "115%", opacity: 0 },
-                show: {
-                  y: "0%",
-                  opacity: 1,
-                  transition: { type: "spring", duration: 0.8, bounce: 0.15 },
-                },
-              }}
-            >
-              {w.t}
-            </motion.span>
-          </span>{" "}
-        </span>
-      ))}
-    </motion.h2>
-  );
-}
-
-// Pill button built from Tailwind utilities (no dependency on hand-authored
-// classes), so it renders correctly regardless of stylesheet load order.
-function Btn({
+/* --- Alethia button set: mono, arrow-tile primary, light pill, ghost --- */
+function ArrowLink({
   href,
-  variant = "primary",
-  size = "md",
-  className,
   children,
+  className,
 }: {
   href: string;
-  variant?: "primary" | "ghost" | "light" | "ghost-light";
-  size?: "md" | "sm";
-  className?: string;
   children: React.ReactNode;
+  className?: string;
 }) {
   return (
-    <Link
-      href={href}
-      className={cn(
-        "group inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full font-medium transition-[transform,background-color,color] duration-200 will-change-transform active:scale-[0.97]",
-        size === "sm" ? "px-5 py-2 text-sm" : "px-6 py-3 text-[0.9375rem]",
-        variant === "primary" &&
-          "bg-[#0f1a20] text-[#f6f8f8] hover:-translate-y-0.5 hover:bg-black",
-        variant === "ghost" && "text-[#16232a] hover:text-[#54636c]",
-        variant === "light" &&
-          "bg-[#f6f8f8] text-[#0f1a20] hover:-translate-y-0.5 hover:bg-white",
-        variant === "ghost-light" && "text-[#d9e6ee] hover:text-white",
-        className,
-      )}
-    >
+    <Link href={href} className={cn("au-arrowbtn", className)}>
       {children}
+      <span className="au-arrow">→</span>
     </Link>
   );
 }
 
-export default function Home() {
+function PillLink({
+  href,
+  children,
+  className,
+}: {
+  href: string;
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <Link href={href} className={cn("au-pill", className)}>
+      {children}
+      <span className="au-pill-arrow">→</span>
+    </Link>
+  );
+}
+
+/* --- scroll state for the nav (transparent over the hero, bar on scroll) --- */
+function useScrolled(threshold = 16) {
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    const on = () => setScrolled(window.scrollY > threshold);
+    on();
+    window.addEventListener("scroll", on, { passive: true });
+    return () => window.removeEventListener("scroll", on);
+  }, [threshold]);
+  return scrolled;
+}
+
+function Nav() {
+  const scrolled = useScrolled();
+  const links: [string, string][] = [
+    ["How it works", "#how"],
+    ["The product", "#product"],
+    ["Markers", "#markers"],
+    ["Pricing", "#pricing"],
+  ];
+  return (
+    <header
+      className={cn(
+        "sticky top-0 z-30 transition-colors duration-300",
+        scrolled
+          ? "border-b border-line bg-page/80 backdrop-blur-md"
+          : "border-b border-transparent",
+      )}
+    >
+      <div aria-hidden className="au-progress" />
+      <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-5 py-4 sm:px-6">
+        <Logo />
+        <nav className="hidden items-center gap-7 md:flex">
+          {links.map(([label, href]) => (
+            <a key={href} href={href} className="au-ghost text-[0.75rem]">
+              {label}
+            </a>
+          ))}
+        </nav>
+        <div className="flex items-center gap-3">
+          <Link href="/login" className="au-ghost hidden text-[0.75rem] sm:inline-flex">
+            Sign in
+          </Link>
+          <PillLink href="/login" className="!py-2 text-[0.72rem]">
+            Start free
+          </PillLink>
+        </div>
+      </div>
+    </header>
+  );
+}
+
+/* Media panel: the animated tonal wash + a fade so it dissolves into canvas.
+   Reads as living video behind frosted glass without shipping a video asset. */
+function Media({ className }: { className?: string }) {
+  return (
+    <div aria-hidden className={cn("absolute inset-0 overflow-hidden", className)}>
+      <div className="au-media" />
+      {/* flat scrim for text contrast — sections cut hard at their hairline */}
+      <div className="absolute inset-0 bg-page/45" />
+    </div>
+  );
+}
+
+/* HERO — load choreography per spec: eyebrow 100ms → headline line-masks from
+   250ms (3 lines x 100ms) → frost panel 600ms → body/CTAs → ticker last.
+   Total settle ~1.4s. No preloader, no curtain. */
+function Hero() {
   const reduce = useReducedMotion();
   return (
-    <div
-      data-theme="light"
-      className="aurora flex min-h-[100dvh] flex-col overflow-x-clip bg-page text-ink"
-    >
-      {/* NAV */}
-      <header className="sticky top-0 z-30 border-b border-line/70 bg-page/70 backdrop-blur-md">
-        {/* scroll progress, drawn as the page's own trend line */}
-        <div aria-hidden className="au-progress" />
-        <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-5 py-4 sm:px-6">
-          <Logo />
-          <nav className="hidden items-center gap-8 text-sm text-ink-2 md:flex">
-            <a href="#how" className="transition-colors hover:text-ink">
-              How it works
-            </a>
-            <a href="#product" className="transition-colors hover:text-ink">
-              The product
-            </a>
-            <a href="#pricing" className="transition-colors hover:text-ink">
-              Pricing
-            </a>
-          </nav>
-          <div className="flex items-center gap-1">
-            <Btn href="/login" variant="ghost" size="sm" className="hidden sm:inline-flex">
-              Sign in
-            </Btn>
-            <Btn href="/login" size="sm">
-              Start free
-            </Btn>
+    <section className="relative overflow-hidden border-b border-line">
+      <Media />
+      <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-5 pb-24 pt-20 sm:px-6 md:grid-cols-[1.05fr_1fr] md:gap-14 md:pb-32 md:pt-28 lg:gap-20">
+        <div className="relative z-10 min-w-0 max-w-xl">
+          <motion.span
+            className="au-chip"
+            variants={HERO_ITEM}
+            custom={0.1}
+            initial={reduce ? false : "hidden"}
+            animate="show"
+          >
+            <span className="au-hex" />
+            Blood-test trends
+          </motion.span>
+          <MaskLines
+            as="h1"
+            lines={H1_LINES}
+            delay={250}
+            className="au-hl mt-5 text-[clamp(2.7rem,1rem+5.4vw,6rem)] leading-[1.02] tracking-[-0.035em] text-ink"
+          />
+          <motion.p
+            variants={HERO_ITEM}
+            custom={0.7}
+            initial={reduce ? false : "hidden"}
+            animate="show"
+            className="mt-6 max-w-md text-lg leading-relaxed text-ink-2"
+          >
+            Log each result once. HealthTrends draws every marker as a single
+            line across the years, so a decade of blood tests reads at a glance.
+          </motion.p>
+          <motion.div
+            variants={HERO_ITEM}
+            custom={0.85}
+            initial={reduce ? false : "hidden"}
+            animate="show"
+            className="mt-9 flex flex-wrap items-center gap-3"
+          >
+            <ArrowLink href="/login">Start free</ArrowLink>
+            <Link href="#how" className="au-ghost">
+              See how it works
+            </Link>
+          </motion.div>
+        </div>
+
+        <motion.div
+          className="relative z-10 min-w-0"
+          initial={reduce ? false : { opacity: 0, y: 36 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.9, ease: EASE_OUT_CUBIC, delay: 0.6 }}
+        >
+          <HeroPanel />
+        </motion.div>
+      </div>
+    </section>
+  );
+}
+
+/* iPhone mockup showing the product's analytics. CSS-built device frame;
+   the screen is a real app UI (app bar, range control, chart, marker list,
+   tab bar) at true phone-UI scale — assembled from the real chart parts. */
+function PhoneScreen() {
+  const { ref, inView } = useInView<HTMLDivElement>(0.3);
+  const rows: { n: string; vals: number[]; status: string; color: string }[] = [
+    {
+      n: "Triglycerides",
+      vals: [210, 195, 178, 162, 148, 130, 98],
+      status: "In range",
+      color: GREEN,
+    },
+    {
+      n: "HbA1c",
+      vals: [5.4, 5.6, 5.9, 6.2, 6.4, 5.8, 5.6],
+      status: "Drifting",
+      color: "var(--borderline)",
+    },
+    {
+      n: "Vitamin D",
+      vals: [18, 21, 24, 31, 38, 42, 46],
+      status: "In range",
+      color: GREEN,
+    },
+    {
+      n: "hs-CRP",
+      vals: [3.2, 2.8, 2.1, 1.6, 1.2, 0.9, 0.8],
+      status: "In range",
+      color: GREEN,
+    },
+  ];
+  const ranges = ["1Y", "5Y", "All"];
+  return (
+    <div ref={ref} className="flex flex-col bg-page">
+      {/* status bar */}
+      <div className="flex items-center justify-between px-5 pb-1.5 pt-3">
+        <span className="au-mono text-[0.55rem] text-ink">9:41</span>
+        <span className="flex items-center gap-1" aria-hidden>
+          <span className="h-1 w-1 rounded-full bg-ink-3" />
+          <span className="h-1 w-1 rounded-full bg-ink-3" />
+          <span className="h-1 w-1 rounded-full bg-ink-2" />
+        </span>
+      </div>
+      {/* app bar */}
+      <div className="flex items-center justify-between px-4 py-2">
+        <span className="text-base leading-none text-ink-2" aria-hidden>
+          ‹
+        </span>
+        <span className="au-mono text-[0.55rem] text-ink-3">Biomarkers</span>
+        <span className="grid size-5 place-items-center rounded-full bg-paper-3 au-mono text-[0.5rem] text-ink-2">
+          P
+        </span>
+      </div>
+      {/* marker header */}
+      <div className="px-4 pt-1">
+        <p className="au-mono text-[0.5rem] tracking-[0.08em] text-ink-3">
+          LDL CHOLESTEROL · MG/DL
+        </p>
+        <div className="mt-1 flex items-end justify-between">
+          <p className="au-num text-[1.65rem] leading-none text-ink">168</p>
+          <span
+            className="rounded-full px-2 py-0.5 text-[0.5rem] font-medium"
+            style={{ backgroundColor: "var(--out-soft)", color: "var(--au-out)" }}
+          >
+            Out of range
+          </span>
+        </div>
+        <p
+          className="mt-1 text-[0.5rem] font-medium"
+          style={{ color: "var(--au-out)" }}
+        >
+          ↑ +75% in 8 years
+        </p>
+      </div>
+      {/* range segmented control */}
+      <div className="mx-4 mt-2.5 flex gap-0.5 rounded-full border border-line bg-paper-2 p-0.5">
+        {ranges.map((r) => (
+          <span
+            key={r}
+            className={cn(
+              "flex-1 rounded-full py-1 text-center au-mono text-[0.5rem]",
+              r === "All" ? "bg-paper-3 text-ink" : "text-ink-3",
+            )}
+          >
+            {r}
+          </span>
+        ))}
+      </div>
+      {/* the line */}
+      <div className="mt-1 h-[112px] w-full pr-1.5">
+        <TrendChart
+          data={DEMO}
+          domain={[60, 190]}
+          band={[40, 130]}
+          height={112}
+          animate={inView}
+          yWidth={22}
+          tickFontSize={7}
+        />
+      </div>
+      {/* marker list */}
+      <div className="mt-1 flex items-center justify-between px-4">
+        <span className="au-mono text-[0.5rem] tracking-[0.08em] text-ink-3">
+          YOUR MARKERS
+        </span>
+        <span className="au-mono text-[0.5rem] text-ink-3">16</span>
+      </div>
+      <div className="mt-1 flex flex-col divide-y divide-line border-t border-line px-4">
+        {rows.map((r) => (
+          <div key={r.n} className="flex items-center gap-2 py-2">
+            <span className="min-w-0 flex-1 truncate text-[0.72rem] text-ink">
+              {r.n}
+            </span>
+            <svg viewBox="0 0 80 24" className="h-4 w-12 shrink-0" aria-hidden>
+              <polyline
+                points={sparkPts(r.vals)}
+                fill="none"
+                stroke="var(--brand)"
+                strokeOpacity="0.7"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            <span
+              className="w-14 shrink-0 text-right text-[0.55rem] font-medium"
+              style={{ color: r.color }}
+            >
+              {r.status}
+            </span>
+          </div>
+        ))}
+      </div>
+      {/* tab bar */}
+      <div className="mt-2 grid grid-cols-3 border-t border-line pt-2">
+        {[
+          ["Trends", true],
+          ["Markers", false],
+          ["Profile", false],
+        ].map(([label, active]) => (
+          <span
+            key={label as string}
+            className={cn(
+              "text-center au-mono text-[0.5rem]",
+              active ? "text-brand" : "text-ink-3",
+            )}
+          >
+            {label as string}
+          </span>
+        ))}
+      </div>
+      {/* home indicator */}
+      <div className="mx-auto my-2 h-1 w-24 rounded-full bg-ink-3/50" />
+    </div>
+  );
+}
+
+function PhoneSection() {
+  return (
+    <section className="scroll-mt-20 border-t border-line py-32 md:py-40">
+      <div className="mx-auto grid max-w-6xl items-center gap-14 px-5 sm:px-6 md:grid-cols-2 md:gap-16">
+        <ScrubIn x={-44} className="min-w-0">
+          <span className="au-eyebrow">The app</span>
+          <h2 className="au-hl mt-4 max-w-[18ch] text-[clamp(1.9rem,1.2rem+2.4vw,3rem)] leading-[1.1] text-ink">
+            The whole picture, in your <span className="em">pocket</span>.
+          </h2>
+          <p className="mt-5 max-w-md text-lg leading-relaxed text-ink-2">
+            Every marker, every year, the same coloured line — on the phone you
+            carry into the consultation room.
+          </p>
+          <p className="au-mono mt-8 text-[0.75rem] tracking-[0.06em] text-ink-3">
+            70+ markers · 8 years · 3 profiles
+          </p>
+        </ScrubIn>
+
+        <ScrubIn y={48} className="min-w-0">
+          <Parallax amount={22}>
+            {/* device frame: near-black bezel, hairline edge, dynamic island */}
+            <div className="relative mx-auto w-[248px] rounded-[42px] border border-line-strong bg-[#0d0d0c] p-2">
+              <div
+                aria-hidden
+                className="absolute left-1/2 top-[15px] z-10 h-[18px] w-[70px] -translate-x-1/2 rounded-full bg-black"
+              />
+              <div className="overflow-hidden rounded-[34px] border border-line">
+                <PhoneScreen />
+              </div>
+            </div>
+          </Parallax>
+        </ScrubIn>
+      </div>
+    </section>
+  );
+}
+
+/* Small instrument tiles reused across the floating collage. */
+function OliveStat({
+  label,
+  value,
+  unit,
+  foot,
+  countTo,
+}: {
+  label: string;
+  value?: string;
+  unit?: string;
+  foot?: string;
+  countTo?: number;
+}) {
+  return (
+    <div className="au-card au-card--olive rounded-2xl p-5">
+      <p className="au-mono text-[0.6875rem] text-ink-3">{label}</p>
+      <div className="mt-2 flex items-baseline gap-2">
+        <span className="au-num text-[2.75rem] leading-none text-ink">
+          {countTo != null ? <CountUp to={countTo} /> : value}
+        </span>
+        {unit ? <span className="au-mono text-[0.7rem] text-ink-3">{unit}</span> : null}
+      </div>
+      {foot ? <p className="au-mono mt-3 text-[0.6875rem] text-ink-3">{foot}</p> : null}
+    </div>
+  );
+}
+
+function DataChip({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="au-datachip">
+      <span className="au-hex" />
+      {children}
+    </span>
+  );
+}
+
+/* Floating collage / parallax cluster. The "scattered" look is secretly a
+   grid: elements sit on hand-tuned positions with shared edge alignments
+   (olive stat & chart card tops align; chart & family right edges align), 0°
+   rotation, ONE deliberate ~28px overlap (entry panel clips the olive stat),
+   and a protected clear zone around the centered headline so drift never
+   collides with the text. Speeds: largest slowest, chips fastest, adjacent
+   elements never share a speed, mixed directions. Damped in Parallax. */
+function FloatingCollage() {
+  return (
+    <section className="relative overflow-hidden border-t border-line py-32 md:py-40">
+      <div className="relative mx-auto max-w-6xl px-5 sm:px-6">
+        {/* scattered layer — large screens only, fixed-height stage */}
+        <div className="pointer-events-none absolute inset-x-5 inset-y-0 hidden lg:block">
+          {/* top band */}
+          <Parallax amount={18} className="absolute left-0 top-[40px] w-[240px]">
+            <OliveStat
+              label="Readings in range"
+              countTo={31}
+              foot="of 34 tracked · +6 this year"
+            />
+          </Parallax>
+          <Parallax
+            amount={34}
+            className="absolute left-[212px] top-[48px] z-[2] w-[220px]"
+          >
+            <div className="au-card au-card--olive rounded-2xl p-4">
+              <EntryPanel />
+            </div>
+          </Parallax>
+          <Parallax
+            amount={14}
+            className="pointer-events-auto absolute right-0 top-[40px] w-[340px]"
+          >
+            <div className="au-card rounded-2xl p-4">
+              <RecoveryDemo />
+            </div>
+          </Parallax>
+          {/* side + bottom band */}
+          <Parallax amount={-56} className="absolute left-[36px] top-[430px]">
+            <DataChip>72 bpm resting</DataChip>
+          </Parallax>
+          <Parallax amount={40} className="absolute bottom-[48px] left-[132px] w-[200px]">
+            <div className="au-card au-card--accent rounded-2xl p-5">
+              <p className="au-mono text-[0.6875rem] opacity-70">Latest HbA1c</p>
+              <p className="au-num mt-2 text-[2.5rem] leading-none">5.6</p>
+              <p className="au-mono mt-3 text-[0.6875rem] opacity-70">back in range</p>
+            </div>
+          </Parallax>
+          <Parallax amount={-26} className="absolute bottom-[24px] right-0 w-[300px]">
+            <div className="au-card au-card--olive rounded-2xl p-5">
+              <FamilyPanel />
+            </div>
+          </Parallax>
+        </div>
+
+        {/* centered headline block (native scroll rate) — the ONE centered
+            element on the page; sized to stay inside the clear zone */}
+        <div className="relative z-10 mx-auto max-w-lg py-8 text-center lg:h-[780px] lg:py-0">
+          <ScrubIn y={36} className="lg:absolute lg:inset-x-0 lg:top-1/2 lg:-translate-y-1/2">
+            <span className="au-eyebrow">↗ One quiet home</span>
+            <h2 className="au-hl mt-4 text-[clamp(1.9rem,1.2rem+2.6vw,3.1rem)] leading-[1.08] text-ink">
+              Your whole history, laid out like <span className="em">instruments</span>.
+            </h2>
+            <p className="mx-auto mt-5 max-w-md text-base leading-relaxed text-ink-2">
+              Panels, readings and people — every number you have ever logged,
+              arranged so the trends read at a glance.
+            </p>
+          </ScrubIn>
+        </div>
+
+        {/* stacked fallback — small screens */}
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:hidden">
+          <OliveStat label="Readings in range" countTo={31} foot="of 34 tracked" />
+          <div className="au-card au-card--accent rounded-2xl p-5">
+            <p className="au-mono text-[0.6875rem] opacity-70">Latest HbA1c</p>
+            <p className="au-num mt-2 text-[2.5rem] leading-none">5.6</p>
+            <p className="au-mono mt-3 text-[0.6875rem] opacity-70">back in range</p>
+          </div>
+          <div className="au-card rounded-2xl p-4 sm:col-span-2">
+            <RecoveryDemo />
           </div>
         </div>
-      </header>
+      </div>
+    </section>
+  );
+}
 
-      <main className="flex-1">
-        {/* HERO — asymmetric: copy left, the line itself as the visual right */}
-        <section className="relative overflow-hidden">
-          <div
-            aria-hidden
-            className="au-field"
-            style={{
-              background:
-                "radial-gradient(640px 460px at 78% 22%, rgba(14, 111, 191, 0.12), transparent 68%), radial-gradient(540px 420px at 6% 92%, rgba(11, 90, 147, 0.08), transparent 70%)",
-            }}
-          />
-          <div className="mx-auto grid max-w-6xl items-center gap-12 px-5 pb-20 pt-16 sm:px-6 md:grid-cols-[1.02fr_1fr] md:gap-14 md:pb-28 md:pt-24 lg:gap-20">
-            <motion.div
-              className="relative z-10 min-w-0 max-w-xl"
-              variants={HERO_STAGE}
-              initial={reduce ? false : "hidden"}
-              animate="show"
-            >
-              <motion.h1
-                variants={HERO_LINE}
-                className="au-hl pb-1 text-[clamp(2.6rem,1.2rem+4.2vw,4.4rem)] leading-[1.08] text-ink [text-wrap:balance]"
-              >
-                {H1_WORDS.map((w, i) => (
-                  <span key={i}>
-                    <motion.span
-                      variants={HERO_WORD}
-                      className={cn("inline-block", w.em && "em")}
-                    >
-                      {w.t}
-                    </motion.span>{" "}
-                  </span>
-                ))}
-              </motion.h1>
-              <motion.p
-                variants={HERO_ITEM}
-                className="mt-6 max-w-md text-lg leading-relaxed text-ink-2"
-              >
-                Log each result once. HealthTrends draws every marker as a
-                single line across the years, so a decade of blood tests reads
-                at a glance.
-              </motion.p>
-              <motion.div
-                variants={HERO_ITEM}
-                className="mt-8 flex flex-wrap items-center gap-2"
-              >
-                <Btn href="/login">
-                  Start free{" "}
-                  <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
-                </Btn>
-                <Btn href="#how" variant="ghost">
-                  See how it works
-                </Btn>
-              </motion.div>
-            </motion.div>
+/* Sticky split (signature): left column pins (copy + live product window)
+   while the numbered capability rows on the right scroll past. */
+const SPLIT_ROWS: { num: string; title: string; body: string }[] = [
+  {
+    num: "01",
+    title: "Full timeline",
+    body: "Every result you have logged, in order, from your first test to your latest.",
+  },
+  {
+    num: "02",
+    title: "Your normal range",
+    body: "The band behind the line is your lab's reference range, not a generic textbook one.",
+  },
+  {
+    num: "03",
+    title: "Life events",
+    body: "Mark a medication or a diet change and see the line answer for itself.",
+  },
+  {
+    num: "04",
+    title: "Read any year",
+    body: "Run your pointer along the line and the reading, the change and the status re-derive live.",
+  },
+];
 
-            <motion.div
-              className="relative z-10 min-w-0"
-              initial={reduce ? false : { opacity: 0, y: 40, scale: 0.965 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              transition={{ type: "spring", duration: 0.9, bounce: 0.18, delay: 0.25 }}
-            >
-              <TiltCard>
-                <HeroPanel />
-              </TiltCard>
-            </motion.div>
-          </div>
-        </section>
-
-        {/* HOW — scrollytelling: a pile of readings becomes a direction */}
-        <ScrollStory />
-
-        {/* FEATURES — bento: one tall feature + two supporting tiles */}
-        <section className="border-t border-line py-20 md:py-28">
-          <div className="mx-auto max-w-6xl px-5 sm:px-6">
-            <ScrubIn y={36}>
-              <h2 className="au-hl max-w-2xl text-[clamp(1.9rem,1.2rem+2.4vw,3rem)] leading-[1.1] text-ink">
-                A quiet home for every result.
-              </h2>
-            </ScrubIn>
-
-            <div className="mt-12 grid gap-4 md:grid-cols-2">
-              {/* A — wide feature: watch a marker recover over the years */}
-              <ScrubIn y={44} className="md:col-span-2">
-              <article className="au-card h-full overflow-hidden rounded-[22px]">
-                <div className="grid gap-6 p-7 md:grid-cols-[0.82fr_1.18fr] md:items-center md:gap-9 md:p-9">
-                  <div>
-                    <h3 className="font-display text-xl text-ink">
-                      Watch every line
-                    </h3>
-                    <p className="mt-3 max-w-sm text-sm leading-relaxed text-ink-2">
-                      Every marker is drawn across every test you have logged,
-                      your own normal range shaded behind it. This one climbed
-                      out of the red over three years.
-                    </p>
-                    <div className="mt-5 flex flex-wrap gap-2">
-                      {[
-                        ["8 years", "logged"],
-                        ["34 results", "tracked"],
-                        ["Back to normal", "outcome"],
-                      ].map(([n, l]) => (
-                        <span
-                          key={n}
-                          className="inline-flex items-baseline gap-1.5 rounded-full border border-line bg-paper-2 px-3 py-1 text-xs"
-                        >
-                          <span className="au-num text-ink">{n}</span>
-                          <span className="text-ink-3">{l}</span>
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                  <RecoveryDemo />
-                </div>
-              </article>
-              </ScrubIn>
-
-              {/* B — log it once (warm sand tile, converges from the left) */}
-              <ScrubIn x={-56}>
-              <article className="au-card au-card--amber flex h-full flex-col rounded-[22px] p-7">
-                <h3 className="font-display text-xl text-ink">Log it once</h3>
-                <p className="mt-2 text-sm leading-relaxed text-ink-2">
-                  Pick a panel and type your numbers. The rows are already there,
-                  so each new result takes seconds.
-                </p>
-                <div className="mt-5">
-                  <EntryPanel />
-                </div>
-              </article>
-              </ScrubIn>
-
-              {/* C — the whole family, side by side (ocean tile, from the right) */}
-              <ScrubIn x={56}>
-              <article className="au-card au-card--blue flex h-full flex-col rounded-[22px] p-7">
-                <h3 className="font-display text-xl text-ink">
-                  Everyone you look after
-                </h3>
-                <p className="mt-2 text-sm leading-relaxed text-ink-2">
-                  Separate profiles for parents, partners and kids, each with
-                  their own lines, side by side in one place.
-                </p>
-                <div className="mt-auto pt-5">
-                  <FamilyPanel />
-                </div>
-              </article>
-              </ScrubIn>
+function ProductSplit() {
+  return (
+    <section id="product" className="scroll-mt-20 border-t border-line py-32 md:py-40">
+      <div className="mx-auto max-w-6xl px-5 sm:px-6">
+        <div className="grid gap-12 md:grid-cols-2 md:gap-16">
+          <div className="md:sticky md:top-24 md:h-fit">
+            <span className="au-chip">
+              <span className="au-hex" />
+              The product
+            </span>
+            <h2 className="au-hl mt-5 max-w-[16ch] text-[clamp(1.9rem,1.2rem+2.4vw,3rem)] leading-[1.1] text-ink">
+              Every marker gets its own <span className="em">line</span>.
+            </h2>
+            <p className="mt-5 max-w-md text-lg leading-relaxed text-ink-2">
+              Open any marker to see it across every test you have ever logged.
+              Each point is coloured by the range that applied that day.
+            </p>
+            <div className="mt-8">
+              <ProductWindow />
             </div>
           </div>
-        </section>
 
-        {/* PRODUCT split */}
-        <section id="product" className="scroll-mt-20 border-t border-line py-20 md:py-28">
-          <div className="mx-auto grid max-w-6xl items-center gap-12 px-5 sm:px-6 md:grid-cols-2 md:gap-16">
-            {/* convergence pair: copy arrives from the left, the window from
-                the right, both scrubbed by scroll and meeting in the middle */}
-            <ScrubIn x={-56} className="min-w-0">
-              <span className="au-eyebrow">The product</span>
-              <h2 className="au-hl mt-3 max-w-[16ch] pb-1 text-[clamp(1.9rem,1.2rem+2.4vw,3rem)] leading-[1.12] text-ink">
-                Every marker gets its own <span className="em">line</span>.
-              </h2>
-              <p className="mt-5 max-w-md text-lg leading-relaxed text-ink-2">
-                Open any marker to see it across every test you have ever
-                logged. Each point is coloured by the range that applied that
-                day. Try the tabs, then run your pointer along the line.
-              </p>
-              <div className="mt-7 flex flex-col divide-y divide-line border-t border-line">
-                {[
-                  ["Full timeline", "Every result you have logged, in order."],
-                  ["Your normal range", "Your lab's range, not a textbook one."],
-                  ["Life events", "Mark a medication or diet change."],
-                ].map(([t, d]) => (
-                  <div key={t} className="flex items-baseline gap-4 py-3.5">
-                    <span className="w-36 shrink-0 font-display text-sm text-ink">
-                      {t}
-                    </span>
-                    <span className="text-sm text-ink-2">{d}</span>
-                  </div>
-                ))}
+          {/* static rows: not everything reveals — the pinned window is the
+              motion moment in this section */}
+          <div>
+            {SPLIT_ROWS.map((r) => (
+              <div
+                key={r.num}
+                className="flex min-h-[150px] flex-col justify-center border-t border-line py-9"
+              >
+                <span className="au-mono text-[0.8rem] text-ink-3">{r.num}</span>
+                <h3 className="mt-3 font-display text-2xl text-ink">{r.title}</h3>
+                <p className="mt-2 max-w-sm text-base leading-relaxed text-ink-2">
+                  {r.body}
+                </p>
               </div>
-            </ScrubIn>
-            <ScrubIn x={56} className="min-w-0">
-              {/* depth: the window travels slower than the page around it */}
-              <Parallax amount={30}>
-                <ProductWindow />
-              </Parallax>
-            </ScrubIn>
+            ))}
           </div>
-        </section>
+        </div>
+      </div>
+    </section>
+  );
+}
 
-        {/* MARKER WALL — the one tinted band */}
-        <MarkerWall />
-
-        {/* FINAL CTA — the deep-ocean climax, bookending the porcelain page */}
-        <section
-          id="pricing"
-          className="relative scroll-mt-20 overflow-hidden"
-          style={{
-            background: "linear-gradient(180deg, #103048 0%, #0b2135 100%)",
-          }}
-        >
-          <div
-            aria-hidden
-            className="au-field"
-            style={{
-              background:
-                "radial-gradient(700px 480px at 70% 0%, rgba(53, 171, 239, 0.16), transparent 65%), radial-gradient(560px 440px at 12% 100%, rgba(14, 111, 191, 0.22), transparent 70%)",
-            }}
+/* CTA — frosted panel over the moving media. Left-aligned (the centered
+   hero + twin pill buttons is a kill-list trope); label → headline → body
+   3-beat; one primary arrow button. */
+function FinalCTA() {
+  return (
+    <section id="pricing" className="relative scroll-mt-20 overflow-hidden border-t border-line">
+      <Media />
+      <div className="relative mx-auto max-w-6xl px-5 py-32 sm:px-6 md:py-40">
+        <div className="au-glass max-w-2xl rounded-[20px] px-7 py-12 sm:px-12 sm:py-14">
+          <Reveal>
+            <span className="au-eyebrow">Pricing</span>
+          </Reveal>
+          <MaskLines
+            delay={150}
+            lines={[
+              { t: "Start seeing how" },
+              { t: "your body changes.", em: true },
+            ]}
+            className="au-hl mt-4 text-[clamp(2.2rem,1.3rem+3vw,3.6rem)] leading-[1.06] text-ink"
           />
-          <div className="relative mx-auto max-w-3xl px-5 py-24 text-center sm:px-6 md:py-32">
-            <StaggerWords
-              className="au-hl pb-1 text-[clamp(2.2rem,1.3rem+3vw,3.6rem)] leading-[1.12] text-[#f2f7fa]"
-              words={[
-                { t: "Start" },
-                { t: "seeing" },
-                { t: "how" },
-                { t: "your" },
-                { t: "body" },
-                { t: "changes.", em: true },
-              ]}
-            />
-            <Reveal delay={420}>
-              <p className="mx-auto mt-5 max-w-md text-lg text-[#f2f7fa]/70">
-                Free for one profile, no card needed. Pro is $4.99 a month for
-                family profiles and your whole history.
-              </p>
-              <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
-                <Magnetic>
-                  <Btn href="/login" variant="light">
-                    Start free{" "}
-                    <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
-                  </Btn>
-                </Magnetic>
-                <Magnetic strength={0.16}>
-                  <Btn href="#how" variant="ghost-light">
-                    See how it works
-                  </Btn>
-                </Magnetic>
-              </div>
-            </Reveal>
+          <Reveal delay={420}>
+            <p className="mt-5 max-w-md text-lg text-ink-2">
+              Free for one profile, no card needed. Pro is $4.99 a month for
+              family profiles and your whole history.
+            </p>
+            <div className="mt-9 flex flex-wrap items-center gap-4">
+              <ArrowLink href="/login">Start free</ArrowLink>
+              <Link href="#how" className="au-ghost">
+                See how it works
+              </Link>
+            </div>
+          </Reveal>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* Footer: lowercase mono sitemap columns + back-to-top, over the hairline. */
+const FOOTER_COLS: { head: string; links: string[] }[] = [
+  { head: "product", links: ["how it works", "the product", "markers", "pricing"] },
+  { head: "company", links: ["about", "privacy", "terms", "contact"] },
+  { head: "account", links: ["sign in", "start free"] },
+];
+
+function Footer() {
+  return (
+    <footer className="border-t border-line">
+      <div className="mx-auto max-w-6xl px-5 py-16 sm:px-6">
+        <div className="grid gap-10 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
+          <div>
+            <Logo />
+            <p className="mt-4 max-w-xs text-sm leading-relaxed text-ink-2">
+              A decade of blood tests, read as a line.
+            </p>
           </div>
-        </section>
+          {FOOTER_COLS.map((c) => (
+            <div key={c.head}>
+              <p className="au-mono text-[0.6875rem] text-ink-3">{c.head}</p>
+              <ul className="mt-4 space-y-2.5">
+                {c.links.map((l) => (
+                  <li key={l}>
+                    <a href="#" className="au-mono text-[0.72rem] normal-case tracking-[0.02em] text-ink-2 transition-colors hover:text-brand">
+                      {l}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+        <div className="mt-14 flex items-center justify-between border-t border-line pt-6">
+          <p className="au-mono text-[0.6875rem] text-ink-3">
+            © {new Date().getFullYear()} healthtrends
+          </p>
+          <a href="#top" className="au-ghost text-[0.68rem]">
+            back to top ↑
+          </a>
+        </div>
+        <p className="mt-8 max-w-2xl text-xs leading-relaxed text-ink-3/80">
+          {DISCLAIMER_TEXT}
+        </p>
+      </div>
+    </footer>
+  );
+}
+
+export default function Home() {
+  return (
+    <div
+      id="top"
+      className="aurora flex min-h-[100dvh] flex-col overflow-x-clip bg-page text-ink"
+    >
+      <Nav />
+      <main className="flex-1">
+        <Hero />
+
+        {/* THE APP — iPhone mockup with the analytics screen */}
+        <PhoneSection />
+
+        {/* HOW — the reports-become-trends scrollytelling */}
+        <ScrollStory />
+
+        {/* PRODUCT — sticky split */}
+        <ProductSplit />
+
+        {/* FLOATING COLLAGE — parallax cluster */}
+        <FloatingCollage />
+
+        {/* MARKER WALL */}
+        <div id="markers">
+          <MarkerWall />
+        </div>
+
+        {/* FINAL CTA */}
+        <FinalCTA />
       </main>
 
-      <footer className="border-t border-line">
-        <div className="mx-auto max-w-6xl px-5 py-10 sm:px-6">
-          <p className="max-w-2xl text-xs leading-relaxed text-ink-3">
-            {DISCLAIMER_TEXT}
-          </p>
-          <p className="mt-3 text-xs text-ink-3">
-            © {new Date().getFullYear()} HealthTrends
-          </p>
-        </div>
-      </footer>
-
-      {/* film grain over the whole landing (fixed, non-interactive) */}
-      <div aria-hidden className="au-grain" />
+      <Footer />
     </div>
   );
 }

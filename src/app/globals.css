@@ -138,6 +138,8 @@
   --font-display: var(--font-google-sans);
   --font-sans: var(--font-google-sans);
   --font-serif: var(--font-newsreader), Georgia, "Times New Roman", serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, "SF Mono", Menlo, monospace;
+  --color-mono: var(--font-mono);
 
   --color-tint-cool: var(--tint-cool);
   --color-tint-warm: var(--tint-warm);
@@ -145,6 +147,10 @@
   --radius-lg: calc(var(--radius) + 0.25rem);
   --radius-md: var(--radius);
   --radius-sm: 0.375rem;
+
+  /* One easing curve everywhere: Tailwind transition utilities default to the
+     house expo-out instead of the stock material curve. */
+  --default-transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 * {
@@ -196,12 +202,12 @@ body {
    marketing page, unifying it to a single typeface. */
 .au-hl {
   font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
-  font-weight: 600;
+  font-weight: 500; /* display face never exceeds 500 — bold headlines are a tell */
   letter-spacing: -0.03em;
 }
 .au-hl .em {
   font-style: italic;
-  font-weight: 600;
+  font-weight: 500;
 }
 
 
@@ -262,46 +268,30 @@ body {
   animation: rise 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-/* --- Landing motion --- */
+/* --- Landing motion (fade-up: transform + opacity only, once) --- */
 .reveal {
   opacity: 0;
   transform: translateY(26px);
-  filter: blur(10px);
   transition:
     opacity 0.85s cubic-bezier(0.22, 1, 0.36, 1),
-    transform 0.85s cubic-bezier(0.22, 1, 0.36, 1),
-    filter 0.85s cubic-bezier(0.22, 1, 0.36, 1);
+    transform 0.85s cubic-bezier(0.22, 1, 0.36, 1);
   transition-delay: var(--reveal-delay, 0ms);
 }
 .reveal.is-visible {
   opacity: 1;
   transform: none;
-  filter: none;
-}
-
-@keyframes bob {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
-}
-.animate-bob {
-  animation: bob 6s ease-in-out infinite;
-}
-
-@keyframes drift {
-  0% { background-position: 0 0; }
-  100% { background-position: 40px 40px; }
 }
 
 /* Draw-on: a stroke that reveals left-to-right when .is-drawn is set */
 .draw-line {
   stroke-dasharray: 1;
   stroke-dashoffset: 1;
-  transition: stroke-dashoffset 1.6s cubic-bezier(0.4, 0, 0.2, 1) 0.15s;
+  transition: stroke-dashoffset 1.6s cubic-bezier(0.22, 1, 0.36, 1) 0.15s;
 }
 .is-drawn .draw-line { stroke-dashoffset: 0; }
 .draw-dot {
   opacity: 0;
-  transition: opacity 0.4s ease var(--dot-delay, 0ms);
+  transition: opacity 0.4s cubic-bezier(0.22, 1, 0.36, 1) var(--dot-delay, 0ms);
 }
 .is-drawn .draw-dot { opacity: 1; }
 
@@ -309,8 +299,8 @@ body {
    itself is set from React; this class only eases the change. */
 .st-fade {
   transition:
-    opacity 0.55s cubic-bezier(0.22, 0.61, 0.36, 1),
-    transform 0.55s cubic-bezier(0.22, 0.61, 0.36, 1);
+    opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 /* Marker-wall chips: hovering a marker redraws its little line */
@@ -320,46 +310,13 @@ body {
 }
 @media (prefers-reduced-motion: no-preference) {
   .wall-chip:hover .draw-line {
-    animation: wallRedraw 0.9s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-}
-
-/* Film grain: one fixed, non-interactive overlay for the whole landing.
-   Kills the flat plastic look of large flat fills; barely-there on purpose. */
-.au-grain {
-  position: fixed;
-  inset: 0;
-  z-index: 60;
-  pointer-events: none;
-  opacity: 0.045;
-  mix-blend-mode: multiply;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  background-size: 180px 180px;
-}
-
-/* Ambient colour field: a soft tone-on-tone wash that drifts and slowly
-   zooms, Ken Burns style. Static (but still coloured) under reduced motion.
-   Always paired with a `relative` content wrapper painted above it. */
-.au-field {
-  position: absolute;
-  inset: -22%;
-  pointer-events: none;
-}
-@keyframes auDrift {
-  0% { transform: translate3d(-3.5%, -2.5%, 0) scale(1); }
-  100% { transform: translate3d(3.5%, 2.5%, 0) scale(1.14); }
-}
-@media (prefers-reduced-motion: no-preference) {
-  .au-field {
-    animation: auDrift 28s ease-in-out infinite alternate;
-    will-change: transform;
+    animation: wallRedraw 0.9s cubic-bezier(0.22, 1, 0.36, 1);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .animate-rise { animation: none; }
-  .reveal { opacity: 1; transform: none; filter: none; transition: none; }
-  .animate-bob { animation: none; }
+  .reveal { opacity: 1; transform: none; transition: none; }
   .draw-line { stroke-dashoffset: 0; transition: none; }
   .draw-dot { opacity: 1; transition: none; }
   .st-fade { transition: none; }
@@ -367,185 +324,296 @@ body {
 }
 
 /* =========================================================================
-   Aurora landing layer — steep.app-inspired editorial-analytics language,
-   recolored from the source system's warm peach/cream into a cool clinical
-   palette. Scoped to the marketing page via `.aurora`, so the dark product
-   app is untouched. Serif display + grotesque UI, diffuse off-center aurora
-   mesh, near-black ink pill buttons, floating status-tinted metric cards.
+   Aurora landing layer — REBUILT to the "Alethia" extracted design system
+   (near-black data-science editorial). Scoped to the marketing page via
+   `.aurora`, so the dark product app is untouched. Near-black canvas, tight
+   neo-grotesque display type, uppercase JetBrains-Mono metadata, a single
+   clinical teal accent reserved for data + interaction, hairline rules, no
+   shadows (depth is glass blur + hairlines), and one expo-out easing curve.
    Swap the tokens in this block to rebrand.
    ========================================================================= */
 .aurora {
-  --page-bg: #eef2f1; /* cool porcelain base (was warm cream) */
-  --paper: #ffffff;
-  --paper-2: #f3f6f5;
-  --paper-3: #e7edec;
-  --line: rgba(15, 26, 32, 0.08);
-  --line-strong: rgba(15, 26, 32, 0.14);
-  --ink: #16232a;
-  --ink-2: #54636c;
-  --ink-3: #7c8a92;
-  --brand: #0e6fbf;
-  --brand-strong: #0b5a93;
-  --brand-soft: #e4f0fa;
+  --page-bg: #f0efea; /* warm off-white canvas, never pure #fff */
+  --paper: #ffffff; /* solid card surface */
+  --paper-2: #f4f3ee;
+  --paper-3: #e8e7e0; /* muted warm-gray tile / data card */
+  --line: rgba(17, 17, 15, 0.1); /* hairline divider */
+  --line-strong: rgba(17, 17, 15, 0.16); /* hairline on buttons/surfaces */
+  --ink: #16160f; /* near-black, never pure #000 */
+  --ink-2: #3d3d37; /* lead / body copy */
+  --ink-3: #5f5f57; /* metadata / mono labels — kept dark enough to read on off-white */
 
-  --au-ink: #0f1a20; /* pill fill / dark chips */
-  --au-ink-hover: #0a1216;
-  --au-inv: #f6f8f8;
-  --au-ease: cubic-bezier(0.22, 0.61, 0.36, 1);
-  --au-sh-card: 0 3px 16px rgba(15, 26, 32, 0.05);
-  --au-sh-float: 0 14px 34px -18px rgba(15, 26, 32, 0.2);
+  /* the single accent: clinical teal, deepened so it reads on white — data
+     values, badges, hover states only (never decoration) */
+  --brand: #0d9488;
+  --brand-strong: #0f766e;
+  --brand-soft: rgba(13, 148, 136, 0.12);
+  --brand-tint: rgba(13, 148, 136, 0.07);
 
-  /* status-tinted card pairs: surface + matching darker ink for its data */
-  --au-blue: #e4f0fa;
-  --au-blue-ink: #0b5a93;
-  --au-green: #e3f2e7;
-  --au-green-ink: #12683c;
-  --au-amber: #f7edd5;
-  --au-amber-ink: #8a5a12;
-  --au-rose: #fae8ea;
-  --au-rose-ink: #a12433;
-  --au-out: #d63b4a;
+  /* status data triad, AA-legible on white (data, never decoration) */
+  --in-range: #16a34a;
+  --in-range-soft: #dcfce7;
+  --borderline: #ca8a04;
+  --borderline-soft: #fef7cd;
+  --borderline-ink: #a16207;
+  --out: #e11d48;
+  --out-soft: #ffe4e6;
+  --au-out: #e11d48;
+
+  --au-inv: #0a0a0a; /* text on the teal accent (accent is always light-ish) */
+  --au-pill-bg: #16160f; /* dark ink pill on the light canvas */
+  --au-pill-fg: #f4f3ee;
+  --au-ease: cubic-bezier(0.22, 1, 0.36, 1); /* the one easing curve */
+
+  background: var(--page-bg);
+  color: var(--ink);
+}
+
+/* Mono metadata language — every label, index, nav link and button rides it */
+.au-mono {
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 400;
 }
 
 .au-eyebrow {
+  font-family: var(--font-mono);
   font-size: 0.75rem;
-  font-weight: 600;
+  font-weight: 500;
   text-transform: uppercase;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.08em;
   color: var(--ink-3);
 }
 
-.au-badge {
+/* Badge chip: accent bg, near-black text — section eyebrows / labels */
+.au-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--au-inv);
+  background: var(--brand);
+  padding: 4px 10px;
+  border-radius: 4px;
+}
+
+/* Data chip: accent bg + hexagon glyph + a live reading */
+.au-datachip {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 0.6875rem;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--ink-3);
-  background: rgba(255, 255, 255, 0.55);
-  border: 1px solid var(--line);
-  padding: 6px 14px;
-  border-radius: 999px;
-  -webkit-backdrop-filter: blur(6px);
-  backdrop-filter: blur(6px);
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  color: var(--au-inv);
+  background: var(--brand);
+  border-radius: 6px;
+  padding: 5px 12px;
+}
+.au-hex {
+  width: 12px;
+  height: 12px;
+  flex: none;
+  background: var(--au-inv);
+  clip-path: polygon(25% 5%, 75% 5%, 100% 50%, 75% 95%, 25% 95%, 0 50%);
 }
 
-.au-btn {
+/* Primary ink button (near-black on both themes) with an accent arrow tile
+   that slides on hover */
+.au-arrowbtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.85rem;
+  background: #16160f;
+  border: 1px solid #16160f;
+  border-radius: 10px;
+  padding: 0.85rem 1.1rem;
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #f4f3ee;
+  white-space: nowrap;
+  transition: border-color 0.3s var(--au-ease);
+}
+.au-arrowbtn:hover {
+  border-color: var(--brand);
+  color: #f4f3ee;
+}
+.au-arrow {
+  width: 26px;
+  height: 26px;
+  flex: none;
+  border-radius: 8px;
+  background: var(--brand);
+  color: var(--au-inv);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.4rem;
-  font-family: inherit;
-  font-size: 0.9375rem;
-  font-weight: 500;
-  line-height: 1;
-  padding: 0.8rem 1.55rem;
-  border-radius: 999px;
+  font-weight: 700;
+  transition: transform 0.35s var(--au-ease);
+}
+.au-arrowbtn:hover .au-arrow {
+  transform: translateX(4px);
+}
+
+/* Pill CTA — dark ink on light canvas; inverts to accent on hover */
+.au-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: var(--au-pill-bg);
+  color: var(--au-pill-fg);
+  border-radius: 10px;
+  padding: 0.75rem 1.05rem;
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
   white-space: nowrap;
   transition:
-    transform 0.2s var(--au-ease),
-    background 0.2s var(--au-ease),
-    color 0.2s var(--au-ease);
+    background 0.3s var(--au-ease),
+    color 0.3s var(--au-ease);
 }
-.au-btn-p {
-  background: var(--au-ink);
+.au-pill:hover {
+  background: var(--brand);
   color: var(--au-inv);
 }
-.au-btn-p:hover {
-  background: var(--au-ink-hover);
-  transform: translateY(-1px);
-  color: var(--au-inv);
+.au-pill-arrow {
+  width: 26px;
+  height: 26px;
+  flex: none;
+  border-radius: 8px;
+  background: var(--au-pill-fg);
+  color: var(--au-pill-bg);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  transition: transform 0.35s var(--au-ease);
 }
-.au-btn-s {
-  color: var(--ink);
-}
-.au-btn-s:hover {
-  color: var(--ink-2);
+.au-pill:hover .au-pill-arrow {
+  transform: translateX(4px);
 }
 
+/* Ghost / secondary — mono, tints accent on hover */
+.au-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  transition: color 0.25s var(--au-ease);
+}
+.au-ghost:hover {
+  color: var(--brand);
+}
+
+/* Solid card / surface — hairline border, no shadow (depth from glass + rules) */
 .au-card {
-  border-radius: 20px;
-  border: 1px solid var(--line);
+  border-radius: 16px;
+  border: 1px solid var(--line-strong);
   background: var(--paper);
-  box-shadow: var(--au-sh-card);
 }
-.au-card--blue {
-  background: var(--au-blue);
-  color: var(--au-blue-ink);
-  border-color: transparent;
+.au-card--olive {
+  background: var(--paper-3);
+  border-color: var(--line-strong);
 }
-.au-card--green {
-  background: var(--au-green);
-  color: var(--au-green-ink);
-  border-color: transparent;
-}
-.au-card--amber {
-  background: var(--au-amber);
-  color: var(--au-amber-ink);
-  border-color: transparent;
-}
-.au-card--rose {
-  background: var(--au-rose);
-  color: var(--au-rose-ink);
+.au-card--accent {
+  background: var(--brand);
+  color: var(--au-inv);
   border-color: transparent;
 }
 
-.au-lift {
-  transition:
-    transform 0.24s var(--au-ease),
-    box-shadow 0.24s var(--au-ease);
+/* Frosted glass over moving media — the signature "alive" texture. Light
+   frost carries dark text; the border is a barely-there hairline. */
+.au-glass {
+  background: rgba(245, 244, 239, 0.74);
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(17, 17, 15, 0.08);
+  border-radius: 18px;
 }
-.au-lift:hover {
-  transform: translateY(-3px);
-  box-shadow: var(--au-sh-float);
+/* Firefox / no-backdrop-filter: raise fill opacity so text stays legible */
+@supports not (backdrop-filter: blur(1px)) {
+  .au-glass {
+    background: rgba(244, 243, 238, 0.94);
+  }
 }
-.au-float {
-  box-shadow: var(--au-sh-float);
-}
+
+/* No shadows on the dark theme, period — depth is blur + overlap + hairlines. */
 
 .au-num {
-  font-weight: 700;
+  font-family: var(--font-mono);
+  font-weight: 400;
   letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
 }
 
-/* mini bar visual — bars inherit their card's ink via currentColor */
-.au-bars {
-  display: flex;
-  align-items: flex-end;
-  gap: 4px;
-  height: 44px;
+/* Line-mask headline: each line slides up from an overflow-hidden mask */
+.au-lmask {
+  display: block;
+  overflow: hidden;
 }
-.au-bar {
-  flex: 1;
-  background: currentColor;
-  border-radius: 2px 2px 0 0;
-  opacity: 0.85;
+.au-lmask > span {
+  display: block;
+  transform: translateY(112%);
+  transition: transform 0.9s var(--au-ease);
+}
+.inview .au-lmask > span,
+.au-lmask.inview > span {
+  transform: none;
 }
 
-/* donut — fill fraction set via --au-donut */
-.au-donut {
-  width: 62px;
-  height: 62px;
-  border-radius: 50%;
-  background: conic-gradient(currentColor 0 var(--au-donut, 70%), rgba(15, 26, 32, 0.08) 0 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex: none;
+/* Animated media fallback: two oversized soft radial blobs translating slowly
+   (transform-only) over a flat near-black base — the handoff's sanctioned
+   no-video path. The frost above is only alive because this moves. */
+.au-media {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  background: #eceae3;
 }
-.au-donut > span {
-  width: 44px;
-  height: 44px;
+.au-media::before,
+.au-media::after {
+  content: "";
+  position: absolute;
+  width: 85vw;
+  height: 85vw;
   border-radius: 50%;
-  background: var(--au-green);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.8125rem;
-  font-weight: 700;
+}
+.au-media::before {
+  left: -25%;
+  top: -45%;
+  background: radial-gradient(circle, rgba(13, 148, 136, 0.12) 0%, transparent 62%);
+}
+.au-media::after {
+  right: -30%;
+  bottom: -55%;
+  background: radial-gradient(circle, rgba(214, 210, 196, 0.9) 0%, transparent 65%);
+}
+@keyframes auBlobA {
+  0% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(12vw, 8vh, 0); }
+  100% { transform: translate3d(0, 0, 0); }
+}
+@keyframes auBlobB {
+  0% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(-10vw, -10vh, 0); }
+  100% { transform: translate3d(0, 0, 0); }
+}
+@media (prefers-reduced-motion: no-preference) {
+  /* linear, like the marquee: ambient media loops carry no easing */
+  .au-media::before { animation: auBlobA 44s linear infinite; will-change: transform; }
+  .au-media::after { animation: auBlobB 52s linear infinite; will-change: transform; }
 }
 
 /* -------------------------------------------------------------------------
@@ -604,6 +672,17 @@ body {
 ::selection {
   background: var(--brand-soft);
   color: var(--brand-strong);
+}
+
+/* Landing: designed selection + focus (default blue rings are a junior tell) */
+.aurora ::selection {
+  background: #5eead4;
+  color: #0a0a0a;
+}
+.aurora :focus-visible {
+  outline: 1px solid var(--brand);
+  outline-offset: 3px;
+  border-radius: 2px;
 }
 
 
