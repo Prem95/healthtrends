@@ -1685,7 +1685,7 @@ function Hero() {
             animate="show"
             className="mt-6 max-w-md text-lg leading-relaxed text-ink-2"
           >
-            Log each result once. HealthTrends draws every marker as a single
+            Log each result once. bbiom draws every marker as a single
             line across the years, so a decade of blood tests reads at a glance.
           </motion.p>
           <motion.div
@@ -2175,7 +2175,7 @@ function Footer() {
         </div>
         <div className="mt-14 flex items-center justify-between border-t border-line pt-6">
           <p className="au-mono text-[0.6875rem] text-ink-3">
-            © {new Date().getFullYear()} healthtrends
+            © {new Date().getFullYear()} bbiom
           </p>
           <a href="#top" className="au-ghost text-[0.68rem]">
             back to top ↑

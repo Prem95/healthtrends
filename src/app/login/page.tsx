@@ -57,7 +57,7 @@ export default async function LoginPage({
           </div>
 
           <p className="mt-8 text-xs leading-relaxed text-ink-3">
-            HealthTrends tracks values you enter. It does not provide medical advice. Discuss
+            bbiom tracks values you enter. It does not provide medical advice. Discuss
             results with your healthcare provider.
           </p>
         </div>

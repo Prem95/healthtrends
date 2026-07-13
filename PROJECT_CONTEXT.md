@@ -1,4 +1,4 @@
-# HealthTrends — SaaS (Target B)
+# bbiom — SaaS (Target B)
 
 Personal lab-test history tracker as hosted SaaS. Specs: `~/Downloads/PRD-health-trends.md` (product) + `~/Downloads/PRD-saas-layer.md` (this layer).
 

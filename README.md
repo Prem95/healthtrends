@@ -1,9 +1,9 @@
-# HealthTrends
+# bbiom
 
 **Turn a stack of lab PDFs into a story you can actually read.**
 
 Most people collect blood test results for years and never see them as anything
-but a table of numbers on a page. HealthTrends changes that. Log the results from
+but a table of numbers on a page. bbiom changes that. Log the results from
 each test, and it shows you every biomarker as a clear line over time — in range,
 borderline, or out — so you can finally see where things are heading instead of
 decoding a printout.
@@ -37,7 +37,7 @@ recognize surfaced first.
 
 - **Your data is yours.** You can export everything (CSV or JSON) or delete your
   account, anytime, for free. No lock-in.
-- **Clarity over alarm.** HealthTrends shows you the numbers and the trend. It
+- **Clarity over alarm.** bbiom shows you the numbers and the trend. It
   isn't a diagnosis and it doesn't replace your doctor — it helps you have a
   better conversation with them.
 - **Calm by design.** No hype, no clutter. Just your own health, made legible.

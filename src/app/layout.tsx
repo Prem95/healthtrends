@@ -27,7 +27,7 @@ const jetBrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "HealthTrends | See how your body changes over the years",
+  title: "bbiom | See how your body changes over the years",
   description:
     "Log each blood test once and watch every marker as a line across the years, using the normal range from your own report. See how your body has actually changed over time.",
 };

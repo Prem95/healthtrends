@@ -1,5 +1,5 @@
 -- 0001_init.sql
--- HealthTrends schema. Mirrors the canonical data model (product PRD §9.2 /
+-- bbiom schema. Mirrors the canonical data model (product PRD §9.2 /
 -- SaaS PRD §4.1). All health data is scoped to a user via the profile chain.
 
 create extension if not exists "pgcrypto";

@@ -21,7 +21,7 @@ export function Logo({ className }: { className?: string }) {
         </svg>
       </span>
       <span className="font-display text-lg tracking-tight text-ink">
-        HealthTrends
+        bbiom
       </span>
     </span>
   );
