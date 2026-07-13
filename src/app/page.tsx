@@ -1337,7 +1337,7 @@ function ScrollStory() {
       : null;
 
   return (
-    <section id="how" className="scroll-mt-20 border-t border-line py-32 md:py-40">
+    <section id="how" className="scroll-mt-20 border-t border-line py-20 sm:py-28 md:py-40">
       <div className="mx-auto max-w-6xl px-5 sm:px-6">
         <ScrubIn y={36}>
           <span className="au-eyebrow">How it works</span>
@@ -1432,7 +1432,7 @@ const WALL: { n: string; vals: number[] }[] = [
 function MarkerWall() {
   const { ref, inView } = useInView<HTMLDivElement>(0.15);
   return (
-    <section className="border-t border-line py-32 md:py-40">
+    <section className="border-t border-line py-20 sm:py-28 md:py-40">
       <div className="mx-auto max-w-6xl px-5 sm:px-6">
         <ScrubIn y={48}>
         <div className="au-card au-card--olive relative overflow-hidden rounded-[20px] px-6 py-12 text-ink sm:px-10 md:py-16">
@@ -1559,19 +1559,23 @@ function useScrolled(threshold = 16) {
   return scrolled;
 }
 
+const NAV_LINKS: [string, string][] = [
+  ["How it works", "#how"],
+  ["The product", "#product"],
+  ["Markers", "#markers"],
+  ["Pricing", "#pricing"],
+];
+
 function Nav() {
   const scrolled = useScrolled();
-  const links: [string, string][] = [
-    ["How it works", "#how"],
-    ["The product", "#product"],
-    ["Markers", "#markers"],
-    ["Pricing", "#pricing"],
-  ];
+  const [open, setOpen] = useState(false);
+  // any nav interaction beyond the top solidifies the bar; an open menu too
+  const solid = scrolled || open;
   return (
     <header
       className={cn(
         "sticky top-0 z-30 transition-colors duration-300",
-        scrolled
+        solid
           ? "border-b border-line bg-page/80 backdrop-blur-md"
           : "border-b border-transparent",
       )}
@@ -1580,20 +1584,77 @@ function Nav() {
       <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-5 py-4 sm:px-6">
         <Logo />
         <nav className="hidden items-center gap-7 md:flex">
-          {links.map(([label, href]) => (
+          {NAV_LINKS.map(([label, href]) => (
             <a key={href} href={href} className="au-ghost text-[0.75rem]">
               {label}
             </a>
           ))}
         </nav>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
           <Link href="/login" className="au-ghost hidden text-[0.75rem] sm:inline-flex">
             Sign in
           </Link>
-          <PillLink href="/login" className="!py-2 text-[0.72rem]">
+          <PillLink href="/login" className="!py-2.5 text-[0.72rem]">
             Start free
           </PillLink>
+          {/* mobile menu toggle — functional glyph, ≥44px hit area */}
+          <button
+            type="button"
+            aria-label={open ? "Close menu" : "Open menu"}
+            aria-expanded={open}
+            onClick={() => setOpen((v) => !v)}
+            className="grid size-11 place-items-center md:hidden"
+          >
+            <span className="relative block h-3 w-5">
+              <span
+                className={cn(
+                  "absolute left-0 top-0 h-px w-5 bg-ink transition-transform duration-300",
+                  open && "translate-y-[6px] rotate-45",
+                )}
+              />
+              <span
+                className={cn(
+                  "absolute left-0 top-1.5 h-px w-5 bg-ink transition-opacity duration-200",
+                  open && "opacity-0",
+                )}
+              />
+              <span
+                className={cn(
+                  "absolute bottom-0 left-0 h-px w-5 bg-ink transition-transform duration-300",
+                  open && "-translate-y-[5px] -rotate-45",
+                )}
+              />
+            </span>
+          </button>
         </div>
+      </div>
+
+      {/* mobile menu panel */}
+      <div
+        className={cn(
+          "overflow-hidden border-t border-line bg-page/95 backdrop-blur-md transition-[max-height,opacity] duration-300 md:hidden",
+          open ? "max-h-80 opacity-100" : "max-h-0 opacity-0",
+        )}
+      >
+        <nav className="mx-auto flex max-w-6xl flex-col px-5 py-2">
+          {NAV_LINKS.map(([label, href]) => (
+            <a
+              key={href}
+              href={href}
+              onClick={() => setOpen(false)}
+              className="au-mono border-b border-line py-3.5 text-[0.8rem] tracking-[0.04em] text-ink-2 transition-colors last:border-0 hover:text-brand"
+            >
+              {label}
+            </a>
+          ))}
+          <a
+            href="/login"
+            onClick={() => setOpen(false)}
+            className="au-mono py-3.5 text-[0.8rem] tracking-[0.04em] text-ink-2 transition-colors hover:text-brand"
+          >
+            Sign in
+          </a>
+        </nav>
       </div>
     </header>
   );
@@ -1619,7 +1680,7 @@ function Hero() {
   return (
     <section className="relative overflow-hidden border-b border-line">
       <Media />
-      <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-5 pb-24 pt-20 sm:px-6 md:grid-cols-[1.05fr_1fr] md:gap-14 md:pb-32 md:pt-28 lg:gap-20">
+      <div className="relative mx-auto grid max-w-6xl items-center gap-10 px-5 pb-20 pt-16 sm:px-6 sm:pb-24 sm:pt-20 md:grid-cols-[1.05fr_1fr] md:gap-14 md:pb-32 md:pt-28 lg:gap-20">
         <div className="relative z-10 min-w-0 max-w-xl">
           <motion.span
             className="au-chip"
@@ -1635,7 +1696,7 @@ function Hero() {
             as="h1"
             lines={H1_LINES}
             delay={250}
-            className="au-hl mt-5 text-[clamp(2.7rem,1rem+5.4vw,6rem)] leading-[1.02] tracking-[-0.035em] text-ink"
+            className="au-hl mt-5 text-[clamp(2rem,1rem+4.8vw,6rem)] leading-[1.04] tracking-[-0.035em] text-ink"
           />
           <motion.p
             variants={HERO_ITEM}
@@ -1833,7 +1894,7 @@ function PhoneScreen() {
 
 function PhoneSection() {
   return (
-    <section className="scroll-mt-20 border-t border-line py-32 md:py-40">
+    <section className="scroll-mt-20 border-t border-line py-20 sm:py-28 md:py-40">
       <div className="mx-auto grid max-w-6xl items-center gap-14 px-5 sm:px-6 md:grid-cols-2 md:gap-16">
         <ScrubIn x={-44} className="min-w-0">
           <span className="au-eyebrow">The app</span>
@@ -1914,7 +1975,7 @@ function DataChip({ children }: { children: React.ReactNode }) {
    elements never share a speed, mixed directions. Damped in Parallax. */
 function FloatingCollage() {
   return (
-    <section className="relative overflow-hidden border-t border-line py-32 md:py-40">
+    <section className="relative overflow-hidden border-t border-line py-20 sm:py-28 md:py-40">
       <div className="relative mx-auto max-w-6xl px-5 sm:px-6">
         {/* scattered layer — large screens only, fixed-height stage */}
         <div className="pointer-events-none absolute inset-x-5 inset-y-0 hidden lg:block">
@@ -2019,7 +2080,7 @@ const SPLIT_ROWS: { num: string; title: string; body: string }[] = [
 
 function ProductSplit() {
   return (
-    <section id="product" className="scroll-mt-20 border-t border-line py-32 md:py-40">
+    <section id="product" className="scroll-mt-20 border-t border-line py-20 sm:py-28 md:py-40">
       <div className="mx-auto max-w-6xl px-5 sm:px-6">
         <div className="grid gap-12 md:grid-cols-2 md:gap-16">
           <div className="md:sticky md:top-24 md:h-fit">
@@ -2068,7 +2129,7 @@ function FinalCTA() {
   return (
     <section id="pricing" className="relative scroll-mt-20 overflow-hidden border-t border-line">
       <Media />
-      <div className="relative mx-auto max-w-6xl px-5 py-32 sm:px-6 md:py-40">
+      <div className="relative mx-auto max-w-6xl px-5 py-20 sm:px-6 sm:py-28 md:py-40">
         <div className="au-glass max-w-2xl rounded-[20px] px-7 py-12 sm:px-12 sm:py-14">
           <Reveal>
             <span className="au-eyebrow">Pricing</span>
@@ -2079,7 +2140,7 @@ function FinalCTA() {
               { t: "Start seeing how" },
               { t: "your body changes.", em: true },
             ]}
-            className="au-hl mt-4 text-[clamp(2.2rem,1.3rem+3vw,3.6rem)] leading-[1.06] text-ink"
+            className="au-hl mt-4 text-[clamp(1.9rem,1rem+3.4vw,3.6rem)] leading-[1.08] text-ink"
           />
           <Reveal delay={420}>
             <p className="mt-5 max-w-md text-lg text-ink-2">
