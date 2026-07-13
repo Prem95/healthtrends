@@ -76,6 +76,81 @@ export function fromCanonical(
 }
 
 /**
+ * A unit is displayable for a biomarker when it is the canonical unit or one of
+ * its known alternates. Used to validate a stored/selected display preference.
+ */
+export function isDisplayableUnit(
+  biomarker: Pick<Biomarker, "canonicalUnit" | "altUnits">,
+  unit: string,
+): boolean {
+  return conversionFactor(biomarker, unit) != null;
+}
+
+/**
+ * Resolve which unit to render a biomarker's values in: the user's preference
+ * when it is still valid for this marker, otherwise the canonical unit.
+ */
+export function resolveDisplayUnit(
+  biomarker: Pick<Biomarker, "canonicalUnit" | "altUnits">,
+  preferred: string | undefined | null,
+): string {
+  if (preferred && isDisplayableUnit(biomarker, preferred)) return preferred;
+  return biomarker.canonicalUnit;
+}
+
+/**
+ * Decimals to show for a measured value, chosen by magnitude so a converted
+ * reading keeps meaningful precision without trailing noise (5.4 mmol/L, not
+ * 5 or 5.42; 99 mg/dL, not 99.00).
+ */
+export function measuredDecimals(displayValue: number): number {
+  const a = Math.abs(displayValue);
+  if (a === 0) return 0;
+  if (a < 1) return 3;
+  if (a < 10) return 2;
+  if (a < 100) return 1;
+  return 0;
+}
+
+/** Format a value already expressed in its display unit, magnitude-aware. */
+export function formatMeasured(displayValue: number): string {
+  if (!Number.isFinite(displayValue)) return "n/a";
+  const decimals = measuredDecimals(displayValue);
+  const rounded = Number(displayValue.toFixed(decimals));
+  return rounded.toLocaleString(undefined, { maximumFractionDigits: decimals });
+}
+
+/**
+ * Convert a canonical value into `displayUnit` and format it. Falls back to the
+ * canonical unit when `displayUnit` is unknown for this biomarker.
+ */
+export function formatInUnit(
+  biomarker: Pick<Biomarker, "canonicalUnit" | "altUnits">,
+  canonicalValue: number,
+  displayUnit: string,
+): string {
+  const unit = resolveDisplayUnit(biomarker, displayUnit);
+  return formatMeasured(fromCanonical(biomarker, canonicalValue, unit));
+}
+
+/**
+ * Convert a canonical range's bounds into a display unit. Linear conversion, so
+ * status/ordering are unaffected — this is for labels only.
+ */
+export function rangeInUnit(
+  biomarker: Pick<Biomarker, "canonicalUnit" | "altUnits">,
+  range: RefRange | null | undefined,
+  displayUnit: string,
+): RefRange | null {
+  if (!range || (range.min == null && range.max == null)) return null;
+  const unit = resolveDisplayUnit(biomarker, displayUnit);
+  const out: RefRange = {};
+  if (range.min != null) out.min = fromCanonical(biomarker, range.min, unit);
+  if (range.max != null) out.max = fromCanonical(biomarker, range.max, unit);
+  return out;
+}
+
+/**
  * Midpoint of a canonical range, used as the plausibility anchor.
  * For one-sided ranges we use the single bound as the anchor.
  */

@@ -6,7 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { StatusBadge, Badge } from "@/components/ui/status-badge";
 import { Sparkline } from "@/components/charts/sparkline";
-import { formatDate, formatNumber } from "@/lib/utils";
+import { formatDate } from "@/lib/utils";
 import {
   CATEGORY_LABEL,
   statusTone,
@@ -20,13 +20,14 @@ type Item = {
   name: string;
   aliases: string[];
   category: BiomarkerCategory;
-  canonicalUnit: string;
   isCustom: boolean;
   archived: boolean;
 };
 
 type Latest = {
-  value: number | null;
+  hasValue: boolean;
+  valueLabel: string | null;
+  unit: string;
   date: string | null;
   status: ResultStatus;
   count: number;
@@ -165,11 +166,11 @@ export function BiomarkerBrowser({
                           className="hidden shrink-0 sm:block"
                         />
                       )}
-                      {latest?.value != null ? (
+                      {latest?.hasValue ? (
                         <>
                           <span className="au-num shrink-0 text-[13px] text-ink-3">
-                            {formatNumber(latest.value)}{" "}
-                            <span className="text-ink-3/70">{b.canonicalUnit}</span>
+                            {latest.valueLabel}{" "}
+                            <span className="text-ink-3/70">{latest.unit}</span>
                           </span>
                           <StatusBadge status={latest.status} className="shrink-0" />
                         </>

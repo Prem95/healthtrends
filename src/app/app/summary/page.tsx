@@ -3,7 +3,9 @@ import { redirect } from "next/navigation";
 import {
   getActiveProfile,
   getBiomarkers,
+  getCustomRanges,
   getResults,
+  getUnitPreferences,
   getUser,
 } from "@/lib/data";
 import { getPlan } from "@/lib/entitlements";
@@ -11,15 +13,24 @@ import { summarize } from "@/lib/analytics";
 import { DISCLAIMER_TEXT } from "@/components/disclaimer";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Reveal } from "@/components/motion/reveal";
-import { formatDate, formatNumber } from "@/lib/utils";
-import { STATUS_LABEL, TREND_LABEL, statusTone, type RefRange } from "@/lib/domain";
+import { formatDate } from "@/lib/utils";
+import {
+  STATUS_LABEL,
+  formatInUnit,
+  formatMeasured,
+  rangeInUnit,
+  resolveDisplayUnit,
+  statusTone,
+  type RefRange,
+} from "@/lib/domain";
 import { PrintButton } from "@/components/summary/print-button";
 
+// Formats a range whose bounds are already in the display unit.
 function fmtRange(r: RefRange | null): string {
   if (!r || (r.min == null && r.max == null)) return "n/a";
-  if (r.min != null && r.max != null) return `${formatNumber(r.min)}–${formatNumber(r.max)}`;
-  if (r.max != null) return `< ${formatNumber(r.max)}`;
-  return `> ${formatNumber(r.min!)}`;
+  if (r.min != null && r.max != null) return `${formatMeasured(r.min)}–${formatMeasured(r.max)}`;
+  if (r.max != null) return `< ${formatMeasured(r.max)}`;
+  return `> ${formatMeasured(r.min!)}`;
 }
 
 /**
@@ -42,7 +53,12 @@ export default async function DoctorSummaryPage({
   const months = windowParam === "6m" ? 6 : windowParam === "3y" ? 36 : windowParam === "all" ? null : 12;
 
   const profile = (await getActiveProfile())!;
-  const [biomarkers, results] = await Promise.all([getBiomarkers(), getResults(profile.id)]);
+  const [biomarkers, results, unitPrefs, customRanges] = await Promise.all([
+    getBiomarkers(),
+    getResults(profile.id),
+    getUnitPreferences(),
+    getCustomRanges(profile.id),
+  ]);
 
   const cutoff = months
     ? (() => {
@@ -53,7 +69,9 @@ export default async function DoctorSummaryPage({
     : null;
 
   const filtered = cutoff ? results.filter((r) => r.sessionDate >= cutoff) : results;
-  const summaries = summarize(filtered, biomarkers, profile.sex).filter((s) => s.latest);
+  const summaries = summarize(filtered, biomarkers, profile.sex, customRanges).filter(
+    (s) => s.latest,
+  );
   const flagged = summaries
     .filter((s) => statusTone(s.latestStatus) !== "in-range" && statusTone(s.latestStatus) !== "neutral")
     .sort((a, b) => (statusTone(a.latestStatus) === "out" ? -1 : 1) - (statusTone(b.latestStatus) === "out" ? -1 : 1));
@@ -130,8 +148,14 @@ export default async function DoctorSummaryPage({
                         {s.biomarker.name}
                       </span>
                       <span className="au-num text-[13px] text-ink">
-                        {formatNumber(s.latest!.value)}{" "}
-                        <span className="text-ink-3">{s.biomarker.canonicalUnit}</span>
+                        {formatInUnit(
+                          s.biomarker,
+                          s.latest!.value,
+                          resolveDisplayUnit(s.biomarker, unitPrefs[s.biomarker.id]),
+                        )}{" "}
+                        <span className="text-ink-3">
+                          {resolveDisplayUnit(s.biomarker, unitPrefs[s.biomarker.id])}
+                        </span>
                       </span>
                       <StatusBadge status={s.latestStatus} />
                     </li>
@@ -146,7 +170,7 @@ export default async function DoctorSummaryPage({
             <table className="mt-2 w-full text-sm">
               <thead>
                 <tr className="border-b border-line-strong text-left">
-                  {["Marker", "Latest", "Date", "Reference", "Status", "Trend"].map((h) => (
+                  {["Marker", "Latest", "Date", "Reference", "Status"].map((h) => (
                     <th
                       key={h}
                       className="py-2 pr-3 font-mono text-[10px] font-medium uppercase tracking-[0.07em] text-ink-3"
@@ -157,27 +181,22 @@ export default async function DoctorSummaryPage({
                 </tr>
               </thead>
               <tbody>
-                {summaries.map((s) => (
+                {summaries.map((s) => {
+                  const displayUnit = resolveDisplayUnit(s.biomarker, unitPrefs[s.biomarker.id]);
+                  return (
                   <tr key={s.biomarker.id} className="border-b border-line">
                     <td className="py-2.5 pr-3 font-medium text-ink">{s.biomarker.name}</td>
                     <td className="py-2.5 pr-3 tnum text-ink">
-                      {formatNumber(s.latest!.value)} {s.biomarker.canonicalUnit}
+                      {formatInUnit(s.biomarker, s.latest!.value, displayUnit)} {displayUnit}
                     </td>
                     <td className="py-2.5 pr-3 tnum text-ink-2">{formatDate(s.latest!.date)}</td>
-                    <td className="py-2.5 pr-3 tnum text-ink-2">{fmtRange(s.latest!.appliedRange)}</td>
-                    <td className="py-2.5 pr-3 text-ink-2">{STATUS_LABEL[s.latestStatus]}</td>
-                    <td className="py-2.5 text-ink-2">
-                      {TREND_LABEL[s.trend.direction]}
-                      {s.trend.deltaPct != null && (
-                        <span className="tnum">
-                          {" "}
-                          ({s.trend.deltaPct > 0 ? "+" : ""}
-                          {formatNumber(s.trend.deltaPct, 1)}%)
-                        </span>
-                      )}
+                    <td className="py-2.5 pr-3 tnum text-ink-2">
+                      {fmtRange(rangeInUnit(s.biomarker, s.latest!.appliedRange, displayUnit))}
                     </td>
+                    <td className="py-2.5 pr-3 text-ink-2">{STATUS_LABEL[s.latestStatus]}</td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           </Reveal>

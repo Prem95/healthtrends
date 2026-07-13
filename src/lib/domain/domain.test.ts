@@ -4,6 +4,10 @@ import {
   toCanonical,
   fromCanonical,
   conversionFactor,
+  resolveDisplayUnit,
+  formatMeasured,
+  formatInUnit,
+  rangeInUnit,
 } from "./units";
 import {
   computeStatus,
@@ -86,6 +90,70 @@ describe("unit conversion", () => {
   });
 });
 
+describe("display unit resolution + formatting", () => {
+  it("resolves a valid preferred unit, falls back to canonical otherwise", () => {
+    expect(resolveDisplayUnit(glucose, "mmol/L")).toBe("mmol/L");
+    expect(resolveDisplayUnit(glucose, "mg/dL")).toBe("mg/dL");
+    expect(resolveDisplayUnit(glucose, "banana")).toBe("mg/dL"); // unknown → canonical
+    expect(resolveDisplayUnit(glucose, undefined)).toBe("mg/dL");
+    expect(resolveDisplayUnit(hdl, "mmol/L")).toBe("mg/dL"); // no such alt → canonical
+  });
+
+  it("formats measured values with magnitude-aware precision", () => {
+    expect(formatMeasured(99)).toBe("99");
+    expect(formatMeasured(5.4)).toBe("5.4");
+    expect(formatMeasured(0.87)).toBe("0.87");
+  });
+
+  it("converts a canonical value into the display unit before formatting", () => {
+    // 97.3 mg/dL glucose ≈ 5.4 mmol/L
+    expect(formatInUnit(glucose, 97.3, "mmol/L")).toBe("5.4");
+    // canonical unit is a no-op conversion
+    expect(formatInUnit(glucose, 99, "mg/dL")).toBe("99");
+  });
+
+  it("converts range bounds into the display unit", () => {
+    const r = rangeInUnit(glucose, { min: 70, max: 99 }, "mmol/L");
+    expect(r?.min).toBeCloseTo(70 / 18.0182, 3);
+    expect(r?.max).toBeCloseTo(99 / 18.0182, 3);
+    // one-sided range keeps the missing bound undefined
+    const one = rangeInUnit(ldl, { max: 100 }, "mmol/L");
+    expect(one?.min).toBeUndefined();
+    expect(one?.max).toBeCloseTo(100 / 38.67, 3);
+    expect(rangeInUnit(glucose, null, "mmol/L")).toBeNull();
+  });
+});
+
+describe("custom range precedence (labRange > custom > default)", () => {
+  it("custom range overrides the catalog default", () => {
+    const r = resolveRange(null, { min: 80, max: 120 }, glucose.defaultRanges, "F");
+    expect(r.range).toEqual({ min: 80, max: 120 });
+  });
+
+  it("a per-result lab range still wins over a custom range", () => {
+    const r = resolveRange({ min: 65, max: 95 }, { min: 80, max: 120 }, glucose.defaultRanges, "F");
+    expect(r.range).toEqual({ min: 65, max: 95 });
+  });
+
+  it("computeStatus flags against the custom range, not the default", () => {
+    // 105 is HIGH against the default 70–99, but IN_RANGE with a custom 70–120.
+    expect(computeStatus({ value: 105, biomarker: glucose, profileSex: "F" }).status).toBe("HIGH");
+    expect(
+      computeStatus({
+        value: 105,
+        customRange: { min: 70, max: 120 },
+        biomarker: glucose,
+        profileSex: "F",
+      }).status,
+    ).toBe("IN_RANGE");
+  });
+
+  it("an empty custom range falls through to the default", () => {
+    const r = resolveRange(null, null, glucose.defaultRanges, "F");
+    expect(r.range).toEqual({ min: 70, max: 99 });
+  });
+});
+
 describe("status — two-sided range", () => {
   const status = (v: number) =>
     computeStatus({ value: v, biomarker: glucose, profileSex: "F" }).status;
@@ -114,7 +182,7 @@ describe("status — one-sided range (LDL < 100)", () => {
     expect(status(80)).toBe("IN_RANGE");
   });
   it("resolveRange returns single-bound range, min stays undefined", () => {
-    const r = resolveRange(null, ldl.defaultRanges, "M");
+    const r = resolveRange(null, null, ldl.defaultRanges, "M");
     expect(r.range?.max).toBe(100);
     expect(r.range?.min).toBeUndefined();
   });

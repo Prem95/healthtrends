@@ -178,6 +178,40 @@ export async function getWatched(profileId: string): Promise<string[]> {
   return (data ?? []).map((w) => w.biomarker_id);
 }
 
+/**
+ * A profile's custom reference ranges, as biomarkerId → { min?, max? } in
+ * canonical units. Overrides catalog defaults (but not a per-result lab range).
+ */
+export async function getCustomRanges(profileId: string): Promise<Record<string, RefRange>> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("custom_ranges")
+    .select("biomarker_id, min, max")
+    .eq("profile_id", profileId);
+  const out: Record<string, RefRange> = {};
+  for (const row of data ?? []) {
+    const range: RefRange = {};
+    if (row.min != null) range.min = Number(row.min);
+    if (row.max != null) range.max = Number(row.max);
+    if (range.min != null || range.max != null) out[row.biomarker_id] = range;
+  }
+  return out;
+}
+
+/**
+ * The current user's display-unit choices, as biomarkerId → unit. RLS scopes
+ * the table to the signed-in user, so no explicit user filter is needed.
+ */
+export async function getUnitPreferences(): Promise<Record<string, string>> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("unit_preferences")
+    .select("biomarker_id, display_unit");
+  const out: Record<string, string> = {};
+  for (const row of data ?? []) out[row.biomarker_id] = row.display_unit;
+  return out;
+}
+
 /** Count of all sessions across the user's profiles — for free-tier limits. */
 export async function countAllSessions(): Promise<number> {
   const supabase = await createClient();

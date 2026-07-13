@@ -2,17 +2,20 @@ import Link from "next/link";
 import {
   getActiveProfile,
   getBiomarkers,
+  getCustomRanges,
   getLifeEvents,
   getResults,
   getSessions,
+  getUnitPreferences,
 } from "@/lib/data";
 import { summarize } from "@/lib/analytics";
+import { formatInUnit, resolveDisplayUnit } from "@/lib/domain";
 import { addLifeEvent, deleteLifeEvent, deleteSession } from "@/app/app/actions";
 import { StatusBadge, Badge } from "@/components/ui/status-badge";
 import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/input";
 import { Reveal } from "@/components/motion/reveal";
-import { formatDate, formatNumber, todayISO } from "@/lib/utils";
+import { formatDate, todayISO } from "@/lib/utils";
 
 /*
   The timeline as the handoff's numbered accordion: hairline-divided rows
@@ -21,22 +24,25 @@ import { formatDate, formatNumber, todayISO } from "@/lib/utils";
 */
 export default async function TimelinePage() {
   const profile = (await getActiveProfile())!;
-  const [sessions, results, biomarkers, events] = await Promise.all([
+  const [sessions, results, biomarkers, events, unitPrefs, customRanges] = await Promise.all([
     getSessions(profile.id),
     getResults(profile.id),
     getBiomarkers(),
     getLifeEvents(profile.id),
+    getUnitPreferences(),
+    getCustomRanges(profile.id),
   ]);
 
-  const summaries = summarize(results, biomarkers, profile.sex);
-  const pointsBySession = new Map<string, { name: string; unit: string; value: number; status: import("@/lib/domain").ResultStatus; resultId: string; biomarkerId: string }[]>();
+  const summaries = summarize(results, biomarkers, profile.sex, customRanges);
+  const pointsBySession = new Map<string, { name: string; unit: string; valueLabel: string; status: import("@/lib/domain").ResultStatus; resultId: string; biomarkerId: string }[]>();
   for (const s of summaries) {
+    const displayUnit = resolveDisplayUnit(s.biomarker, unitPrefs[s.biomarker.id]);
     for (const p of s.points) {
       if (!pointsBySession.has(p.sessionId)) pointsBySession.set(p.sessionId, []);
       pointsBySession.get(p.sessionId)!.push({
         name: s.biomarker.name,
-        unit: s.biomarker.canonicalUnit,
-        value: p.value,
+        unit: displayUnit,
+        valueLabel: formatInUnit(s.biomarker, p.value, displayUnit),
         status: p.status,
         resultId: p.resultId,
         biomarkerId: s.biomarker.id,
@@ -190,7 +196,7 @@ export default async function TimelinePage() {
                             </Link>
                             <span className="flex shrink-0 items-center gap-3">
                               <span className="au-num text-[13px] text-ink-2">
-                                {formatNumber(r.value)} {r.unit}
+                                {r.valueLabel} {r.unit}
                               </span>
                               <StatusBadge status={r.status} />
                             </span>

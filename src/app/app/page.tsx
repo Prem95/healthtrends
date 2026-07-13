@@ -2,13 +2,15 @@ import Link from "next/link";
 import {
   getActiveProfile,
   getBiomarkers,
+  getCustomRanges,
   getResults,
   getSessions,
+  getUnitPreferences,
   getWatched,
 } from "@/lib/data";
 import { summarize, isOutOfRange, isBorderline, type BiomarkerSummary } from "@/lib/analytics";
-import { formatDate, formatNumber } from "@/lib/utils";
-import { statusTone } from "@/lib/domain";
+import { formatDate } from "@/lib/utils";
+import { formatInUnit, resolveDisplayUnit, statusTone } from "@/lib/domain";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Button } from "@/components/ui/button";
 import { Sparkline } from "@/components/charts/sparkline";
@@ -30,14 +32,16 @@ const TONE_VAR: Record<string, string> = {
 
 export default async function DashboardPage() {
   const profile = (await getActiveProfile())!;
-  const [biomarkers, results, sessions, watched] = await Promise.all([
+  const [biomarkers, results, sessions, watched, unitPrefs, customRanges] = await Promise.all([
     getBiomarkers(),
     getResults(profile.id),
     getSessions(profile.id),
     getWatched(profile.id),
+    getUnitPreferences(),
+    getCustomRanges(profile.id),
   ]);
 
-  const summaries = summarize(results, biomarkers, profile.sex);
+  const summaries = summarize(results, biomarkers, profile.sex, customRanges);
   const byId = new Map(summaries.map((s) => [s.biomarker.id, s]));
 
   const watchedSummaries = watched
@@ -109,15 +113,21 @@ export default async function DashboardPage() {
       </Reveal>
 
       {watchedSummaries.length > 0 && (
-        <MarkerSection title="Watching" items={watchedSummaries} showValue />
+        <MarkerSection title="Watching" items={watchedSummaries} unitPrefs={unitPrefs} showValue />
       )}
 
       {attention.length > 0 && (
-        <MarkerSection title="Needs attention" items={attention} />
+        <MarkerSection title="Needs attention" items={attention} unitPrefs={unitPrefs} />
       )}
 
       {others.length > 0 && (
-        <MarkerSection title="All other markers · A–Z" items={others} showValue quietSpark />
+        <MarkerSection
+          title="All other markers · A–Z"
+          items={others}
+          unitPrefs={unitPrefs}
+          showValue
+          quietSpark
+        />
       )}
 
       {recentSession && (
@@ -174,11 +184,13 @@ function SummaryStat({
 function MarkerSection({
   title,
   items,
+  unitPrefs,
   showValue = false,
   quietSpark = false,
 }: {
   title: string;
   items: BiomarkerSummary[];
+  unitPrefs: Record<string, string>;
   showValue?: boolean;
   quietSpark?: boolean;
 }) {
@@ -188,7 +200,7 @@ function MarkerSection({
       <ul className="mt-1">
         {items.map((s) => (
           <li key={s.biomarker.id}>
-            <MarkerRow s={s} showValue={showValue} quietSpark={quietSpark} />
+            <MarkerRow s={s} unitPrefs={unitPrefs} showValue={showValue} quietSpark={quietSpark} />
           </li>
         ))}
       </ul>
@@ -200,15 +212,18 @@ function MarkerSection({
    Hover indents and tints the name — the handoff's row interaction. */
 function MarkerRow({
   s,
+  unitPrefs,
   showValue,
   quietSpark,
 }: {
   s: BiomarkerSummary;
+  unitPrefs: Record<string, string>;
   showValue: boolean;
   quietSpark: boolean;
 }) {
   const tone = statusTone(s.latestStatus);
   const spark = s.points.slice(-8).map((p) => p.value);
+  const displayUnit = resolveDisplayUnit(s.biomarker, unitPrefs[s.biomarker.id]);
   return (
     <Link
       href={`/app/biomarkers/${s.biomarker.id}`}
@@ -227,8 +242,8 @@ function MarkerRow({
       )}
       {showValue && s.latest && (
         <span className="au-num shrink-0 text-[13px] text-ink-3">
-          {formatNumber(s.latest.value)}{" "}
-          <span className="text-ink-3/70">{s.biomarker.canonicalUnit}</span>
+          {formatInUnit(s.biomarker, s.latest.value, displayUnit)}{" "}
+          <span className="text-ink-3/70">{displayUnit}</span>
         </span>
       )}
       <StatusBadge status={s.latestStatus} className="shrink-0" />

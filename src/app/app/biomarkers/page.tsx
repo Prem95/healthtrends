@@ -1,25 +1,39 @@
-import { getActiveProfile, getBiomarkers, getResults } from "@/lib/data";
+import {
+  getActiveProfile,
+  getBiomarkers,
+  getCustomRanges,
+  getResults,
+  getUnitPreferences,
+} from "@/lib/data";
 import { summarize } from "@/lib/analytics";
+import { formatInUnit, resolveDisplayUnit } from "@/lib/domain";
 import { BiomarkerBrowser } from "@/components/biomarkers/biomarker-browser";
 
 export default async function AllBiomarkersPage() {
   const profile = (await getActiveProfile())!;
-  const [biomarkers, results] = await Promise.all([
+  const [biomarkers, results, unitPrefs, customRanges] = await Promise.all([
     getBiomarkers(),
     getResults(profile.id),
+    getUnitPreferences(),
+    getCustomRanges(profile.id),
   ]);
-  const summaries = summarize(results, biomarkers, profile.sex);
+  const summaries = summarize(results, biomarkers, profile.sex, customRanges);
   const latestById = Object.fromEntries(
-    summaries.map((s) => [
-      s.biomarker.id,
-      {
-        value: s.latest?.value ?? null,
-        date: s.latest?.date ?? null,
-        status: s.latestStatus,
-        count: s.points.length,
-        spark: s.points.slice(-8).map((p) => p.value),
-      },
-    ]),
+    summaries.map((s) => {
+      const displayUnit = resolveDisplayUnit(s.biomarker, unitPrefs[s.biomarker.id]);
+      return [
+        s.biomarker.id,
+        {
+          hasValue: !!s.latest,
+          valueLabel: s.latest ? formatInUnit(s.biomarker, s.latest.value, displayUnit) : null,
+          unit: displayUnit,
+          date: s.latest?.date ?? null,
+          status: s.latestStatus,
+          count: s.points.length,
+          spark: s.points.slice(-8).map((p) => p.value),
+        },
+      ];
+    }),
   );
 
   return (
@@ -36,7 +50,6 @@ export default async function AllBiomarkersPage() {
             name: b.name,
             aliases: b.aliases,
             category: b.category,
-            canonicalUnit: b.canonicalUnit,
             isCustom: b.isCustom,
             archived: b.archived,
           }))}

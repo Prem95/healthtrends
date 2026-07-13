@@ -25,19 +25,24 @@ export type ResolvedRange = {
 };
 
 /**
- * Resolve which range applies to a result:
- *   labRange (if present) always wins — it is the range printed on the report.
- *   Otherwise pick from catalog defaults using the profile's sex.
+ * Resolve which range applies to a result, in priority order:
+ *   1. labRange — the range printed on that specific report — always wins.
+ *   2. customRange — the profile's own override for this marker.
+ *   3. catalog defaults, picked by the profile's sex.
  *
  * All ranges are assumed to be in the biomarker's canonical unit.
  */
 export function resolveRange(
   labRange: RefRange | null | undefined,
+  customRange: RefRange | null | undefined,
   defaultRanges: RefRange[],
   profileSex: Sex,
 ): ResolvedRange {
   if (hasBound(labRange)) {
     return { range: labRange as RefRange, ambiguousSex: false };
+  }
+  if (hasBound(customRange)) {
+    return { range: customRange as RefRange, ambiguousSex: false };
   }
 
   const bounded = (defaultRanges ?? []).filter(hasBound);
@@ -93,13 +98,14 @@ export function statusForRange(
 export function computeStatus(args: {
   value: number; // canonical
   labRange?: RefRange | null; // canonical
+  customRange?: RefRange | null; // canonical, profile override
   biomarker: Pick<Biomarker, "defaultRanges">;
   profileSex: Sex;
   fraction?: number;
 }): { status: ResultStatus; appliedRange: RefRange | null; ambiguousSex: boolean } {
-  const { value, labRange, biomarker, profileSex } = args;
+  const { value, labRange, customRange, biomarker, profileSex } = args;
   const fraction = args.fraction ?? DEFAULT_BORDERLINE_FRACTION;
-  const resolved = resolveRange(labRange, biomarker.defaultRanges, profileSex);
+  const resolved = resolveRange(labRange, customRange, biomarker.defaultRanges, profileSex);
 
   if (resolved.ambiguousSex) {
     return { status: "NO_RANGE", appliedRange: null, ambiguousSex: true };

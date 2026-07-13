@@ -51,6 +51,12 @@ export const lifeEventSchema = z.object({
 });
 export type LifeEventInput = z.infer<typeof lifeEventSchema>;
 
+export const displayUnitSchema = z.object({
+  biomarkerId: z.string().min(1),
+  unit: z.string().trim().min(1).max(32),
+});
+export type DisplayUnitInput = z.infer<typeof displayUnitSchema>;
+
 export const customBiomarkerSchema = z.object({
   name: z.string().trim().min(1).max(80),
   category: z.enum([

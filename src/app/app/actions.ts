@@ -13,14 +13,17 @@ import {
   resultInputSchema,
   lifeEventSchema,
   customBiomarkerSchema,
+  displayUnitSchema,
 } from "@/lib/validation";
 import {
   conversionFactor,
   checkPlausibility,
+  isDisplayableUnit,
+  parseDecimal,
   type Biomarker,
   type RefRange,
 } from "@/lib/domain";
-import { ACTIVE_PROFILE_COOKIE } from "@/lib/data";
+import { ACTIVE_PROFILE_COOKIE, getBiomarker } from "@/lib/data";
 
 async function requireUser() {
   const user = await getUser();
@@ -331,6 +334,87 @@ export async function toggleWatch(formData: FormData): Promise<void> {
       .insert({ profile_id: profileId, biomarker_id: biomarkerId });
   }
   revalidatePath("/app");
+}
+
+// -------------------- Display-unit preference --------------------
+
+/**
+ * Set (or clear) the user's preferred display unit for a biomarker. Selecting
+ * the canonical unit clears the row so the table only holds real overrides.
+ */
+export async function setDisplayUnit(biomarkerId: string, unit: string): Promise<void> {
+  const user = await requireUser();
+  const parsed = displayUnitSchema.safeParse({ biomarkerId, unit });
+  if (!parsed.success) return;
+
+  const biomarker = await getBiomarker(parsed.data.biomarkerId);
+  if (!biomarker || !isDisplayableUnit(biomarker, parsed.data.unit)) return;
+
+  const supabase = await createClient();
+  const canonical = biomarker.canonicalUnit.trim().toLowerCase();
+  if (parsed.data.unit.trim().toLowerCase() === canonical) {
+    await supabase
+      .from("unit_preferences")
+      .delete()
+      .eq("user_id", user.id)
+      .eq("biomarker_id", parsed.data.biomarkerId);
+  } else {
+    await supabase.from("unit_preferences").upsert({
+      user_id: user.id,
+      biomarker_id: parsed.data.biomarkerId,
+      display_unit: parsed.data.unit,
+      updated_at: new Date().toISOString(),
+    });
+  }
+  revalidatePath("/app");
+}
+
+// -------------------- Custom reference range --------------------
+
+/**
+ * Set or clear a profile's custom reference range for a biomarker. Min/max are
+ * entered in `unit` and stored canonical. Leaving both blank clears the
+ * override so the catalog default applies again.
+ */
+export async function setCustomRange(formData: FormData): Promise<void> {
+  await requireUser();
+  const profileId = z.string().uuid().parse(formData.get("profileId"));
+  const biomarkerId = z.string().min(1).parse(formData.get("biomarkerId"));
+  const unit = String(formData.get("unit") ?? "");
+  const min = parseDecimal(String(formData.get("min") ?? ""));
+  const max = parseDecimal(String(formData.get("max") ?? ""));
+
+  const supabase = await createClient();
+  const dest = `/app/biomarkers/${biomarkerId}`;
+
+  // Both blank → clear any override.
+  if (min == null && max == null) {
+    await supabase
+      .from("custom_ranges")
+      .delete()
+      .eq("profile_id", profileId)
+      .eq("biomarker_id", biomarkerId);
+    revalidatePath("/app");
+    redirect(dest);
+  }
+
+  const biomarker = await getBiomarker(biomarkerId);
+  if (!biomarker) redirect(`${dest}?error=invalid`);
+  const canonical = rangeToCanonical(biomarker, unit, min ?? undefined, max ?? undefined);
+  if (!canonical) redirect(dest);
+  if (canonical.min != null && canonical.max != null && canonical.min > canonical.max) {
+    redirect(`${dest}?error=range_order`);
+  }
+
+  await supabase.from("custom_ranges").upsert({
+    profile_id: profileId,
+    biomarker_id: biomarkerId,
+    min: canonical.min ?? null,
+    max: canonical.max ?? null,
+    updated_at: new Date().toISOString(),
+  });
+  revalidatePath("/app");
+  redirect(dest);
 }
 
 // -------------------- Custom biomarkers --------------------

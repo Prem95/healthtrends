@@ -259,7 +259,7 @@ export function NewSessionForm({
             <tbody className="divide-y divide-line">
               {rows.map((row, i) => {
                 const b = byId.get(row.biomarkerId)!;
-                const resolved = resolveRange(null, b.defaultRanges, profileSex);
+                const resolved = resolveRange(null, null, b.defaultRanges, profileSex);
                 const hint = resolved.range
                   ? resolved.range.min != null && resolved.range.max != null
                     ? `${formatNumber(resolved.range.min)}–${formatNumber(resolved.range.max)}`

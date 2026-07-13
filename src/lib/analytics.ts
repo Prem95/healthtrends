@@ -42,6 +42,7 @@ export function summarize(
   results: ResultWithSession[],
   biomarkers: (Biomarker & { archived?: boolean })[],
   profileSex: Sex,
+  customRanges: Record<string, RefRange> = {},
   fraction?: number,
 ): BiomarkerSummary[] {
   const byId = new Map<string, Biomarker & { archived?: boolean }>();
@@ -57,6 +58,7 @@ export function summarize(
   for (const [biomarkerId, rows] of grouped) {
     const biomarker = byId.get(biomarkerId);
     if (!biomarker) continue;
+    const customRange = customRanges[biomarkerId] ?? null;
 
     const sorted = [...rows].sort((a, b) => {
       const d = a.sessionDate.localeCompare(b.sessionDate);
@@ -68,6 +70,7 @@ export function summarize(
       const { status, appliedRange } = computeStatus({
         value: r.value,
         labRange: r.labRange,
+        customRange,
         biomarker,
         profileSex,
         fraction,
@@ -90,7 +93,12 @@ export function summarize(
 
     // Band uses the most recent applicable range. Fall back to catalog if the
     // latest point had no lab range.
-    const resolved = resolveRange(latest?.appliedRange ?? null, biomarker.defaultRanges, profileSex);
+    const resolved = resolveRange(
+      latest?.appliedRange ?? null,
+      customRange,
+      biomarker.defaultRanges,
+      profileSex,
+    );
     const bandRange = latest?.appliedRange ?? resolved.range;
 
     out.push({

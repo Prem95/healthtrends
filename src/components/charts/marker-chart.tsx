@@ -1,9 +1,9 @@
 "use client";
 
 import { useMemo, useRef, useState } from "react";
-import { cn, formatDate, formatNumber } from "@/lib/utils";
+import { cn, formatDate } from "@/lib/utils";
 import type { RefRange, LifeEvent, ResultStatus } from "@/lib/domain";
-import { STATUS_LABEL } from "@/lib/domain";
+import { STATUS_LABEL, formatMeasured } from "@/lib/domain";
 import type { SeriesPoint } from "@/lib/analytics";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { RangeBar } from "@/components/charts/range-bar";
@@ -41,12 +41,13 @@ function isoToTs(iso: string): number {
   return Date.UTC(y, m - 1, d);
 }
 
-function fmtRange(r: RefRange | null | undefined): string | null {
+// Canonical bounds in, display-unit label out (divide by the display factor).
+function fmtRange(r: RefRange | null | undefined, factor: number): string | null {
   if (!r || (r.min == null && r.max == null)) return null;
-  if (r.min != null && r.max != null)
-    return `${formatNumber(r.min)}–${formatNumber(r.max)}`;
-  if (r.max != null) return `< ${formatNumber(r.max)}`;
-  return `> ${formatNumber(r.min!)}`;
+  const d = (v: number) => formatMeasured(v / factor);
+  if (r.min != null && r.max != null) return `${d(r.min)}–${d(r.max)}`;
+  if (r.max != null) return `< ${d(r.max)}`;
+  return `> ${d(r.min!)}`;
 }
 
 // Plot geometry (viewBox units; the svg itself is fluid)
@@ -57,6 +58,7 @@ const M = { t: 18, r: 14, b: 28, l: 46 };
 export function MarkerChart({
   name,
   unit,
+  displayFactor = 1,
   points,
   bandRange,
   sexBands,
@@ -64,11 +66,15 @@ export function MarkerChart({
 }: {
   name: string;
   unit: string;
+  /** Divide canonical values by this to render them in `unit`. */
+  displayFactor?: number;
   points: SeriesPoint[];
   bandRange: RefRange | null;
   sexBands?: RefRange[];
   events: LifeEvent[];
 }) {
+  // Values/geometry stay canonical; only printed labels convert to `unit`.
+  const toDisplay = (v: number) => formatMeasured(v / displayFactor);
   const [win, setWin] = useState<WindowKey>("all");
   const [hover, setHover] = useState<number | null>(null);
   const [everHovered, setEverHovered] = useState(false);
@@ -155,7 +161,7 @@ export function MarkerChart({
     ? { y1: bandRange.min ?? domain.min, y2: bandRange.max ?? domain.max }
     : null;
 
-  const target = fmtRange(bandRange);
+  const target = fmtRange(bandRange, displayFactor);
 
   function selectWindow(k: WindowKey) {
     if (k === win) return;
@@ -207,9 +213,9 @@ export function MarkerChart({
           aria-live="polite"
         >
           {scrubbed || everHovered ? (
-            formatNumber(shown.value)
+            toDisplay(shown.value)
           ) : (
-            <CountUp value={latest.value} startDelay={250} />
+            <CountUp value={latest.value / displayFactor} startDelay={250} />
           )}
         </span>
         <span className="mk-pop" style={{ "--d": "1150ms" } as React.CSSProperties}>
@@ -220,7 +226,9 @@ export function MarkerChart({
         {scrubbed ? (
           <>
             {formatDate(shown.date)}
-            {fmtRange(shown.appliedRange) && <> · range {fmtRange(shown.appliedRange)}</>}
+            {fmtRange(shown.appliedRange, displayFactor) && (
+              <> · range {fmtRange(shown.appliedRange, displayFactor)}</>
+            )}
             {shown.labName && <> · {shown.labName}</>}
           </>
         ) : (
@@ -258,7 +266,7 @@ export function MarkerChart({
       <figure
         className="mt-4"
         role="img"
-        aria-label={`${name} over time: ${data.length} measurements, latest ${formatNumber(latest.value)} ${unit} (${STATUS_LABEL[latest.status]})`}
+        aria-label={`${name} over time: ${data.length} measurements, latest ${toDisplay(latest.value)} ${unit} (${STATUS_LABEL[latest.status]})`}
       >
         {data.length === 0 ? (
           <p className="border-t border-line py-10 text-sm text-ink-3">
@@ -321,7 +329,7 @@ export function MarkerChart({
                   fontFamily="var(--font-mono)"
                   className="tnum"
                 >
-                  {formatNumber(v)}
+                  {toDisplay(v)}
                 </text>
               </g>
             ))}
