@@ -121,7 +121,7 @@ export default async function BiomarkerDetailPage({
   const chrono = s.points;
 
   return (
-    <div className="max-w-3xl space-y-10">
+    <div className="mx-auto max-w-3xl space-y-10">
       <Reveal className="flex items-center justify-between gap-3">
         <Link
           href="/app/biomarkers"

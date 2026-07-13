@@ -23,7 +23,7 @@ export default async function AllBiomarkersPage() {
   );
 
   return (
-    <div className="max-w-3xl">
+    <div className="mx-auto max-w-3xl">
       <h1 className="au-mono text-[13px] text-ink">Browse</h1>
       <p className="au-mono mt-2 text-[11px] text-ink-3">
         The built-in catalog plus your custom markers · anything with history links to its

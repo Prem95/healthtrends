@@ -38,7 +38,7 @@ export default async function SettingsPage({
   const canAddProfile = profiles.length < plan.limits.maxProfiles;
 
   return (
-    <div className="max-w-2xl space-y-14">
+    <div className="mx-auto max-w-2xl space-y-14">
       <Reveal as="header">
         <h1 className="au-mono text-[13px] text-ink">Settings</h1>
         <p className="au-mono mt-2 text-[11px] text-ink-3">{user.email}</p>

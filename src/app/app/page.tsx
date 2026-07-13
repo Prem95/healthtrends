@@ -71,7 +71,7 @@ export default async function DashboardPage() {
   }
 
   return (
-    <div className="max-w-3xl space-y-12">
+    <div className="mx-auto max-w-3xl space-y-12">
       {/* Header: mono title + the one accent action */}
       <Reveal as="header">
         <div className="flex items-baseline justify-between gap-4">

@@ -64,7 +64,7 @@ export default async function TimelinePage() {
   }
 
   return (
-    <div className="max-w-3xl space-y-10">
+    <div className="mx-auto max-w-3xl space-y-10">
       <Reveal as="header">
         <div className="flex items-baseline justify-between gap-4">
           <h1 className="au-mono text-[13px] text-ink">Timeline</h1>

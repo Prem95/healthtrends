@@ -18,7 +18,7 @@ export default async function NewSessionPage() {
     Number.isFinite(plan.limits.maxSessions) && sessionCount >= plan.limits.maxSessions;
 
   return (
-    <div className="max-w-3xl">
+    <div className="mx-auto max-w-3xl">
       <h1 className="au-mono text-[13px] text-ink">Log a test</h1>
       <p className="au-mono mt-2 text-[11px] text-ink-3">
         {profile.name} · only the date is required · add whichever markers your report
