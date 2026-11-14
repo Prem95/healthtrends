@@ -1,51 +1,50 @@
 /**
- * Data-bearing mini trend for markers with ≥2 values (never decoration).
- * Stroke colour carries the marker's status; inside a Reveal the line draws
- * left→right via the shared .draw-line hook.
+ * Mini trend for markers with ≥2 values. The line stays in a quiet neutral so
+ * a list of them reads as texture; only the latest point wears the marker's
+ * status colour (ringed in the surface so it stays legible on the line).
  */
 export function Sparkline({
   values,
-  stroke = "var(--ink-3)",
-  draw = false,
+  tone = "var(--neutral-status)",
+  width = 76,
+  height = 26,
   className,
 }: {
   values: number[];
-  /** CSS colour — pass the status token, e.g. "var(--out)". */
-  stroke?: string;
-  /** Draw on when an ancestor Reveal adds .inview. */
-  draw?: boolean;
+  /** CSS colour for the latest point — pass the status token. */
+  tone?: string;
+  width?: number;
+  height?: number;
   className?: string;
 }) {
-  const w = 64;
-  const h = 22;
+  if (values.length < 2) return null;
+  const pad = 6;
   const min = Math.min(...values);
   const max = Math.max(...values);
   const span = max - min || 1;
-  const pts = values
-    .map((v, i) => {
-      const x = (i / (values.length - 1)) * (w - 4) + 2;
-      const y = h - 3 - ((v - min) / span) * (h - 6);
-      return `${x},${y}`;
-    })
-    .join(" ");
+  const pts = values.map((v, i) => {
+    const x = pad + (i / (values.length - 1)) * (width - pad * 2);
+    const y = height - pad - ((v - min) / span) * (height - pad * 2);
+    return [x, y] as const;
+  });
+  const [lx, ly] = pts[pts.length - 1];
   return (
     <svg
-      width={w}
-      height={h}
-      viewBox={`0 0 ${w} ${h}`}
+      width={width}
+      height={height}
+      viewBox={`0 0 ${width} ${height}`}
       className={className}
       aria-hidden
     >
       <polyline
-        points={pts}
+        points={pts.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(" ")}
         fill="none"
-        stroke={stroke}
+        stroke="var(--neutral-status)"
         strokeWidth="1.5"
         strokeLinecap="round"
         strokeLinejoin="round"
-        pathLength={1}
-        className={draw ? "draw-line" : undefined}
       />
+      <circle cx={lx} cy={ly} r="4.5" fill={tone} stroke="var(--paper)" strokeWidth="2" />
     </svg>
   );
 }

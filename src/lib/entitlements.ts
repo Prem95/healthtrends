@@ -1,23 +1,9 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 
-export type Plan = "free" | "pro";
+import { PLAN_LIMITS, type Entitlement, type Plan } from "@/lib/plan-limits";
 
-export type Entitlement = {
-  plan: Plan;
-  status: string;
-  currentPeriodEnd: string | null;
-  pastDue: boolean;
-  limits: {
-    maxProfiles: number;
-    maxSessions: number; // total sessions across all profiles; Infinity for pro
-    doctorSummary: boolean;
-  };
-};
-
-export const PLAN_LIMITS: Record<Plan, Entitlement["limits"]> = {
-  free: { maxProfiles: 1, maxSessions: 20, doctorSummary: false },
-  pro: { maxProfiles: 6, maxSessions: Infinity, doctorSummary: true },
-};
+export { PLAN_LIMITS };
+export type { Entitlement, Plan };
 
 /**
  * Single source of truth for a user's plan. Used by BOTH UI gating and API

@@ -1,13 +1,12 @@
 import { cn } from "@/lib/utils";
 import type { ResultStatus } from "@/lib/domain";
-import { statusTone } from "@/lib/domain";
+import { formatMeasured, statusTone } from "@/lib/domain";
 
 /*
-  A calm, data-bearing status visual: a hairline track with the normal-range
-  band shaded, and a single status-coloured dot at the value's position. It
-  answers "where does this sit, and how far out?" at a glance — far more
-  informative than a repeated status pill, and it echoes the landing's shaded
-  reference band. Colour stays reserved for data.
+  Where a value sits against its reference range: a thin track, the range
+  shaded as a band, one status-coloured dot for the value. It answers "inside
+  or outside, and by how much?" before any number is read. With `labels`, the
+  range limits are printed under the band's edges.
 */
 
 const DOT_TONE: Record<string, string> = {
@@ -22,12 +21,18 @@ export function RangeBar({
   min,
   max,
   status,
+  labels = false,
+  displayFactor = 1,
   className,
 }: {
   value: number;
   min?: number;
   max?: number;
   status: ResultStatus;
+  /** Print the range limits beneath the band. */
+  labels?: boolean;
+  /** Divide canonical bounds by this for the printed labels. */
+  displayFactor?: number;
   className?: string;
 }) {
   const hasMin = typeof min === "number";
@@ -68,25 +73,39 @@ export function RangeBar({
   const pos = (v: number) => Math.max(0, Math.min(100, ((v - ax0) / span) * 100));
   const left = pos(bandL);
   const right = pos(bandR);
-  const dot = pos(value);
+  const dot = Math.max(2, Math.min(98, pos(value)));
   const tone = statusTone(status);
+  const fmt = (v: number) => formatMeasured(v / displayFactor);
 
   return (
-    <div
-      className={cn("relative h-1.5 w-full rounded-full bg-paper-3", className)}
-      aria-hidden
-    >
-      <div
-        className="absolute inset-y-0 rounded-full bg-in-range-soft"
-        style={{ left: `${left}%`, right: `${100 - right}%` }}
-      />
-      <div
-        className={cn(
-          "absolute top-1/2 size-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full ring-2 ring-page transition-[left] duration-300",
-          DOT_TONE[tone],
-        )}
-        style={{ left: `${dot}%` }}
-      />
+    <div className={cn("w-full", className)} aria-hidden>
+      <div className="relative h-1.5 w-full rounded-full bg-paper-3">
+        <div
+          className="absolute inset-y-0 rounded-full bg-in-range/30"
+          style={{ left: `${left}%`, right: `${100 - right}%` }}
+        />
+        <div
+          className={cn(
+            "absolute top-1/2 size-3 -translate-x-1/2 -translate-y-1/2 rounded-full ring-2 ring-paper transition-[left] duration-300",
+            DOT_TONE[tone],
+          )}
+          style={{ left: `${dot}%` }}
+        />
+      </div>
+      {labels && (
+        <div className="relative mt-1.5 h-4 text-[0.6875rem] text-ink-3 tnum">
+          {hasMin && (
+            <span className="absolute -translate-x-1/2" style={{ left: `${left}%` }}>
+              {fmt(min!)}
+            </span>
+          )}
+          {hasMax && (
+            <span className="absolute -translate-x-1/2" style={{ left: `${right}%` }}>
+              {fmt(max!)}
+            </span>
+          )}
+        </div>
+      )}
     </div>
   );
 }

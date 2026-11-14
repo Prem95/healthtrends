@@ -3,31 +3,29 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 /*
-  Alethia button language: every button is uppercase mono with tracking.
-  Primary is the light pill (off-white fill, hover → accent); secondary is a
-  hairline ghost whose border tints accent; solid accent is reserved for the
-  one CTA per screen that IS the point (e.g. "Share as PDF").
+  Buttons are sentence-case sans, 500 weight. Primary is solid ink (one per
+  view); secondary is a hairline outline; ghost is text only. Evergreen appears
+  on hover and focus, never as a resting fill.
 */
 const buttonVariants = cva(
-  "inline-flex cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-[10px] font-mono uppercase tracking-[0.05em] transition-[background-color,color,border-color] duration-300 focus-visible:outline focus-visible:outline-1 focus-visible:outline-brand focus-visible:outline-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:size-4 [&_svg]:shrink-0",
+  "inline-flex cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-[10px] font-medium transition-[background-color,color,border-color] duration-300 disabled:pointer-events-none disabled:opacity-50 [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
       variant: {
-        primary: "bg-ink text-page hover:bg-brand hover:text-[#0a0a0a]",
+        primary: "bg-ink text-page hover:bg-brand",
         secondary:
-          "border border-rule bg-transparent text-ink-2 hover:border-brand hover:text-ink",
-        ghost: "text-ink-3 hover:text-brand",
-        subtle: "bg-brand-soft text-brand hover:bg-brand/25",
-        accent: "bg-brand text-[#0a0a0a] hover:bg-brand-strong",
+          "border border-line-strong bg-paper text-ink hover:border-brand hover:text-brand",
+        ghost: "text-ink-2 hover:bg-paper-2 hover:text-ink",
+        subtle: "bg-brand-soft text-brand-strong hover:bg-brand-tint",
         danger:
-          "border border-out/40 bg-transparent text-out hover:border-out hover:bg-out-soft",
-        link: "text-brand underline underline-offset-4 hover:text-brand-strong p-0 h-auto",
+          "border border-out/40 bg-paper text-out-ink hover:border-out hover:bg-out-soft",
+        link: "h-auto p-0 text-brand underline underline-offset-4 hover:text-brand-strong",
       },
       size: {
-        sm: "h-8 px-3 text-[0.75rem]",
-        md: "h-10 px-4 text-[0.8125rem]",
-        lg: "h-12 px-6 text-[0.875rem]",
-        icon: "h-9 w-9 text-[0.875rem]",
+        sm: "h-8 px-3 text-[0.8125rem]",
+        md: "h-10 px-4 text-sm",
+        lg: "h-12 px-6 text-[0.9375rem]",
+        icon: "size-9 text-sm",
       },
     },
     defaultVariants: { variant: "primary", size: "md" },

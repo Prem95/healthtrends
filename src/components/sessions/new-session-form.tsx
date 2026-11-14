@@ -2,6 +2,7 @@
 
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { X } from "lucide-react";
 import { createSession, type SessionActionState } from "@/app/app/actions";
 import { Button } from "@/components/ui/button";
 import { Input, Label, Select, Textarea } from "@/components/ui/input";
@@ -141,11 +142,13 @@ export function NewSessionForm({
   const duplicates = serverState.duplicateBiomarkerIds ?? [];
 
   return (
-    <div className="max-w-3xl space-y-8">
+    <div className="space-y-5">
       {/* Session metadata */}
-      <section className="grid gap-4 sm:grid-cols-2">
+      <section className="card p-5 sm:p-6">
+        <h2 className="text-base font-medium text-ink">About this test</h2>
+        <div className="mt-4 grid gap-4 sm:grid-cols-2">
         <div>
-          <Label htmlFor="date">Collection date *</Label>
+          <Label htmlFor="date">Collection date</Label>
           <Input
             id="date"
             type="date"
@@ -193,43 +196,45 @@ export function NewSessionForm({
             placeholder="Anything worth remembering about this test"
           />
         </div>
+        </div>
       </section>
 
-      {/* Panel shortcuts */}
-      <section>
-        <p className="au-eyebrow border-t border-line pt-3">Panel shortcuts</p>
-        <div className="mt-3 flex flex-wrap gap-2">
+      {/* Panel shortcuts + single-marker search */}
+      <section className="card p-5 sm:p-6">
+        <h2 className="text-base font-medium text-ink">Add the markers on your report</h2>
+        <p className="mt-1 text-[0.8125rem] text-ink-3">
+          Start with a panel to add its usual rows at once, then add anything else by name.
+        </p>
+        <div className="mt-4 flex flex-wrap gap-2">
           {PANELS.map((p) => (
             <button
               key={p.id}
               type="button"
               onClick={() => addPanel(p.id)}
-              className="cursor-pointer rounded-[6px] border border-rule px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.05em] text-ink-2 transition-colors duration-300 hover:border-brand hover:text-ink"
+              className="cursor-pointer rounded-full border border-line-strong bg-paper px-3 py-1.5 text-[0.8125rem] font-medium text-ink-2 transition-colors duration-300 hover:border-brand hover:text-brand"
             >
               + {p.name}
             </button>
           ))}
         </div>
-      </section>
 
-      {/* Marker search */}
-      <section>
+        <div className="mt-5 border-t border-line pt-5">
         <Label htmlFor="marker-search">Add a single marker</Label>
-        <div className="relative">
+        <div className="relative max-w-md">
           <Input
             id="marker-search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search by name or alias: ldl, a1c, tsh"
+            placeholder="Search by name or abbreviation — LDL, A1c, TSH"
           />
           {searchResults.length > 0 && (
-            <ul className="absolute z-10 mt-1 w-full overflow-hidden rounded-[8px] border border-line-strong bg-paper">
+            <ul className="absolute z-10 mt-1 w-full overflow-hidden rounded-[10px] border border-line-strong bg-paper">
               {searchResults.map((b) => (
                 <li key={b.id}>
                   <button
                     type="button"
                     onClick={() => addBiomarker(b)}
-                    className="flex w-full items-center justify-between px-3 py-2 text-left text-sm hover:bg-paper-2"
+                    className="flex w-full cursor-pointer items-center justify-between px-3 py-2 text-left text-sm hover:bg-brand-tint"
                   >
                     <span className="text-ink">{b.name}</span>
                     <span className="text-xs text-ink-3">{b.canonicalUnit}</span>
@@ -239,24 +244,28 @@ export function NewSessionForm({
             </ul>
           )}
         </div>
+        </div>
       </section>
 
       {/* Value grid */}
       {rows.length > 0 && (
-        <section className="au-card overflow-x-auto">
-          <table className="w-full min-w-[640px] text-sm">
-            <thead>
-              <tr className="border-b border-line bg-paper-2 text-left font-mono text-[10px] uppercase tracking-[0.07em] text-ink-3">
-                <th className="px-3 py-2.5 font-medium">Marker</th>
+        <section className="card overflow-x-auto">
+          <h2 className="px-5 pb-3 pt-5 text-base font-medium text-ink">
+            Results <span className="ml-1 font-normal text-ink-3 tnum">{rows.length}</span>
+          </h2>
+          <table className="block w-full text-sm sm:table sm:min-w-[640px]">
+            <thead className="hidden sm:table-header-group">
+              <tr className="border-y border-line bg-paper-2 text-left text-xs text-ink-3">
+                <th className="px-5 py-2.5 font-medium">Marker</th>
                 <th className="px-3 py-2.5 font-medium">Value</th>
                 <th className="px-3 py-2.5 font-medium">Unit</th>
                 <th className="px-3 py-2.5 font-medium" colSpan={2}>
-                  Lab range (from your report, optional)
+                  Range printed on your report (optional)
                 </th>
                 <th className="px-3 py-2.5" />
               </tr>
             </thead>
-            <tbody className="divide-y divide-line">
+            <tbody className="block divide-y divide-line border-t border-line sm:table-row-group sm:border-t-0">
               {rows.map((row, i) => {
                 const b = byId.get(row.biomarkerId)!;
                 const resolved = resolveRange(null, null, b.defaultRanges, profileSex);
@@ -264,18 +273,21 @@ export function NewSessionForm({
                   ? resolved.range.min != null && resolved.range.max != null
                     ? `${formatNumber(resolved.range.min)}–${formatNumber(resolved.range.max)}`
                     : resolved.range.max != null
-                      ? `< ${formatNumber(resolved.range.max)}`
-                      : `> ${formatNumber(resolved.range.min!)}`
+                      ? `under ${formatNumber(resolved.range.max)}`
+                      : `over ${formatNumber(resolved.range.min!)}`
                   : null;
                 return (
-                  <tr key={row.biomarkerId}>
-                    <td className="px-3 py-2">
+                  <tr
+                    key={row.biomarkerId}
+                    className="flex flex-wrap items-center gap-x-2 gap-y-2 px-5 py-3 sm:table-row sm:p-0"
+                  >
+                    <td className="block w-full p-0 sm:table-cell sm:w-auto sm:px-5 sm:py-2">
                       <p className="font-medium text-ink">{b.name}</p>
                       {hint && (
-                        <p className="text-xs text-ink-3 tnum">typical {hint} {b.canonicalUnit}</p>
+                        <p className="text-xs text-ink-3 tnum">usual range {hint} {b.canonicalUnit}</p>
                       )}
                     </td>
-                    <td className="px-3 py-2">
+                    <td className="block p-0 sm:table-cell sm:px-3 sm:py-2">
                       <Input
                         inputMode="decimal"
                         value={row.valueText}
@@ -290,7 +302,7 @@ export function NewSessionForm({
                         aria-label={`${b.name} value`}
                       />
                     </td>
-                    <td className="px-3 py-2">
+                    <td className="block flex-1 p-0 sm:table-cell sm:px-3 sm:py-2">
                       {b.altUnits.length > 0 ? (
                         <Select
                           value={row.unit}
@@ -309,17 +321,18 @@ export function NewSessionForm({
                         <span className="text-ink-3">{b.canonicalUnit}</span>
                       )}
                     </td>
-                    <td className="py-2 pl-3 pr-1">
+                    <td className="order-last block p-0 sm:order-none sm:table-cell sm:py-2 sm:pl-3 sm:pr-1">
+                      <span className="mr-2 text-xs text-ink-3 sm:hidden">Range on report</span>
                       <Input
                         inputMode="decimal"
                         value={row.labMinText}
                         onChange={(e) => updateRow(i, { labMinText: e.target.value })}
-                        className="h-9 w-20 tnum"
+                        className="inline-flex h-9 w-20 tnum"
                         placeholder="min"
                         aria-label={`${b.name} lab range minimum`}
                       />
                     </td>
-                    <td className="py-2 pr-3 pl-1">
+                    <td className="order-last block p-0 sm:order-none sm:table-cell sm:py-2 sm:pl-1 sm:pr-3">
                       <Input
                         inputMode="decimal"
                         value={row.labMaxText}
@@ -329,7 +342,7 @@ export function NewSessionForm({
                         aria-label={`${b.name} lab range maximum`}
                       />
                     </td>
-                    <td className="px-2 py-2">
+                    <td className="block p-0 sm:table-cell sm:px-2 sm:py-2">
                       <Button
                         type="button"
                         variant="ghost"
@@ -337,7 +350,7 @@ export function NewSessionForm({
                         onClick={() => removeRow(i)}
                         aria-label={`Remove ${b.name}`}
                       >
-                        ×
+                        <X aria-hidden />
                       </Button>
                     </td>
                   </tr>
@@ -350,7 +363,7 @@ export function NewSessionForm({
 
       {/* Plausibility confirmation */}
       {needsConfirm.length > 0 && (
-        <section className="au-card border-borderline/30 bg-borderline-soft p-5">
+        <section className="card border-borderline/40 bg-borderline-soft p-5">
           <p className="font-medium text-ink">Double-check these values</p>
           <ul className="mt-2 space-y-2 text-sm text-ink-2">
             {needsConfirm.map((c) => {
@@ -404,7 +417,7 @@ export function NewSessionForm({
 
       {/* Duplicate warning: warn, never block */}
       {duplicates.length > 0 && (
-        <section className="au-card border-borderline/30 bg-borderline-soft p-5">
+        <section className="card border-borderline/40 bg-borderline-soft p-5">
           <p className="font-medium text-ink">Possible duplicates</p>
           <p className="mt-1 text-sm text-ink-2">
             {duplicates
@@ -431,21 +444,23 @@ export function NewSessionForm({
       )}
 
       {serverState.error && (
-        <p className="rounded-[8px] border border-out/25 bg-out-soft px-3 py-2 text-sm text-out">
+        <p className="rounded-lg bg-out-soft px-3 py-2 text-sm text-out-ink">
           {serverState.error}
         </p>
       )}
 
-      <div className="flex items-center gap-3 border-t border-line pt-5">
+      <div className="flex flex-wrap items-center gap-3 pt-2">
         <Button
           type="button"
           onClick={() => submit()}
           disabled={pending || !date || invalidRows.length > 0}
         >
-          ＋ {pending ? "Saving…" : `Save session${filledRows.length ? ` (${filledRows.length} results)` : ""}`}
+          {pending
+            ? "Saving…"
+            : `Save test${filledRows.length ? ` · ${filledRows.length} result${filledRows.length === 1 ? "" : "s"}` : ""}`}
         </Button>
         {invalidRows.length > 0 && (
-          <p className="text-sm text-out">Some values are not numbers yet.</p>
+          <p className="text-sm text-out-ink">Some values are not numbers yet.</p>
         )}
       </div>
     </div>

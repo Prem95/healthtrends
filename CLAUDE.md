@@ -5,57 +5,71 @@
 ### Users
 People tracking their own bloodwork over time — health-conscious adults, patients
 managing a condition, and families keeping several profiles. They arrive with a
-PDF or a printout of lab results and want to understand a trend, not decode a
-table. Context is calm and considered, not urgent: reviewing history at home,
+PDF or a printout of lab results (which they type in) and want to understand a
+trend, not decode a table. Context is calm and considered, not urgent: reviewing history at home,
 before or after a doctor's visit.
 
 ### Brand Personality
-**Calm, editorial, trustworthy.** Voice is plain and human — "your lab's range,
-not a textbook one," never clinical jargon or hype. It should feel like a quiet
-magazine spread that happens to be full of your own live data. Evokes clarity and
-quiet confidence, never alarm.
+**Calm, clear, trustworthy.** Voice is plain and human — "your lab's range,
+not a textbook one," never clinical jargon or hype. It should feel like a
+well-kept personal record: everything legible, nothing shouting. Evokes clarity
+and quiet confidence, never alarm.
 
 ### Aesthetic Direction
-**Data-science editorial**, extracted from the "Alethia" system (Framer,
-Awwwards-nominated) and recolored for a clinical product. The landing runs the
-**light theme**: warm off-white canvas `#F0EFEA` (never pure white); near-black
-ink `#16160f`; a **single clinical teal accent** (`#0d9488`, deepened so it
-reads on white) reserved for data values, badges and interactive/hover states
-only — everything else is grayscale. (The system is dual-theme; the dark variant
-is near-black `#070707` / off-white `#f2f2ee` / teal `#5EEAD4`.) A tight neo-grotesque (Google Sans)
-carries display headlines at **weight 500 max, sentence case** (bold headlines
-are an instant tell); **all metadata, labels, nav links and buttons are
-uppercase JetBrains Mono** with tracking (mono never exceeds 14px except as a
-data value). Hairline rules (`#1e1e1c`) separate sections; **no shadows and no
-gradients** — flat fills only (the drifting `au-media` blobs are the one
-sanctioned exception, standing in for video); depth comes from frosted-glass
-blur over that moving media and from the rules themselves. Punctuation is
-typeset: real em-dashes, `SpO₂`-style subscripts, tabular numerals. Two radius
-families only: 4–6px chips, 16–20px cards. The product's green/amber/red status hues stay
-vivid and are reserved for *data*, never decoration. One easing curve everywhere:
-`cubic-bezier(0.22, 1, 0.36, 1)` (expo-out) — nothing bounces or overshoots.
-**Anti-references:** serif display headlines (the most-cited AI tell), AI-purple
-gradients, template clones, glossy status pills, decorative accent (teal on
-anything that isn't data or a hover state), pure `#000`/`#fff`, fake browser
-chrome, default easings (`ease`, `ease-in-out`, `linear` — except the marquee).
+**"Clear chart": a health record you can read at arm's length.** Product-led,
+not agency-editorial: every marketing preview is the real app component over
+sample data, and the same screens are public at `/demo`. Light theme
+throughout: warm paper canvas `#F5F4EF` (never pure white), white cards on
+hairlines, evergreen-black ink `#13231F`. **Interaction colour is deep
+evergreen `#0F5C4D`** (links, focus, active nav); primary buttons are solid
+ink. **The only vivid colour on any screen is the status of a result** —
+in range `#0A8F6C`, borderline `#D07C00`, out `#D1345B` (validated for
+colour-blind separation and ≥3:1 on white) — and status is **never colour
+alone**: each state has its own shape (dot / diamond / arrow up or down /
+hollow ring) and a plain label. One grotesque (Google Sans) carries
+everything: display headings at **weight 500 max, sentence case**; **all UI
+text — nav, buttons, labels — is sentence-case sans, 12px minimum** (no
+uppercase-mono controls: this audience includes older readers). JetBrains
+Mono is reserved for two things only: the small uppercase section kicker
+(`.eyebrow`) and the unit beside a reading (`.unit`). Hairlines separate;
+**no shadows, no gradients** — depth is surface + hairline. Punctuation is
+typeset: real en-dashes in ranges, `10³/µL`-style superscripts
+(`prettyUnit`), tabular numerals in columns (proportional on big standalone
+readings). Radii: 10px controls, 16px cards, pill chips. One easing curve
+everywhere: `cubic-bezier(0.22, 1, 0.36, 1)` — nothing bounces.
+**Anti-references:** serif or bold display headlines, AI-purple gradients,
+decorative use of status colours, uppercase-mono buttons and nav, tiny
+(<12px) labels, pure `#000`/`#fff`, fake browser chrome or phone mock-ups,
+marquees, parallax, scroll-jacking, health "scores" or alarm language.
 
 ### Design Principles
-1. **Show the line, don't describe it.** One biomarker read as a single line over
-   years is the hero visual — a real chart inside a frosted instrument panel.
-2. **One accent, grayscale everything else.** Teal appears only on data, badges,
-   or interaction. Green/amber/red mean in-range / borderline / out, on data only.
-3. **Instrument-grade metadata.** Uppercase mono labels, numbered rows, mono
-   readings; headline-driven layout with sparse body copy (~640px measure).
-4. **Signature patterns.** Line-mask headline reveals, a numbered one-open
-   accordion, a sticky split, a marquee divider, and a floating parallax collage.
-5. **Quiet, single-curve motion.** Fade-up + line-mask on entry (once), 0.25–0.35s
-   hovers, frosted glass alive over drifting media. Always honor
-   `prefers-reduced-motion` (media paused, parallax off, content visible).
+1. **Show the product, with real components.** Landing previews, the auth
+   side panel and `/demo` all render the app's own components over
+   `lib/demo` — never a drawn mock-up.
+2. **Status is the only colour, and never alone.** Green/amber/red appear on
+   results only, always with the status shape and a label. Chart text wears
+   ink tokens, never the status colour.
+3. **Answer "how am I doing?" first.** Overview leads with one figure (N of M
+   in range), then only what needs a closer look as cards, then everything
+   else folded into body systems. Detail leads with the reading, then the
+   line, then the same data as a table.
+4. **One line per marker.** Reference range as a shaded band, each test a
+   status-shaped point, life events as labelled rules, a legend under the
+   plot. Pointing or arrow keys move the reading block to that test.
+5. **Plain words, honest claims.** "In range / Borderline / High / Low", "your
+   lab's range, not a textbook one". Marketing copy states only what the
+   product does today (no PDF import, no diagnosis).
+6. **Quiet, single-curve motion.** Fade-up on entry (once), a line that
+   draws, 0.25–0.3s hovers. Motion is armed only under
+   `prefers-reduced-motion: no-preference` *and* `scripting: enabled`, so
+   content is never hidden from anyone.
 
-> Landing implementation lives in `src/app/page.tsx`; the Alethia token +
-> component layer is the scoped `.aurora` block in `src/app/globals.css` (swap
-> those tokens to rebrand). The landing runs the light theme top to bottom.
-> The product app (`/app`, `/login`, `/onboarding`) runs the same light theme
-> on the "Marker" screen anatomy; the dark variant is fully tokenized in the
-> `.aurora[data-theme="dark"]` block — set `data-theme="dark"` on a surface
-> root to flip it.
+> Tokens and component classes (`.card`, `.chip`, `.seg`, `.eyebrow`, `.acc`,
+> `.reveal`) live in `src/app/globals.css` — tokens on `:root`, a
+> `[data-theme="dark"]` block for the one inverted band (landing privacy
+> section), component classes inside `@layer components` so utilities win.
+> Landing: `src/app/page.tsx` (+ `src/components/landing/`). Product screens
+> are shared views in `src/components/views/` rendered by both `/app` (real
+> data, editable) and `/demo` (sample data, read-only) via `ViewCtx`; the
+> frame is `src/components/app/app-shell.tsx` (sidebar on desktop, top bar +
+> tab bar on mobile). Sample data: `src/lib/demo.ts`.

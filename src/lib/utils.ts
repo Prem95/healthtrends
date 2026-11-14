@@ -5,6 +5,11 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+/** Typeset a unit for display: 10^3/µL → 10³/µL. Never use for stored values. */
+export function prettyUnit(unit: string): string {
+  return unit.replace(/\^(\d)/g, (_, d: string) => "⁰¹²³⁴⁵⁶⁷⁸⁹"[Number(d)]);
+}
+
 /** Format a number for display with sensible precision (no trailing noise). */
 export function formatNumber(n: number, maxDecimals = 2): string {
   if (!Number.isFinite(n)) return "n/a";

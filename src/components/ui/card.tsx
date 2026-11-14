@@ -1,9 +1,9 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 
-/* Flat surface: 16px radius, hairline border, no shadow — depth is rules. */
+/* Flat surface: white on the paper canvas, 16px radius, hairline, no shadow. */
 export function Card({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn("au-card", className)} {...props} />;
+  return <div className={cn("card", className)} {...props} />;
 }
 
 export function CardHeader({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
@@ -13,7 +13,7 @@ export function CardHeader({ className, ...props }: React.HTMLAttributes<HTMLDiv
 export function CardTitle({ className, ...props }: React.HTMLAttributes<HTMLHeadingElement>) {
   return (
     <h3
-      className={cn("au-hl text-lg leading-tight text-ink", className)}
+      className={cn("text-base font-medium leading-tight text-ink", className)}
       {...props}
     />
   );

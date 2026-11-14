@@ -3,26 +3,67 @@ import type { ResultStatus, TrendDirection } from "@/lib/domain";
 import { STATUS_LABEL, statusTone } from "@/lib/domain";
 
 /*
-  Status pills per the handoff: mono uppercase 10px, 5px radius, tinted fill
-  with the status hue as text. Terse on the face ("Drifting"), full label on
-  aria/title. Colour stays reserved for data.
+  Status is never colour alone. Each state has its own shape — a dot for in
+  range, a diamond for borderline, an arrow pointing the way a value has left
+  its range — plus a plain-language label in ink.
 */
 
-const TONE_PILL: Record<string, string> = {
-  "in-range": "bg-in-range-soft text-in-range",
-  borderline: "bg-borderline-soft text-borderline-ink",
-  out: "bg-out-soft text-out",
-  neutral: "bg-paper-3 text-ink-2",
+export type Tone = "in-range" | "borderline" | "out" | "neutral";
+
+export const TONE_VAR: Record<Tone, string> = {
+  "in-range": "var(--in-range)",
+  borderline: "var(--borderline)",
+  out: "var(--out)",
+  neutral: "var(--neutral-status)",
 };
 
-const SHORT_LABEL: Record<ResultStatus, string> = {
+const TONE_FILL: Record<Tone, string> = {
+  "in-range": "bg-in-range-soft",
+  borderline: "bg-borderline-soft",
+  out: "bg-out-soft",
+  neutral: "bg-paper-3",
+};
+
+export const SHORT_LABEL: Record<ResultStatus, string> = {
   LOW: "Low",
   HIGH: "High",
   IN_RANGE: "In range",
-  BORDERLINE_LOW: "Drifting",
-  BORDERLINE_HIGH: "Drifting",
+  BORDERLINE_LOW: "Borderline low",
+  BORDERLINE_HIGH: "Borderline high",
   NO_RANGE: "No range",
 };
+
+/** The shape that stands for a status, drawn in its status colour. */
+export function StatusGlyph({
+  status,
+  size = 10,
+  className,
+}: {
+  status: ResultStatus;
+  size?: number;
+  className?: string;
+}) {
+  const fill = TONE_VAR[statusTone(status)];
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 10 10"
+      className={cn("shrink-0", className)}
+      aria-hidden
+    >
+      {status === "IN_RANGE" && <circle cx="5" cy="5" r="4" fill={fill} />}
+      {(status === "BORDERLINE_HIGH" || status === "BORDERLINE_LOW") && (
+        <path d="M5 0.5 9.5 5 5 9.5 0.5 5Z" fill={fill} />
+      )}
+      {status === "HIGH" && <path d="M5 1 9.5 9H0.5Z" fill={fill} />}
+      {status === "LOW" && <path d="M5 9 0.5 1h9Z" fill={fill} />}
+      {status === "NO_RANGE" && (
+        <circle cx="5" cy="5" r="3.25" fill="none" stroke={fill} strokeWidth="1.5" />
+      )}
+    </svg>
+  );
+}
 
 export function StatusBadge({
   status,
@@ -31,13 +72,12 @@ export function StatusBadge({
   status: ResultStatus;
   className?: string;
 }) {
-  const tone = statusTone(status);
   return (
     <span
-      className={cn("au-pill", TONE_PILL[tone], className)}
+      className={cn("chip", TONE_FILL[statusTone(status)], className)}
       title={STATUS_LABEL[status]}
-      aria-label={STATUS_LABEL[status]}
     >
+      <StatusGlyph status={status} />
       {SHORT_LABEL[status]}
     </span>
   );
@@ -54,14 +94,12 @@ export function Badge({
 }) {
   const map: Record<string, string> = {
     neutral: "bg-paper-3 text-ink-2",
-    brand: "bg-brand-soft text-brand",
-    "in-range": "bg-in-range-soft text-in-range",
-    borderline: "bg-borderline-soft text-borderline-ink",
-    out: "bg-out-soft text-out",
+    brand: "bg-brand-soft text-brand-strong",
+    "in-range": "bg-in-range-soft text-ink",
+    borderline: "bg-borderline-soft text-ink",
+    out: "bg-out-soft text-ink",
   };
-  return (
-    <span className={cn("au-pill gap-1", map[tone], className)}>{children}</span>
-  );
+  return <span className={cn("chip chip--plain", map[tone], className)}>{children}</span>;
 }
 
 const ARROW: Record<TrendDirection, string> = {
@@ -72,5 +110,5 @@ const ARROW: Record<TrendDirection, string> = {
 };
 
 export function TrendArrow({ direction }: { direction: TrendDirection }) {
-  return <span className="tnum tabular-nums">{ARROW[direction]}</span>;
+  return <span aria-hidden>{ARROW[direction]}</span>;
 }

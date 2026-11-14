@@ -1,28 +1,27 @@
 import { cn } from "@/lib/utils";
 
 /**
- * Wordmark set like a stamp on a lab form: a square-ruled mark holding a
- * plotted line, next to the serif name and a small ascending-trend glyph.
+ * Wordmark: an ink tile holding one plotted line that settles into range,
+ * beside the name. The mark is the product in miniature.
  */
-export function Logo({ className }: { className?: string }) {
+export function Logo({ className, compact = false }: { className?: string; compact?: boolean }) {
   return (
-    <span className={cn("inline-flex items-center gap-2.5 select-none", className)}>
-      <span className="grid size-8 place-items-center rounded-sm border-2 border-ink bg-paper text-ink">
+    <span className={cn("inline-flex select-none items-center gap-2.5", className)}>
+      <span className="grid size-8 place-items-center rounded-[9px] bg-ink text-page">
         <svg viewBox="0 0 24 24" className="size-5" fill="none" aria-hidden>
           <path
-            d="M4 16.5 9 11l3.5 3L20 6"
+            d="M4 15.5 8.5 9l4 5 3-3.5H20"
             stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="square"
-            strokeLinejoin="miter"
+            strokeWidth="1.9"
+            strokeLinecap="round"
+            strokeLinejoin="round"
           />
-          <rect x="7.7" y="9.7" width="2.6" height="2.6" fill="currentColor" />
-          <rect x="11.2" y="12.7" width="2.6" height="2.6" fill="currentColor" />
+          <circle cx="20" cy="10.5" r="1.9" fill="currentColor" />
         </svg>
       </span>
-      <span className="font-display text-lg tracking-tight text-ink">
-        bbiom
-      </span>
+      {!compact && (
+        <span className="text-[1.125rem] font-medium tracking-[-0.02em] text-ink">bbiom</span>
+      )}
     </span>
   );
 }

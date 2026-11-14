@@ -11,9 +11,10 @@ import {
 import { getPlan } from "@/lib/entitlements";
 import { summarize } from "@/lib/analytics";
 import { DISCLAIMER_TEXT } from "@/components/disclaimer";
-import { StatusBadge } from "@/components/ui/status-badge";
+import { ArrowLeft } from "lucide-react";
+import { StatusBadge, StatusGlyph } from "@/components/ui/status-badge";
 import { Reveal } from "@/components/motion/reveal";
-import { formatDate } from "@/lib/utils";
+import { formatDate, prettyUnit } from "@/lib/utils";
 import {
   STATUS_LABEL,
   formatInUnit,
@@ -27,17 +28,17 @@ import { PrintButton } from "@/components/summary/print-button";
 
 // Formats a range whose bounds are already in the display unit.
 function fmtRange(r: RefRange | null): string {
-  if (!r || (r.min == null && r.max == null)) return "n/a";
+  if (!r || (r.min == null && r.max == null)) return "—";
   if (r.min != null && r.max != null) return `${formatMeasured(r.min)}–${formatMeasured(r.max)}`;
-  if (r.max != null) return `< ${formatMeasured(r.max)}`;
-  return `> ${formatMeasured(r.min!)}`;
+  if (r.max != null) return `under ${formatMeasured(r.max)}`;
+  return `over ${formatMeasured(r.min!)}`;
 }
 
 /**
- * Consultation mode (Pro): flagged markers first, then the full table, then
- * one accent CTA. Server-side gated with getPlan — the same helper used by
- * UI gating, so client tricks can't reach it. Printing flips to ink-on-paper
- * via the print token override in globals.css.
+ * Doctor summary (Pro): flagged markers first, then the full table, then
+ * print. Server-side gated with getPlan — the same helper used by
+ * UI gating, so client tricks can't reach it. The shell chrome is hidden when
+ * printing, so the page goes out as ink on paper.
  */
 export default async function DoctorSummaryPage({
   searchParams,
@@ -89,26 +90,20 @@ export default async function DoctorSummaryPage({
   const activeWindow = windowParam ?? "1y";
 
   return (
-    <div className="mx-auto max-w-3xl">
-      <Reveal className="mb-8 flex flex-wrap items-center justify-between gap-4 print:hidden">
+    <div>
+      <Reveal className="mb-7 flex flex-wrap items-center justify-between gap-4 print:hidden">
         <Link
           href="/app"
-          className="au-mono text-[12px] text-ink-3 transition-colors duration-300 hover:text-brand"
+          className="inline-flex items-center gap-1.5 text-sm text-ink-3 transition-colors duration-300 hover:text-brand"
         >
-          ← Markers
+          <ArrowLeft className="size-4" aria-hidden /> Overview
         </Link>
-        <div className="au-seg" role="group" aria-label="Time window">
+        <div className="seg" role="group" aria-label="Time window">
           {windows.map((w) => (
             <Link
               key={w.key}
               href={`/app/summary?window=${w.key}`}
-              role="button"
-              aria-pressed={activeWindow === w.key}
-              className={
-                activeWindow === w.key
-                  ? "rounded-[6px] bg-[color:var(--au-seg-on)] px-3.5 py-1.5 font-mono text-[11px] uppercase tracking-[0.05em] text-ink"
-                  : "rounded-[6px] px-3.5 py-1.5 font-mono text-[11px] uppercase tracking-[0.05em] text-ink-3 transition-colors duration-300 hover:text-ink"
-              }
+              aria-current={activeWindow === w.key ? "true" : undefined}
             >
               {w.label}
             </Link>
@@ -117,102 +112,107 @@ export default async function DoctorSummaryPage({
       </Reveal>
 
       <Reveal as="header" delay={60}>
-        <h1 className="au-hl max-w-[560px] text-[26px] leading-[1.15] tracking-[-0.02em] text-ink sm:text-[30px]">
-          Everything your doctor asks for, on one screen.
+        <p className="eyebrow">Doctor summary</p>
+        <h1 className="display mt-3 text-[1.75rem] text-ink sm:text-[2rem]">
+          {profile.name}&rsquo;s results, on one page
         </h1>
-        <p className="au-mono mt-3 text-[11px] text-ink-3">
-          {profile.name} · {summaries.length} markers
-          {latestDate && <> · updated {formatDate(latestDate)}</>}
+        <p className="mt-2 text-sm text-ink-3">
+          {summaries.length} marker{summaries.length === 1 ? "" : "s"}
+          {latestDate && <> · latest test {formatDate(latestDate)}</>}
           {" · "}
           {months ? `last ${months} months` : "all recorded history"}
         </p>
       </Reveal>
 
       {summaries.length === 0 ? (
-        <p className="py-10 text-sm text-ink-2">No results in this window.</p>
+        <p className="card mt-8 px-5 py-10 text-center text-sm text-ink-2">
+          No results in this window. Try a longer one.
+        </p>
       ) : (
         <>
           {flagged.length > 0 && (
-            <Reveal delay={140}>
-              <div className="au-card au-card--olive mt-8 rounded-2xl px-5 py-4">
-                <p className="au-eyebrow text-[color:var(--au-olive-label)]">
-                  Flagged for discussion
-                </p>
-                <ul>
-                  {flagged.map((s) => (
-                    <li
-                      key={s.biomarker.id}
-                      className="flex items-center gap-4 border-t border-[color:var(--au-olive-line)] py-3 first:mt-3"
-                    >
-                      <span className="min-w-0 flex-1 truncate text-[15px] font-medium text-ink">
+            <Reveal as="section" delay={120} className="card mt-8 overflow-hidden">
+              <h2 className="px-5 pb-3 pt-5 text-base font-medium text-ink">
+                Flagged for discussion{" "}
+                <span className="ml-1 font-normal text-ink-3 tnum">{flagged.length}</span>
+              </h2>
+              <ul className="divide-y divide-line border-t border-line">
+                {flagged.map((s) => {
+                  const displayUnit = resolveDisplayUnit(s.biomarker, unitPrefs[s.biomarker.id]);
+                  return (
+                    <li key={s.biomarker.id} className="flex items-center gap-4 px-5 py-3">
+                      <span className="min-w-0 flex-1 truncate text-[0.9375rem] font-medium text-ink">
                         {s.biomarker.name}
                       </span>
-                      <span className="au-num text-[13px] text-ink">
-                        {formatInUnit(
-                          s.biomarker,
-                          s.latest!.value,
-                          resolveDisplayUnit(s.biomarker, unitPrefs[s.biomarker.id]),
-                        )}{" "}
-                        <span className="text-ink-3">
-                          {resolveDisplayUnit(s.biomarker, unitPrefs[s.biomarker.id])}
-                        </span>
+                      <span className="text-sm font-medium text-ink tnum">
+                        {formatInUnit(s.biomarker, s.latest!.value, displayUnit)}{" "}
+                        <span className="unit font-normal">{prettyUnit(displayUnit)}</span>
                       </span>
-                      <StatusBadge status={s.latestStatus} />
+                      <span className="w-[8.25rem] shrink-0">
+                        <StatusBadge status={s.latestStatus} />
+                      </span>
                     </li>
-                  ))}
-                </ul>
-              </div>
+                  );
+                })}
+              </ul>
             </Reveal>
           )}
 
-          <Reveal delay={200}>
-            <h2 className="au-eyebrow mt-10">All results in this window</h2>
-            <table className="mt-2 w-full text-sm">
-              <thead>
-                <tr className="border-b border-line-strong text-left">
-                  {["Marker", "Latest", "Date", "Reference", "Status"].map((h) => (
-                    <th
-                      key={h}
-                      className="py-2 pr-3 font-mono text-[10px] font-medium uppercase tracking-[0.07em] text-ink-3"
-                    >
-                      {h}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {summaries.map((s) => {
-                  const displayUnit = resolveDisplayUnit(s.biomarker, unitPrefs[s.biomarker.id]);
-                  return (
-                  <tr key={s.biomarker.id} className="border-b border-line">
-                    <td className="py-2.5 pr-3 font-medium text-ink">{s.biomarker.name}</td>
-                    <td className="py-2.5 pr-3 tnum text-ink">
-                      {formatInUnit(s.biomarker, s.latest!.value, displayUnit)} {displayUnit}
-                    </td>
-                    <td className="py-2.5 pr-3 tnum text-ink-2">{formatDate(s.latest!.date)}</td>
-                    <td className="py-2.5 pr-3 tnum text-ink-2">
-                      {fmtRange(rangeInUnit(s.biomarker, s.latest!.appliedRange, displayUnit))}
-                    </td>
-                    <td className="py-2.5 pr-3 text-ink-2">{STATUS_LABEL[s.latestStatus]}</td>
+          <Reveal as="section" delay={180} className="card mt-6 overflow-hidden">
+            <h2 className="px-5 pb-3 pt-5 text-base font-medium text-ink">
+              All results in this window
+            </h2>
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[560px] text-sm">
+                <thead>
+                  <tr className="border-y border-line bg-paper-2 text-left text-xs text-ink-3">
+                    {["Marker", "Latest", "Date", "Reference", "Status"].map((h) => (
+                      <th key={h} className="px-3 py-2 font-medium first:pl-5 last:pr-5">
+                        {h}
+                      </th>
+                    ))}
                   </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-line">
+                  {summaries.map((s) => {
+                    const displayUnit = resolveDisplayUnit(s.biomarker, unitPrefs[s.biomarker.id]);
+                    return (
+                      <tr key={s.biomarker.id}>
+                        <td className="py-2.5 pl-5 pr-3 font-medium text-ink">{s.biomarker.name}</td>
+                        <td className="whitespace-nowrap px-3 py-2.5 text-ink tnum">
+                          {formatInUnit(s.biomarker, s.latest!.value, displayUnit)}{" "}
+                          <span className="unit">{prettyUnit(displayUnit)}</span>
+                        </td>
+                        <td className="whitespace-nowrap px-3 py-2.5 text-ink-2 tnum">
+                          {formatDate(s.latest!.date)}
+                        </td>
+                        <td className="whitespace-nowrap px-3 py-2.5 text-ink-2 tnum">
+                          {fmtRange(rangeInUnit(s.biomarker, s.latest!.appliedRange, displayUnit))}
+                        </td>
+                        <td className="py-2.5 pl-3 pr-5 text-ink-2">
+                          <span className="inline-flex items-center gap-2">
+                            <StatusGlyph status={s.latestStatus} />
+                            {STATUS_LABEL[s.latestStatus]}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           </Reveal>
 
-          <Reveal delay={260} className="mt-8 print:hidden">
+          <Reveal delay={240} className="mt-7 flex flex-wrap items-center gap-4 print:hidden">
             <PrintButton />
-            <p className="au-mono mt-4 text-[11px] leading-[1.7] text-ink-3">
-              Prints exactly this window · ink on paper
-              <br />
-              nothing leaves your device
+            <p className="text-sm text-ink-3">
+              Prints exactly this window, as ink on paper, from your own browser.
             </p>
           </Reveal>
         </>
       )}
 
-      <footer className="mt-10 border-t border-line pt-4">
+      <footer className="mt-10 hidden border-t border-line pt-4 print:block">
         <p className="text-xs leading-relaxed text-ink-3">{DISCLAIMER_TEXT}</p>
       </footer>
     </div>

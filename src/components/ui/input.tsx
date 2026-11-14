@@ -2,11 +2,11 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 
 /*
-  Inset controls on the dark canvas: quiet fill, hairline border, accent only
-  on focus. Labels ride the mono metadata language.
+  Form controls: white field on a hairline, evergreen border on focus. Labels
+  are plain sentence-case sans so they read at arm's length.
 */
 const base =
-  "flex h-10 w-full rounded-[8px] border border-line-strong bg-paper-2 px-3 py-2 text-sm text-ink placeholder:text-ink-3 transition-[border-color] duration-300 focus-visible:outline-none focus-visible:border-brand disabled:cursor-not-allowed disabled:opacity-50";
+  "flex h-10 w-full rounded-[10px] border border-line-strong bg-paper px-3 py-2 text-sm text-ink placeholder:text-ink-3 transition-[border-color] duration-300 hover:border-rule focus-visible:border-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-soft disabled:cursor-not-allowed disabled:opacity-50";
 
 export const Input = React.forwardRef<
   HTMLInputElement,
@@ -37,7 +37,7 @@ export const Select = React.forwardRef<
     className={cn(base, "cursor-pointer appearance-none bg-[length:1rem] pr-8", className)}
     style={{
       backgroundImage:
-        "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238a8a84' stroke-width='1.5'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E\")",
+        "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2362706b' stroke-width='1.75'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E\")",
       backgroundRepeat: "no-repeat",
       backgroundPosition: "right 0.6rem center",
     }}
@@ -49,10 +49,7 @@ Select.displayName = "Select";
 export function Label({ className, ...props }: React.LabelHTMLAttributes<HTMLLabelElement>) {
   return (
     <label
-      className={cn(
-        "mb-1.5 block font-mono text-[11px] font-medium uppercase tracking-[0.07em] text-ink-3",
-        className,
-      )}
+      className={cn("mb-1.5 block text-[0.8125rem] font-medium text-ink-2", className)}
       {...props}
     />
   );

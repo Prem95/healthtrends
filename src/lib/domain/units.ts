@@ -121,6 +121,18 @@ export function formatMeasured(displayValue: number): string {
 }
 
 /**
+ * Format a change between two readings with the same precision as the reading
+ * it belongs to, so a delta never shows more decimals than the value beside it
+ * (5.77 mmol/L, up 0.17 — not 0.166).
+ */
+export function formatDelta(absDelta: number, displayValue: number): string {
+  if (!Number.isFinite(absDelta)) return "n/a";
+  const decimals = measuredDecimals(displayValue);
+  const rounded = Number(Math.abs(absDelta).toFixed(decimals));
+  return rounded.toLocaleString(undefined, { maximumFractionDigits: decimals });
+}
+
+/**
  * Convert a canonical value into `displayUnit` and format it. Falls back to the
  * canonical unit when `displayUnit` is unknown for this biomarker.
  */

@@ -1,18 +1,13 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { StatusBadge, Badge } from "@/components/ui/status-badge";
-import { Sparkline } from "@/components/charts/sparkline";
-import { formatDate } from "@/lib/utils";
-import {
-  CATEGORY_LABEL,
-  statusTone,
-  type BiomarkerCategory,
-  type ResultStatus,
-} from "@/lib/domain";
+import { MarkerList, MarkerRow } from "@/components/markers/marker-parts";
+import { needsAttention, type MarkerDigest } from "@/lib/digest";
+import { prettyUnit } from "@/lib/utils";
+import { CATEGORY_LABEL, type BiomarkerCategory } from "@/lib/domain";
 import { CATEGORY_COMMON_ORDER, sortByCommonality } from "@/lib/commonality";
 
 type Item = {
@@ -20,62 +15,54 @@ type Item = {
   name: string;
   aliases: string[];
   category: BiomarkerCategory;
+  canonicalUnit: string;
   isCustom: boolean;
   archived: boolean;
 };
 
-type Latest = {
-  hasValue: boolean;
-  valueLabel: string | null;
-  unit: string;
-  date: string | null;
-  status: ResultStatus;
-  count: number;
-  spark: number[];
-};
+type Show = "results" | "attention" | "all";
 
-const TONE_VAR: Record<string, string> = {
-  "in-range": "var(--in-range)",
-  borderline: "var(--borderline)",
-  out: "var(--out)",
-  neutral: "var(--neutral-status)",
-};
+const FILTERS: { key: Show; label: string }[] = [
+  { key: "results", label: "With results" },
+  { key: "attention", label: "Worth a look" },
+  { key: "all", label: "Whole catalog" },
+];
 
-const FLAGGED: ResultStatus[] = ["LOW", "HIGH", "BORDERLINE_LOW", "BORDERLINE_HIGH"];
-function isFlagged(latest: Latest | undefined): boolean {
-  return latest ? FLAGGED.includes(latest.status) : false;
-}
-
+/*
+  Every marker, grouped by body system. Three scopes (what you have results
+  for, what is outside or near a limit, the whole catalog) and a search that
+  also matches the abbreviations printed on lab reports.
+*/
 export function BiomarkerBrowser({
   biomarkers,
-  latestById,
+  digests,
+  base,
 }: {
   biomarkers: Item[];
-  latestById: Record<string, Latest>;
+  digests: Record<string, MarkerDigest>;
+  base: string;
 }) {
+  const hasAnyData = Object.keys(digests).length > 0;
+  const param = useSearchParams().get("show");
+  const initial: Show =
+    param === "attention" || param === "all" || param === "results"
+      ? param
+      : hasAnyData
+        ? "results"
+        : "all";
+  const [show, setShow] = useState<Show>(initial);
   const [query, setQuery] = useState("");
-  const [trackedOnly, setTrackedOnly] = useState(false);
-
-  // "?review=<CATEGORY>" narrows the browser to just the flagged (out-of-range
-  // or near-boundary) markers in one system.
-  const searchParams = useSearchParams();
-  const reviewParam = searchParams.get("review");
-  const review = reviewParam && reviewParam in CATEGORY_LABEL
-    ? (reviewParam as BiomarkerCategory)
-    : null;
 
   const groups = useMemo(() => {
     const q = query.trim().toLowerCase();
     const filtered = biomarkers.filter((b) => {
-      if (b.archived && !latestById[b.id]) return false;
-      if (review) {
-        if (b.category !== review) return false;
-        if (!isFlagged(latestById[b.id])) return false;
-      } else if (trackedOnly && !latestById[b.id]) return false;
+      const d = digests[b.id];
+      if (b.archived && !d) return false;
+      if (show === "results" && !d) return false;
+      if (show === "attention" && !(d && needsAttention(d.status))) return false;
       if (!q) return true;
       return (
-        b.name.toLowerCase().includes(q) ||
-        b.aliases.some((a) => a.toLowerCase().includes(q))
+        b.name.toLowerCase().includes(q) || b.aliases.some((a) => a.toLowerCase().includes(q))
       );
     });
     const map = new Map<BiomarkerCategory, Item[]>();
@@ -87,106 +74,90 @@ export function BiomarkerBrowser({
       category: c,
       items: sortByCommonality(map.get(c)!),
     }));
-  }, [biomarkers, latestById, query, trackedOnly, review]);
+  }, [biomarkers, digests, query, show]);
+
+  const total = groups.reduce((n, g) => n + g.items.length, 0);
 
   return (
     <div>
-      {review && (
-        <div className="au-card mb-6 flex flex-wrap items-center justify-between gap-3 px-4 py-3">
-          <p className="text-sm text-ink-2">
-            Showing markers to review in{" "}
-            <span className="font-medium text-ink">{CATEGORY_LABEL[review]}</span>.
-          </p>
-          <Link
-            href="/app/biomarkers"
-            className="au-mono text-[12px] text-brand transition-colors duration-300 hover:text-brand-strong"
-          >
-            Show all →
-          </Link>
-        </div>
-      )}
-      <div className="flex flex-wrap items-center gap-4">
-        <Input
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search markers and aliases"
-          className="min-w-56 flex-1"
-          aria-label="Search biomarkers"
-        />
-        <label className="au-mono flex cursor-pointer items-center gap-2 text-[11px] text-ink-2">
-          <input
-            type="checkbox"
-            checked={trackedOnly}
-            onChange={(e) => setTrackedOnly(e.target.checked)}
-            className="size-4 accent-[var(--brand)]"
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="relative min-w-56 flex-1">
+          <Search
+            className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-ink-3"
+            aria-hidden
           />
-          With data only
-        </label>
+          <Input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search by name or abbreviation — LDL, A1c, TSH…"
+            className="pl-9"
+            aria-label="Search markers"
+          />
+        </div>
+        <div className="seg" role="group" aria-label="Which markers to show">
+          {FILTERS.map((f) => (
+            <button
+              key={f.key}
+              type="button"
+              aria-pressed={show === f.key}
+              onClick={() => setShow(f.key)}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
       </div>
 
-      <div className="mt-8 space-y-10">
+      <p className="mt-4 text-xs text-ink-3" aria-live="polite">
+        {total} marker{total === 1 ? "" : "s"}
+        {query.trim() ? ` matching “${query.trim()}”` : ""}
+      </p>
+
+      <div className="mt-4 space-y-8">
         {groups.length === 0 && (
-          <p className="text-sm text-ink-3">No markers match &quot;{query}&quot;.</p>
+          <div className="card px-5 py-10 text-center text-sm text-ink-2">
+            {show === "attention" && !query.trim()
+              ? "Nothing is outside or near a limit on its latest test."
+              : "No markers match. Try the whole catalog or a different spelling."}
+          </div>
         )}
-        {groups.map(({ category, items }, gi) => (
+        {groups.map(({ category, items }) => (
           <section key={category} id={category} className="scroll-mt-24">
-            <h2 className="au-eyebrow flex items-baseline gap-2">
-              <span className="au-num text-ink-3/70">
-                {String(gi + 1).padStart(2, "0")}.
-              </span>
+            <h2 className="mb-3 flex items-baseline gap-2 text-base font-medium text-ink">
               {CATEGORY_LABEL[category]}
+              <span className="font-normal text-ink-3 tnum">{items.length}</span>
             </h2>
-            <ul className="mt-1">
-              {items.map((b) => {
-                const latest = latestById[b.id];
-                const tone = latest ? statusTone(latest.status) : "neutral";
-                return (
-                  <li key={b.id}>
-                    <Link
-                      href={`/app/biomarkers/${b.id}`}
-                      className="au-row flex items-center gap-4 border-t border-line py-3.5"
-                    >
-                      <div className="min-w-0 flex-1">
-                        <p className="au-row-title flex items-center gap-2 truncate text-[15px] font-medium text-ink">
-                          {b.name}
-                          {b.isCustom && <Badge tone="brand">Custom</Badge>}
-                          {b.archived && <Badge>Archived</Badge>}
-                        </p>
-                        {latest?.date && (
-                          <p className="au-mono mt-1 text-[10px] text-ink-3">
-                            {latest.count} value{latest.count === 1 ? "" : "s"} · last{" "}
-                            {formatDate(latest.date)}
-                          </p>
-                        )}
-                      </div>
-                      {latest?.spark && latest.spark.length >= 2 && (
-                        <Sparkline
-                          values={latest.spark}
-                          stroke={TONE_VAR[tone]}
-                          className="hidden shrink-0 sm:block"
-                        />
-                      )}
-                      {latest?.hasValue ? (
-                        <>
-                          <span className="au-num shrink-0 text-[13px] text-ink-3">
-                            {latest.valueLabel}{" "}
-                            <span className="text-ink-3/70">{latest.unit}</span>
-                          </span>
-                          <StatusBadge status={latest.status} className="shrink-0" />
-                        </>
-                      ) : (
-                        <span className="au-mono shrink-0 text-[10px] text-ink-3/70">
-                          No data
-                        </span>
-                      )}
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
+            <MarkerList>
+              {items.map((b) => (
+                <MarkerRow
+                  key={b.id}
+                  d={digests[b.id] ?? blank(b)}
+                  href={`${base}/biomarkers/${b.id}`}
+                />
+              ))}
+            </MarkerList>
           </section>
         ))}
       </div>
     </div>
   );
+}
+
+function blank(b: Item): MarkerDigest {
+  return {
+    id: b.id,
+    name: b.name,
+    category: b.category,
+    isCustom: b.isCustom,
+    unit: prettyUnit(b.canonicalUnit),
+    displayFactor: 1,
+    count: 0,
+    value: null,
+    valueLabel: null,
+    date: null,
+    status: "NO_RANGE",
+    spark: [],
+    deltaLabel: null,
+    prevDate: null,
+  };
 }

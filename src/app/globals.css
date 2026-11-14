@@ -1,114 +1,101 @@
 @import "tailwindcss";
 
 /*
-  bbiom design system: "the lab logbook".
-  Print-inspired. Cream paper, near-black green ink, hairline rules instead of
-  card shadows, sharp corners, tabular figures. Statuses read like marks on a
-  typeset lab form: a small square swatch plus plain text, never a glossy pill.
+  bbiom design system — "clear chart".
+
+  A health record people read at home, so legibility comes first: a warm paper
+  canvas, white cards on hairlines, evergreen ink, and sentence-case sans for
+  every control. The only vivid colour on any screen is the status of a
+  result (in range / borderline / out), and it always travels with a shape and
+  a label. No shadows, no gradients; depth is surface + hairline. One easing
+  curve. Swap the tokens in :root to rebrand.
 */
 
 :root {
-  /* Surfaces: near-black canvas, raised charcoal cards (WHOOP-style depth) */
-  --paper: #141c22;        /* raised surface / cards */
-  --paper-2: #1c2831;      /* higher surface / hover */
-  --paper-3: #26333d;      /* highest surface */
-  --line: #2a3a44;
-  --line-strong: #3d515e;
-  --rule: #4a626f;         /* section rule */
+  /* Surfaces */
+  --page-bg: #f5f4ef; /* warm paper canvas, never pure #fff */
+  --paper: #ffffff; /* card */
+  --paper-2: #f3f2ec; /* inset: inputs, tracks, table heads */
+  --paper-3: #e9e8e0; /* strongest inset / neutral chips */
 
-  /* Text: bright on dark */
-  --ink: #f3f7f8;
-  --ink-2: #a6b4bc;
-  --ink-3: #74858f;
+  /* Ink: evergreen-black, never pure #000 */
+  --ink: #13231f;
+  --ink-2: #40504b; /* body copy */
+  --ink-3: #62706b; /* metadata — 4.9:1 on the canvas */
 
-  /* Accent: WHOOP strain blue — interactive / brand, kept off the status hues */
-  --brand: #0093e7;
-  --brand-strong: #35abef;
-  --brand-soft: #113140;
-  --brand-tint: #0d222c;
+  /* Hairlines */
+  --line: rgba(19, 35, 31, 0.1);
+  --line-strong: rgba(19, 35, 31, 0.16);
+  --rule: rgba(19, 35, 31, 0.3);
 
-  /* Status: WHOOP recovery triad — vivid, glowing on dark */
-  --in-range: #19e60a;         /* high recovery green */
-  --in-range-soft: #123a17;
-  --borderline: #ffd400;       /* medium yellow */
-  --borderline-soft: #38310a;
-  --borderline-ink: #ffd400;   /* amber for text (already AA on dark) */
-  --out: #ff2b40;              /* low red */
-  --out-soft: #3c141b;
-  --neutral-status: #7a8a93;
+  /* Brand / interaction: deep evergreen. Links, focus, active nav. */
+  --brand: #0f5c4d;
+  --brand-strong: #0a4438;
+  --brand-soft: #dcebe6;
+  --brand-tint: #edf4f1;
 
-  --background: var(--paper);
+  /* Status triad — data only. Validated for CVD separation and ≥3:1 on white
+     (dataviz validator); always paired with a glyph + label, never alone. */
+  --in-range: #0a8f6c;
+  --in-range-soft: #ddf2ea;
+  --borderline: #d07c00;
+  --borderline-soft: #fbefd9;
+  --borderline-ink: #8f5500; /* amber as text: AA on white and on its soft fill */
+  --out: #d1345b;
+  --out-soft: #fbe3e9;
+  --out-ink: #ad2247;
+  --neutral-status: #84908c;
+
+  /* Chart chrome */
+  --chart-line: #2a3a36;
+  --chart-grid: rgba(19, 35, 31, 0.09);
+  --chart-axis: rgba(19, 35, 31, 0.22);
+
+  --ease: cubic-bezier(0.22, 1, 0.36, 1); /* the one easing curve */
+
+  --background: var(--page-bg);
   --foreground: var(--ink);
-  --page-bg: #0b1013; /* canvas behind the app / dark landing */
-  --tint-cool: #16222b; /* soft feature-card fills (dark defaults) */
-  --tint-warm: #241a1c;
-  --radius: 0.625rem; /* 10px: soft, modern app corners */
+  --radius: 0.625rem;
 }
 
 /*
-  Nested dark section inside a light page (the marketing climax block). Mirrors
-  the app's dark token set so bg-page / text-ink / status utilities flip back to
-  dark for one deliberate section, as with Steep's dark "Ship metrics" block.
+  Dark surface. Used for the one inverted band on the landing page; set
+  data-theme="dark" on any root to flip a whole surface. Status hues are
+  re-stepped for the dark card, not auto-inverted.
 */
 [data-theme="dark"] {
-  --paper: #141c22;
-  --paper-2: #1c2831;
-  --paper-3: #26333d;
-  --line: #2a3a44;
-  --line-strong: #3d515e;
-  --rule: #4a626f;
-  --ink: #f3f7f8;
-  --ink-2: #a6b4bc;
-  --ink-3: #74858f;
-  --brand: #0093e7;
-  --brand-strong: #35abef;
-  --brand-soft: #113140;
-  --in-range: #19e60a;
-  --borderline: #ffd400;
-  --borderline-ink: #ffd400;
-  --out: #ff2b40;
-  --neutral-status: #7a8a93;
-  --page-bg: #0b1013;
-}
-
-/*
-  Light theme, scoped. The product app stays dark; the marketing surfaces opt
-  in with data-theme="light". Every semantic token is redefined so utilities
-  (bg-paper, text-ink, text-out, ...) flip automatically via CSS variable
-  inheritance. Status hues are deepened for legibility on white.
-*/
-[data-theme="light"] {
-  --paper: #ffffff;
-  --paper-2: #f3f6f8;
-  --paper-3: #e8edf1;
-  --line: #e5eaee;
-  --line-strong: #ccd5db;
-  --rule: #b4c0c8;
-
-  --ink: #0f1a20;
-  --ink-2: #46555f;
-  --ink-3: #626e77;
-
-  --brand: #0284c7;
-  --brand-strong: #0369a1;
-  --brand-soft: #e0f2fe;
-  --brand-tint: #f0f9ff;
-
-  --in-range: #16a34a;
-  --in-range-soft: #dcfce7;
-  --borderline: #ca8a04;
-  --borderline-soft: #fef9c3;
-  --borderline-ink: #a16207;  /* darker amber: WCAG AA (4.9:1) as text on white */
-  --out: #e11d48;
-  --out-soft: #ffe4e6;
-  --neutral-status: #64748b;
-
-  --page-bg: #fbfcfd;
-  --tint-cool: #eaf1fb; /* highlighted feature card (soft blue) */
-  --tint-warm: #fbeee6; /* warm accent card (soft peach, a Steep nod) */
+  --page-bg: #0f1c19;
+  --paper: #162521;
+  --paper-2: #1b2c27;
+  --paper-3: #23362f;
+  --ink: #f1f3ee;
+  --ink-2: #c3ccc6;
+  --ink-3: #94a19b;
+  --line: rgba(241, 243, 238, 0.1);
+  --line-strong: rgba(241, 243, 238, 0.16);
+  --rule: rgba(241, 243, 238, 0.3);
+  --brand: #8fd6c1;
+  --brand-strong: #b4e6d6;
+  --brand-soft: rgba(143, 214, 193, 0.16);
+  --brand-tint: rgba(143, 214, 193, 0.08);
+  --in-range: #35b88f;
+  --in-range-soft: rgba(53, 184, 143, 0.16);
+  --borderline: #e9a13a;
+  --borderline-soft: rgba(233, 161, 58, 0.16);
+  --borderline-ink: #f0b860;
+  --out: #ec6585;
+  --out-soft: rgba(236, 101, 133, 0.16);
+  --out-ink: #f38ba4;
+  --neutral-status: #7f8c87;
+  --chart-line: #dfe5df;
+  --chart-grid: rgba(241, 243, 238, 0.1);
+  --chart-axis: rgba(241, 243, 238, 0.24);
+  background: var(--page-bg);
+  color: var(--ink);
 }
 
 @theme inline {
+  --color-page: var(--page-bg);
   --color-paper: var(--paper);
   --color-paper-2: var(--paper-2);
   --color-paper-3: var(--paper-3);
@@ -129,27 +116,20 @@
   --color-borderline-ink: var(--borderline-ink);
   --color-out: var(--out);
   --color-out-soft: var(--out-soft);
+  --color-out-ink: var(--out-ink);
   --color-neutral-status: var(--neutral-status);
-
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --color-page: var(--page-bg);
 
-  --font-display: var(--font-google-sans);
-  --font-sans: var(--font-google-sans);
-  --font-serif: var(--font-newsreader), Georgia, "Times New Roman", serif;
+  --font-sans: var(--font-google-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-google-sans), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-jetbrains-mono), ui-monospace, "SF Mono", Menlo, monospace;
-  --color-mono: var(--font-mono);
 
-  --color-tint-cool: var(--tint-cool);
-  --color-tint-warm: var(--tint-warm);
-
-  --radius-lg: calc(var(--radius) + 0.25rem);
-  --radius-md: var(--radius);
   --radius-sm: 0.375rem;
+  --radius-md: var(--radius);
+  --radius-lg: 1rem;
 
-  /* One easing curve everywhere: Tailwind transition utilities default to the
-     house expo-out instead of the stock material curve. */
+  /* Tailwind transition utilities ride the house curve. */
   --default-transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -159,583 +139,218 @@
 
 html {
   -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
 }
 
 body {
-  background:
-    radial-gradient(1100px 460px at 50% -8%, rgba(0, 147, 231, 0.1), transparent 70%),
-    linear-gradient(180deg, #10181d 0%, #0b1013 100%);
-  background-attachment: fixed;
-  background-color: #0b1013;
+  background: var(--page-bg);
   color: var(--ink);
-  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
 
-/* Tabular figures for all numeric data */
-.tnum {
-  font-variant-numeric: tabular-nums;
-  font-feature-settings: "tnum";
+::selection {
+  background: var(--brand-soft);
+  color: var(--brand-strong);
 }
 
-.font-display {
-  font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
-  letter-spacing: -0.02em;
-  font-weight: 500;
-}
-
-/* Editorial display serif — used by the dark product app surface only. */
-.serif {
-  font-family: var(--font-serif);
-  font-weight: 500;
-  letter-spacing: -0.015em;
-}
-.serif em,
-.serif .em {
-  font-style: italic;
-  font-weight: 400;
-}
-
-/* Landing display headline: one grotesque (Google Sans), same-family italic
-   emphasis. Replaces the serif hero — the most-cited AI tell — on the
-   marketing page, unifying it to a single typeface. */
-.au-hl {
-  font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
-  font-weight: 500; /* display face never exceeds 500 — bold headlines are a tell */
-  letter-spacing: -0.03em;
-}
-.au-hl .em {
-  font-style: italic;
-  font-weight: 500;
-}
-
-
-/* Status dot: a small round mark that glows in its own status colour */
-.status-dot {
-  border-radius: 9999px;
-  box-shadow: 0 0 7px -1px currentColor;
-}
-
-/* On light surfaces the glow reads as blur; keep the mark crisp instead */
-[data-theme="light"] .status-dot {
-  box-shadow: none;
-}
-
-/* Raised surface with a soft lift, for the WHOOP-style dark cards */
-.surface {
-  background: var(--paper);
-  border: 1px solid var(--line);
-  box-shadow:
-    0 1px 0 0 rgba(255, 255, 255, 0.02) inset,
-    0 8px 24px -12px rgba(0, 0, 0, 0.6);
-}
-
-[data-theme="light"] .surface {
-  box-shadow:
-    0 1px 2px rgba(15, 26, 32, 0.04),
-    0 12px 32px -20px rgba(15, 26, 32, 0.22);
-}
-
-/* Micro label: the uppercase letter-spaced caption used across the logbook */
-.microlabel {
-  font-size: 0.6875rem;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--ink-3);
-}
-
-/* Section top rule: a quiet hairline over each heading */
-.rule-top {
-  border-top: 1px solid var(--line-strong);
-}
-
-/* Dotted leader, as in tables of contents / requisition forms */
-.leader {
-  flex: 1;
-  min-width: 1.5rem;
-  border-bottom: 1px dotted var(--line-strong);
-  transform: translateY(-0.3em);
-}
-
-@keyframes rise {
-  from { opacity: 0; transform: translateY(6px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.animate-rise {
-  animation: rise 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
-/* --- Landing motion (fade-up: transform + opacity only, once) --- */
-.reveal {
-  opacity: 0;
-  transform: translateY(26px);
-  transition:
-    opacity 0.85s cubic-bezier(0.22, 1, 0.36, 1),
-    transform 0.85s cubic-bezier(0.22, 1, 0.36, 1);
-  transition-delay: var(--reveal-delay, 0ms);
-}
-.reveal.is-visible {
-  opacity: 1;
-  transform: none;
-}
-
-/* Draw-on: a stroke that reveals left-to-right when .is-drawn is set */
-.draw-line {
-  stroke-dasharray: 1;
-  stroke-dashoffset: 1;
-  transition: stroke-dashoffset 1.6s cubic-bezier(0.22, 1, 0.36, 1) 0.15s;
-}
-.is-drawn .draw-line { stroke-dashoffset: 0; }
-.draw-dot {
-  opacity: 0;
-  transition: opacity 0.4s cubic-bezier(0.22, 1, 0.36, 1) var(--dot-delay, 0ms);
-}
-.is-drawn .draw-dot { opacity: 1; }
-
-/* Scrollytelling ("how it works"): staged panel transitions. The stage
-   itself is set from React; this class only eases the change. */
-.st-fade {
-  transition:
-    opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1),
-    transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-/* Marker-wall chips: hovering a marker redraws its little line */
-@keyframes wallRedraw {
-  from { stroke-dashoffset: 1; }
-  to { stroke-dashoffset: 0; }
-}
-@media (prefers-reduced-motion: no-preference) {
-  .wall-chip:hover .draw-line {
-    animation: wallRedraw 0.9s cubic-bezier(0.22, 1, 0.36, 1);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .animate-rise { animation: none; }
-  .reveal { opacity: 1; transform: none; transition: none; }
-  .draw-line { stroke-dashoffset: 0; transition: none; }
-  .draw-dot { opacity: 1; transition: none; }
-  .st-fade { transition: none; }
-  * { scroll-behavior: auto !important; }
-}
-
-/* =========================================================================
-   Aurora landing layer — REBUILT to the "Alethia" extracted design system
-   (near-black data-science editorial). Scoped to the marketing page via
-   `.aurora`, so the dark product app is untouched. Near-black canvas, tight
-   neo-grotesque display type, uppercase JetBrains-Mono metadata, a single
-   clinical teal accent reserved for data + interaction, hairline rules, no
-   shadows (depth is glass blur + hairlines), and one expo-out easing curve.
-   Swap the tokens in this block to rebrand.
-   ========================================================================= */
-.aurora {
-  --page-bg: #f0efea; /* warm off-white canvas, never pure #fff */
-  --paper: #ffffff; /* solid card surface */
-  --paper-2: #f4f3ee;
-  --paper-3: #e8e7e0; /* muted warm-gray tile / data card */
-  --line: rgba(17, 17, 15, 0.1); /* hairline divider */
-  --line-strong: rgba(17, 17, 15, 0.16); /* hairline on buttons/surfaces */
-  --rule: rgba(17, 17, 15, 0.26); /* hairline on controls (chips, ghost buttons) */
-  --neutral-status: #77776f; /* no-range data marks */
-  --ink: #16160f; /* near-black, never pure #000 */
-  --ink-2: #3d3d37; /* lead / body copy */
-  --ink-3: #5f5f57; /* metadata / mono labels — kept dark enough to read on off-white */
-
-  /* the single accent: clinical teal, deepened so it reads on white — data
-     values, badges, hover states only (never decoration) */
-  --brand: #0d9488;
-  --brand-strong: #0f766e;
-  --brand-soft: rgba(13, 148, 136, 0.12);
-  --brand-tint: rgba(13, 148, 136, 0.07);
-
-  /* status data triad, AA-legible on white (data, never decoration) */
-  --in-range: #16a34a;
-  --in-range-soft: #dcfce7;
-  --borderline: #ca8a04;
-  --borderline-soft: #fef7cd;
-  --borderline-ink: #a16207;
-  --out: #e11d48;
-  --out-soft: #ffe4e6;
-  --au-out: #e11d48;
-
-  --au-inv: #0a0a0a; /* text on the teal accent (accent is always light-ish) */
-  --au-ease: cubic-bezier(0.22, 1, 0.36, 1); /* the one easing curve */
-
-  background: var(--page-bg);
-  color: var(--ink);
-}
-
-/* Mono metadata language — every label, index, nav link and button rides it */
-.au-mono {
-  font-family: var(--font-mono);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  font-weight: 400;
-}
-
-.au-eyebrow {
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--ink-3);
-}
-
-/* Badge chip: accent bg, near-black text — section eyebrows / labels */
-.au-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.45rem;
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
-  font-weight: 500;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--au-inv);
-  background: var(--brand);
-  padding: 4px 10px;
+:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
   border-radius: 4px;
 }
 
-.au-hex {
-  width: 12px;
-  height: 12px;
-  flex: none;
-  background: var(--au-inv);
-  clip-path: polygon(25% 5%, 75% 5%, 100% 50%, 75% 95%, 25% 95%, 0 50%);
+/* Component classes live in the components layer so Tailwind utilities on the
+   same element (a tinted chip, a padded card) always win. */
+@layer components {
+/* ---- Type ---- */
+
+/* Display headings: one grotesque, weight 500 at most, sentence case. */
+.display {
+  font-family: var(--font-display);
+  font-weight: 500;
+  letter-spacing: -0.025em;
+  line-height: 1.08;
+  text-wrap: balance;
 }
 
-/* Primary ink button (near-black on both themes) with an accent arrow tile
-   that slides on hover */
-.au-arrowbtn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.85rem;
-  background: #16160f;
-  border: 1px solid #16160f;
-  border-radius: 10px;
-  padding: 0.85rem 1.1rem;
+/* Section kicker: the only uppercase mono on a screen, used sparingly. */
+.eyebrow {
   font-family: var(--font-mono);
-  font-size: 0.8125rem;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: #f4f3ee;
-  white-space: nowrap;
-  transition: border-color 0.3s var(--au-ease);
-}
-.au-arrowbtn:hover {
-  border-color: var(--brand);
-  color: #f4f3ee;
-}
-.au-arrow {
-  width: 26px;
-  height: 26px;
-  flex: none;
-  border-radius: 8px;
-  background: var(--brand);
-  color: var(--au-inv);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  transition: transform 0.35s var(--au-ease);
-}
-.au-arrowbtn:hover .au-arrow {
-  transform: translateX(4px);
-}
-
-/* Ghost / secondary — mono, tints accent on hover */
-.au-ghost {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-family: var(--font-mono);
-  font-size: 0.8125rem;
-  letter-spacing: 0.05em;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--ink-3);
-  transition: color 0.25s var(--au-ease);
-}
-.au-ghost:hover {
-  color: var(--brand);
 }
 
-/* Solid card / surface — hairline border, no shadow (depth from glass + rules) */
-.au-card {
-  border-radius: 16px;
-  border: 1px solid var(--line-strong);
-  background: var(--paper);
-}
-.au-card--olive {
-  background: var(--paper-3);
-  border-color: var(--line-strong);
-}
-.au-card--accent {
-  background: var(--brand);
-  color: var(--au-inv);
-  border-color: transparent;
-}
-
-/* Frosted glass over moving media — the signature "alive" texture. Light
-   frost carries dark text; the border is a barely-there hairline. */
-.au-glass {
-  background: rgba(245, 244, 239, 0.74);
-  -webkit-backdrop-filter: blur(20px);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(17, 17, 15, 0.08);
-  border-radius: 18px;
-}
-/* Firefox / no-backdrop-filter: raise fill opacity so text stays legible */
-@supports not (backdrop-filter: blur(1px)) {
-  .au-glass {
-    background: rgba(244, 243, 238, 0.94);
-  }
-}
-
-/* No shadows on the dark theme, period — depth is blur + overlap + hairlines. */
-
-.au-num {
-  font-family: var(--font-mono);
-  font-weight: 400;
-  letter-spacing: -0.02em;
+/* Columns of numbers align; standalone readings keep proportional figures. */
+.tnum {
   font-variant-numeric: tabular-nums;
 }
 
-/* Line-mask headline: each line slides up from an overflow-hidden mask */
-.au-lmask {
-  display: block;
-  overflow: hidden;
-}
-.au-lmask > span {
-  display: block;
-  transform: translateY(112%);
-  transition: transform 0.9s var(--au-ease);
-}
-.inview .au-lmask > span,
-.au-lmask.inview > span {
-  transform: none;
-}
-
-/* Animated media fallback: two oversized soft radial blobs translating slowly
-   (transform-only) over a flat near-black base — the handoff's sanctioned
-   no-video path. The frost above is only alive because this moves. */
-.au-media {
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
-  pointer-events: none;
-  background: #eceae3;
-}
-.au-media::before,
-.au-media::after {
-  content: "";
-  position: absolute;
-  width: 85vw;
-  height: 85vw;
-  border-radius: 50%;
-}
-.au-media::before {
-  left: -25%;
-  top: -45%;
-  background: radial-gradient(circle, rgba(13, 148, 136, 0.12) 0%, transparent 62%);
-}
-.au-media::after {
-  right: -30%;
-  bottom: -55%;
-  background: radial-gradient(circle, rgba(214, 210, 196, 0.9) 0%, transparent 65%);
-}
-@keyframes auBlobA {
-  0% { transform: translate3d(0, 0, 0); }
-  50% { transform: translate3d(12vw, 8vh, 0); }
-  100% { transform: translate3d(0, 0, 0); }
-}
-@keyframes auBlobB {
-  0% { transform: translate3d(0, 0, 0); }
-  50% { transform: translate3d(-10vw, -10vh, 0); }
-  100% { transform: translate3d(0, 0, 0); }
-}
-@media (prefers-reduced-motion: no-preference) {
-  /* linear, like the marquee: ambient media loops carry no easing */
-  .au-media::before { animation: auBlobA 44s linear infinite; will-change: transform; }
-  .au-media::after { animation: auBlobB 52s linear infinite; will-change: transform; }
-}
-
-/* =========================================================================
-   Alethia dark — the product app surface. Same extracted system as the light
-   landing (one accent, uppercase mono metadata, hairlines, no shadows, one
-   easing), flipped to the handoff's near-black canvas: #070707, warm
-   off-white ink, teal #5EEAD4 reserved for data + interaction, status hues
-   on data only. Scoped via .aurora[data-theme="dark"] on the app root; this
-   must out-rank both the generic [data-theme="dark"] block and .aurora.
-   ========================================================================= */
-.aurora[data-theme="dark"] {
-  --page-bg: #070707; /* canvas — near-black, never pure #000 */
-  --paper: #111110; /* solid card */
-  --paper-2: #141412; /* inset surface (notes, seg track, inputs) */
-  --paper-3: #1c1c1a; /* highest surface */
-  --line: #1b1b19; /* hairline row divider */
-  --line-strong: #222220; /* hairline on cards */
-  --rule: #2a2a28; /* hairline on buttons */
-  --ink: #f2f2ee; /* warm off-white, never pure #fff */
-  --ink-2: #b7b7b0; /* body copy */
-  --ink-3: #8a8a84; /* metadata, mono labels */
-
-  --brand: #5eead4; /* the single clinical-teal accent (data + interaction) */
-  --brand-strong: #8df2e2;
-  --brand-soft: rgba(94, 234, 212, 0.13);
-  --brand-tint: rgba(94, 234, 212, 0.06);
-
-  /* status data triad — vivid on near-black, data only, never decoration */
-  --in-range: #63d97e;
-  --in-range-soft: rgba(99, 217, 126, 0.12);
-  --borderline: #eec95e;
-  --borderline-soft: rgba(238, 201, 94, 0.13);
-  --borderline-ink: #eec95e;
-  --out: #f37c7c;
-  --out-soft: rgba(243, 124, 124, 0.14);
-  --neutral-status: #6f6f68;
-
-  --au-olive: #1c231a; /* the olive-tinted summary card from the handoff */
-  --au-olive-line: #2a3324;
-  --au-olive-label: #7d8a6d;
-  --au-seg-on: #26261f;
-  --au-inv: #0a0a0a;
-
-  --background: var(--page-bg);
-  background: var(--page-bg);
-  color: var(--ink);
-}
-
-/* Light-theme values for tokens the dark block introduces */
-.aurora {
-  --au-olive: #e8e7e0;
-  --au-olive-line: rgba(17, 17, 15, 0.12);
-  --au-olive-label: #6b6b60;
-  --au-seg-on: #ffffff;
-}
-
-/* au-* components that hard-code light fills, flipped for the dark surface */
-.aurora[data-theme="dark"] .au-arrowbtn {
-  background: #0d0d0c;
-  border-color: var(--rule);
-  color: var(--ink);
-}
-.aurora[data-theme="dark"] .au-arrowbtn:hover {
-  border-color: var(--brand);
-  color: var(--ink);
-}
-.aurora[data-theme="dark"] .au-glass {
-  background: rgba(20, 20, 18, 0.62);
-  border-color: rgba(255, 255, 255, 0.08);
-}
-@supports not (backdrop-filter: blur(1px)) {
-  .aurora[data-theme="dark"] .au-glass {
-    background: rgba(17, 17, 16, 0.95);
-  }
-}
-.aurora[data-theme="dark"] .au-media {
-  background: #0a0a0a;
-}
-.aurora[data-theme="dark"] .au-media::before {
-  background: radial-gradient(circle, rgba(94, 234, 212, 0.09) 0%, transparent 62%);
-}
-.aurora[data-theme="dark"] .au-media::after {
-  background: radial-gradient(circle, rgba(35, 43, 30, 0.85) 0%, transparent 65%);
-}
-.au-card--olive {
-  background: var(--au-olive);
-  border-color: var(--au-olive-line);
-}
-
-/* ---- App-layer anatomy (both themes; token-driven) ---- */
-
-/* Status pill: mono uppercase 10px, 5px radius — the handoff's exact spec */
-.au-pill {
-  display: inline-flex;
-  align-items: center;
-  white-space: nowrap;
+/* Small data unit beside a reading (mg/dL, %, …). */
+.unit {
   font-family: var(--font-mono);
-  font-size: 10px;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  padding: 4px 9px;
-  border-radius: 5px;
+  font-size: 0.75em;
+  color: var(--ink-3);
+  letter-spacing: 0;
 }
 
-/* Marker row: hairline-topped; hover indents 12px and tints the title —
-   the numbered-list interaction from the handoff, applied to data rows. */
-.au-row {
-  transition: padding-left 0.4s var(--au-ease);
+/* ---- Surfaces ---- */
+
+.card {
+  background: var(--paper);
+  border: 1px solid var(--line-strong);
+  border-radius: 16px;
 }
-.au-row .au-row-title {
-  transition: color 0.25s var(--au-ease);
+.card-inset {
+  background: var(--paper-2);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+
+/* A row that is also a link: quiet fill on hover, title tints. */
+.row-link {
+  transition: background-color 0.25s var(--ease);
+}
+.row-link .row-title {
+  transition: color 0.25s var(--ease);
 }
 @media (hover: hover) {
-  .au-row:hover {
-    padding-left: 12px;
+  .row-link:hover {
+    background: var(--brand-tint);
   }
-  .au-row:hover .au-row-title {
+  .row-link:hover .row-title {
     color: var(--brand);
   }
 }
 
-/* Segmented range control (1Y/3Y/8Y/All): dark inset track, mono labels */
-.au-seg {
+/* ---- Controls ---- */
+
+/* Segmented control (time window, unit, billing interval). */
+.seg {
   display: inline-flex;
-  gap: 4px;
+  gap: 2px;
   background: var(--paper-2);
-  border-radius: 8px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
   padding: 3px;
 }
-.au-seg button {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  padding: 6px 14px;
-  border-radius: 6px;
+.seg > * {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1;
+  padding: 7px 12px;
+  border-radius: 7px;
   color: var(--ink-3);
   cursor: pointer;
+  white-space: nowrap;
   transition:
-    color 0.25s var(--au-ease),
-    background-color 0.25s var(--au-ease);
+    color 0.25s var(--ease),
+    background-color 0.25s var(--ease);
 }
-.au-seg button:hover {
+.seg > *:hover {
   color: var(--ink);
 }
-.au-seg button[aria-pressed="true"] {
-  background: var(--au-seg-on);
+.seg > [aria-pressed="true"],
+.seg > [aria-current="true"] {
+  background: var(--paper);
   color: var(--ink);
+  box-shadow: 0 0 0 1px var(--line-strong);
 }
 
-/* App fade-up reveal (Tier B): opacity + transform only, fires once */
-.au-reveal {
-  opacity: 0;
-  transform: translateY(28px);
+/* Status chip: soft tint, a shape that carries the state, an ink label. */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  white-space: nowrap;
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1;
+  padding: 5px 9px 5px 7px;
+  border-radius: 999px;
+  color: var(--ink);
+  background: var(--paper-3);
+}
+.chip--plain {
+  padding-left: 9px;
+}
+
+/* Accordion (native <details>): height animates where supported. */
+:root {
+  interpolate-size: allow-keywords;
+}
+.acc::details-content {
+  block-size: 0;
+  overflow-y: clip;
   transition:
-    opacity 0.8s var(--au-ease),
-    transform 0.8s var(--au-ease);
-  transition-delay: var(--rv-delay, 0ms);
+    content-visibility 0.4s allow-discrete,
+    block-size 0.4s var(--ease);
 }
-.au-reveal.inview {
-  opacity: 1;
-  transform: none;
+.acc[open]::details-content {
+  block-size: auto;
 }
-/* Draw-on strokes and dots inside a revealed block */
-.inview .draw-line {
-  stroke-dashoffset: 0;
+.acc > summary {
+  list-style: none;
+  cursor: pointer;
 }
-.inview .draw-dot {
-  opacity: 1;
+.acc > summary::-webkit-details-marker {
+  display: none;
+}
+.acc-mark {
+  transition: transform 0.3s var(--ease);
+}
+.acc[open] > summary .acc-mark {
+  transform: rotate(45deg);
 }
 
-/* Chart choreography: line draws L→R, dots pop sequentially (--d per dot) */
+/* Mobile tab bar: opaque paper so readings never show through. */
+.tabbar {
+  background: color-mix(in srgb, var(--page-bg) 94%, transparent);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+} /* end @layer components */
+
+/* ---- Motion ---- */
+
+/* Fade-up on viewport entry, once. Only armed when scripting is available and
+   motion is welcome, so content is never hidden from anyone. */
+@media (prefers-reduced-motion: no-preference) and (scripting: enabled) {
+  .reveal {
+    opacity: 0;
+    transform: translateY(14px);
+    transition:
+      opacity 0.7s var(--ease),
+      transform 0.7s var(--ease);
+    transition-delay: var(--rv-delay, 0ms);
+  }
+  .reveal.inview {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* Chart choreography: the line draws left to right, dots land in order. */
+  .mk-line {
+    stroke-dasharray: 1;
+    animation: mkDraw 0.9s var(--ease) both;
+  }
+  .mk-line--fast {
+    animation-duration: 0.5s;
+  }
+  .mk-dot {
+    animation: mkPop 0.3s var(--ease) both;
+    animation-delay: var(--d, 0ms);
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+}
+
 @keyframes mkDraw {
   from {
     stroke-dashoffset: 1;
@@ -747,183 +362,42 @@ body {
 @keyframes mkPop {
   from {
     opacity: 0;
-    transform: scale(0.8);
+    transform: scale(0.6);
   }
   to {
     opacity: 1;
     transform: scale(1);
   }
 }
-.mk-line {
-  stroke-dasharray: 1;
-  animation: mkDraw 0.9s var(--au-ease) both;
-}
-.mk-line--fast {
-  animation-duration: 0.55s;
-}
-.mk-dot {
-  opacity: 0;
-  animation: mkPop 0.3s var(--au-ease) both;
-  animation-delay: var(--d, 0ms);
-  transform-box: fill-box;
-  transform-origin: center;
-}
-/* Same pop for HTML elements that land last in a chart's choreography */
-.mk-pop {
-  display: inline-flex;
-  opacity: 0;
-  animation: mkPop 0.3s var(--au-ease) both;
-  animation-delay: var(--d, 0ms);
-}
-
-/* Accordion (details): height animated where the platform supports it,
-   instant elsewhere. The + marker rotates to × when open. */
-.aurora {
-  interpolate-size: allow-keywords;
-}
-.au-acc::details-content {
-  block-size: 0;
-  overflow-y: clip;
-  transition:
-    content-visibility 0.55s allow-discrete,
-    block-size 0.55s var(--au-ease);
-}
-.au-acc[open]::details-content {
-  block-size: auto;
-}
-.au-acc-plus {
-  display: inline-block;
-  transition: transform 0.35s var(--au-ease);
-}
-.au-acc[open] .au-acc-plus {
-  transform: rotate(45deg);
-}
-.au-acc summary {
-  list-style: none;
-}
-.au-acc summary::-webkit-details-marker {
-  display: none;
-}
-
-/* Mobile tab bar: frost over the scrolling canvas */
-.au-tabbar {
-  background: color-mix(in srgb, var(--page-bg) 86%, transparent);
-  -webkit-backdrop-filter: blur(14px);
-  backdrop-filter: blur(14px);
-  padding-bottom: env(safe-area-inset-bottom);
-}
 
 @media (prefers-reduced-motion: reduce) {
-  .au-reveal {
-    opacity: 1;
-    transform: none;
-    transition: none;
+  html {
+    scroll-behavior: auto;
   }
-  .au-row,
-  .au-row .au-row-title,
-  .au-seg button,
-  .au-acc::details-content,
-  .au-acc-plus {
-    transition: none;
-  }
-  .mk-line,
-  .mk-dot,
-  .mk-pop {
-    animation: none;
-    opacity: 1;
-    stroke-dashoffset: 0;
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
   }
 }
 
-/* The doctor summary prints from the dark app: flip to ink-on-paper */
+/* ---- Print: the doctor summary goes out as ink on paper ---- */
 @media print {
-  .aurora[data-theme="dark"] {
+  :root {
     --page-bg: #ffffff;
-    --paper: #ffffff;
-    --paper-2: #f4f3ee;
-    --paper-3: #e8e7e0;
-    --line: rgba(17, 17, 15, 0.16);
-    --line-strong: rgba(17, 17, 15, 0.24);
-    --rule: rgba(17, 17, 15, 0.35);
-    --ink: #16160f;
-    --ink-2: #3d3d37;
-    --ink-3: #5f5f57;
-    --brand: #0d9488;
-    --in-range: #16a34a;
-    --borderline: #ca8a04;
-    --borderline-ink: #a16207;
-    --out: #e11d48;
+    --paper-2: #ffffff;
+  }
+  body {
     background: #ffffff;
   }
-}
-
-/* -------------------------------------------------------------------------
-   Scroll-driven motion (native, dependency-free). Uses `animation-timeline:
-   view()` so animations are linked to how far an element has scrolled through
-   the viewport — richer than a one-shot reveal. Progressive enhancement:
-   where unsupported (or reduced motion), the classes do nothing and content is
-   simply visible. Keyframes are declared globally; the classes are gated.
-   ------------------------------------------------------------------------- */
-@keyframes sdLift {
-  from {
-    opacity: 0;
-    transform: translateY(24px);
+  .card {
+    border-color: rgba(19, 35, 31, 0.3);
   }
-  to {
-    opacity: 1;
-    transform: none;
+  /* Sections that never scrolled into view must still print. */
+  .reveal {
+    opacity: 1 !important;
+    transform: none !important;
   }
 }
-/* The page's own trend line: scroll progress under the nav */
-@keyframes sdProgress {
-  from {
-    transform: scaleX(0);
-  }
-  to {
-    transform: scaleX(1);
-  }
-}
-
-.au-progress {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: -1px;
-  height: 2px;
-  background: var(--brand);
-  transform: scaleX(0);
-  transform-origin: left;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  @supports (animation-timeline: view()) {
-    .sd-lift {
-      animation: sdLift linear both;
-      animation-timeline: view();
-      animation-range: entry 2% cover 34%;
-    }
-    .au-progress {
-      animation: sdProgress linear both;
-      animation-timeline: scroll(root);
-    }
-  }
-}
-
-::selection {
-  background: var(--brand-soft);
-  color: var(--brand-strong);
-}
-
-/* Landing: designed selection + focus (default blue rings are a junior tell) */
-.aurora ::selection {
-  background: #5eead4;
-  color: #0a0a0a;
-}
-.aurora :focus-visible {
-  outline: 1px solid var(--brand);
-  outline-offset: 3px;
-  border-radius: 2px;
-}
-
-
