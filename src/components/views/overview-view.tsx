@@ -12,6 +12,7 @@ import {
 import { CATEGORY_COMMON_ORDER } from "@/lib/commonality";
 import type { ViewCtx } from "@/lib/view-context";
 import { formatDate, monthsSince } from "@/lib/utils";
+import { Art } from "@/components/ui/art";
 import { Button } from "@/components/ui/button";
 import { StatusGlyph } from "@/components/ui/status-badge";
 import { StatusSummary } from "@/components/markers/status-summary";
@@ -46,6 +47,7 @@ export function OverviewView({
   unitPrefs: Record<string, string>;
 }) {
   if (sessions.length === 0) return <EmptyOverview name={profile.name} ctx={ctx} />;
+
 
   const digests = summaries.filter((s) => s.latest).map((s) => toDigest(s, unitPrefs));
   const byId = new Map(digests.map((d) => [d.id, d]));
@@ -226,25 +228,32 @@ function SystemCard({
 
 function EmptyOverview({ name, ctx }: { name: string; ctx: ViewCtx }) {
   return (
-    <Reveal className="flex min-h-[60vh] flex-col items-center justify-center text-center">
-      <div className="max-w-md">
-        <p className="eyebrow">First entry</p>
-        <h1 className="display mt-3 text-[2rem] text-ink sm:text-[2.5rem]">
+    <Reveal>
+      <Art
+        name="hero"
+        scrim
+        flip
+        priority
+        sizes="100vw"
+        className="flex min-h-[60vh] flex-col justify-end p-7 text-white sm:p-12"
+      >
+        <p className="eyebrow text-white/75">First entry</p>
+        <h1 className="display mt-3 max-w-[16ch] text-[2rem] text-white sm:text-[3rem]">
           Start {name}&rsquo;s record with any report
         </h1>
-        <p className="mt-4 leading-relaxed text-ink-2">
+        <p className="mt-4 max-w-md leading-relaxed text-white/85">
           Grab a lab report, even an old one. Panel shortcuts pre-fill the rows, so a
           20-marker report takes about three minutes to enter. Trends appear once a marker
           has two results.
         </p>
         {!ctx.readOnly && (
-          <Button asChild size="lg" className="mt-8">
+          <Button asChild size="lg" variant="light" className="mt-8 self-start">
             <Link href="/app/sessions/new">
               <Plus aria-hidden /> Add your first results
             </Link>
           </Button>
         )}
-      </div>
+      </Art>
     </Reveal>
   );
 }

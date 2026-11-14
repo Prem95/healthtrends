@@ -7,8 +7,9 @@
   canvas, white cards on hairlines, evergreen ink, and sentence-case sans for
   every control. The only vivid colour on any screen is the status of a
   result (in range / borderline / out), and it always travels with a shape and
-  a label. No shadows, no gradients; depth is surface + hairline. One easing
-  curve. Swap the tokens in :root to rebrand.
+  a label. Warmth comes from one gradient family — evergreen into orange —
+  used as painted artwork (public/art), soft washes and frosted glass, never
+  on data. One easing curve. Swap the tokens in :root to rebrand.
 */
 
 :root {
@@ -45,6 +46,18 @@
   --out-soft: #fbe3e9;
   --out-ink: #ad2247;
   --neutral-status: #84908c;
+
+  /* Warm partner to the evergreen: brand surfaces and artwork only, never
+     data (amber "borderline" is a status; this orange is not). */
+  --warm: #ee7420;
+  --warm-strong: #c9480f;
+  --warm-soft: #fdebd9;
+
+  /* The one gradient family: evergreen into orange. */
+  --grad-brand: linear-gradient(118deg, #0c5348 0%, #1c8c74 40%, #f3a23a 80%, #ea6a1f 100%);
+  --grad-wash: radial-gradient(120% 140% at 0% 0%, rgba(28, 140, 116, 0.1), transparent 55%),
+    radial-gradient(120% 140% at 100% 100%, rgba(238, 116, 32, 0.12), transparent 55%);
+  --shadow-float: 0 28px 60px -30px rgba(6, 33, 29, 0.5);
 
   /* Chart chrome */
   --chart-line: #2a3a36;
@@ -118,6 +131,9 @@
   --color-out-soft: var(--out-soft);
   --color-out-ink: var(--out-ink);
   --color-neutral-status: var(--neutral-status);
+  --color-warm: var(--warm);
+  --color-warm-strong: var(--warm-strong);
+  --color-warm-soft: var(--warm-soft);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
 
@@ -143,7 +159,13 @@ html {
 }
 
 body {
-  background: var(--page-bg);
+  /* Paper, warmed at the top by the two brand hues. */
+  background:
+    radial-gradient(1100px 620px at -5% -10%, rgba(28, 140, 116, 0.11), transparent 62%),
+    radial-gradient(1000px 640px at 105% -5%, rgba(238, 116, 32, 0.12), transparent 60%),
+    var(--page-bg);
+  background-repeat: no-repeat;
+  background-color: var(--page-bg);
   color: var(--ink);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
@@ -205,6 +227,80 @@ body {
   border: 1px solid var(--line-strong);
   border-radius: 16px;
 }
+/* A card with the brand wash: faint green from one corner, orange from the
+   other. For summary surfaces, not for tables or charts. */
+.card-wash {
+  background: var(--grad-wash), var(--paper);
+  border: 1px solid var(--line-strong);
+  border-radius: 20px;
+}
+
+/* Painted artwork panel: the image fills it, content sits on top. */
+.art {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border-radius: 28px;
+  background: #0c5348;
+}
+.art > img {
+  z-index: -2;
+}
+/* Fluted-glass ribs over the art. */
+.art--ribbed::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: repeating-linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.11) 0px,
+    rgba(255, 255, 255, 0) 10px,
+    rgba(6, 33, 29, 0.09) 23px,
+    rgba(6, 33, 29, 0) 24px
+  );
+}
+/* Scrim for white type on art. */
+.art--scrim::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(180deg, rgba(6, 33, 29, 0.04), rgba(6, 33, 29, 0.4));
+}
+
+/* Frosted glass over artwork. Light glass carries ink; dark glass, white. */
+.glass {
+  background: rgba(255, 255, 255, 0.78);
+  -webkit-backdrop-filter: blur(22px) saturate(1.3);
+  backdrop-filter: blur(22px) saturate(1.3);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: var(--shadow-float);
+}
+.glass-dark {
+  background: rgba(8, 30, 26, 0.5);
+  -webkit-backdrop-filter: blur(22px) saturate(1.2);
+  backdrop-filter: blur(22px) saturate(1.2);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  color: #ffffff;
+}
+@supports not (backdrop-filter: blur(1px)) {
+  .glass {
+    background: rgba(255, 255, 255, 0.95);
+  }
+  .glass-dark {
+    background: rgba(8, 30, 26, 0.86);
+  }
+}
+
+/* Gradient ink for one emphasised phrase per page. */
+.text-grad {
+  background: var(--grad-brand);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
 .card-inset {
   background: var(--paper-2);
   border: 1px solid var(--line);

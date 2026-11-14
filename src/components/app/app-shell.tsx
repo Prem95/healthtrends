@@ -34,7 +34,7 @@ export function AppShell({
 }) {
   const demo = ctx.readOnly;
   return (
-    <div className="min-h-[100dvh] bg-page text-ink lg:grid lg:grid-cols-[256px_minmax(0,1fr)]">
+    <div className="min-h-[100dvh] text-ink lg:grid lg:grid-cols-[256px_minmax(0,1fr)]">
       <aside className="sticky top-0 hidden h-[100dvh] flex-col border-r border-line px-4 py-5 lg:flex print:hidden">
         <Link href={demo ? "/" : "/app"} className="px-2" aria-label="bbiom home">
           <Logo />
@@ -106,7 +106,7 @@ export function AppShell({
         </header>
 
         {demo && (
-          <div className="border-b border-line bg-brand-tint print:hidden">
+          <div className="border-b border-line bg-[image:linear-gradient(90deg,var(--brand-soft),var(--warm-soft))] print:hidden">
             <p className="mx-auto flex max-w-5xl flex-wrap items-center gap-x-3 gap-y-1 px-5 py-2.5 text-sm text-ink-2 sm:px-8">
               <span className="font-medium text-ink">Sample dashboard.</span>
               <span className="hidden sm:inline">

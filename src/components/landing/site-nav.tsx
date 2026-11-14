@@ -13,8 +13,8 @@ import { NAV_LINKS } from "@/components/landing/nav-links";
 export function SiteNav() {
   const [open, setOpen] = useState(false);
   return (
-    <header className="tabbar sticky top-0 z-40 border-b border-line">
-      <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-5 py-3 sm:px-8">
+    <header className="tabbar sticky top-0 z-40">
+      <div className="mx-auto flex w-full max-w-[1280px] items-center justify-between gap-4 px-4 py-3 sm:px-6">
         <Link href="/" aria-label="bbiom home">
           <Logo />
         </Link>
@@ -42,7 +42,7 @@ export function SiteNav() {
             aria-expanded={open}
             aria-controls="site-menu"
             onClick={() => setOpen((v) => !v)}
-            className="grid size-10 cursor-pointer place-items-center rounded-[10px] text-ink md:hidden"
+            className="grid size-10 cursor-pointer place-items-center rounded-full text-ink md:hidden"
           >
             {open ? <X className="size-5" aria-hidden /> : <Menu className="size-5" aria-hidden />}
           </button>

@@ -34,7 +34,7 @@ export function StatusSummary({
   ].filter((p) => p.n > 0);
 
   return (
-    <div className={cn("card p-6 sm:p-7", className)}>
+    <div className={cn("card-wash @container p-6 sm:p-7", className)}>
       <p className="text-sm text-ink-3">Latest result for each marker</p>
       <p className="mt-2 flex flex-wrap items-baseline gap-x-3 gap-y-1">
         <span className="text-[3.25rem] font-medium leading-none tracking-[-0.035em] text-ink">
@@ -60,7 +60,7 @@ export function StatusSummary({
         ))}
       </div>
 
-      <dl className="mt-5 flex flex-wrap justify-between gap-x-4 gap-y-3 sm:grid sm:grid-cols-3">
+      <dl className="mt-4 divide-y divide-line @sm:mt-5 @sm:grid @sm:grid-cols-3 @sm:gap-x-4 @sm:divide-y-0">
         <Tally status="IN_RANGE" label="In range" n={c.inRange} />
         <Tally status="BORDERLINE_HIGH" label="Borderline" n={c.borderline} />
         <Tally status="HIGH" label="Out of range" n={c.out} />
@@ -77,12 +77,12 @@ export function StatusSummary({
 
 function Tally({ status, label, n }: { status: ResultStatus; label: string; n: number }) {
   return (
-    <div>
-      <dt className="flex items-center gap-2 whitespace-nowrap text-[0.8125rem] text-ink-2 sm:text-sm">
+    <div className="flex items-center justify-between gap-3 py-2 @sm:block @sm:py-0">
+      <dt className="flex items-center gap-2 whitespace-nowrap text-sm text-ink-2">
         <StatusGlyph status={status} />
         {label}
       </dt>
-      <dd className="mt-1 text-2xl font-medium text-ink">{n}</dd>
+      <dd className="text-lg font-medium text-ink @sm:mt-1 @sm:text-2xl">{n}</dd>
     </div>
   );
 }

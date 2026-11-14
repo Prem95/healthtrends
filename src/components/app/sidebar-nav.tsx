@@ -60,9 +60,9 @@ export function SideNav({ base }: { base: string }) {
               href={href}
               aria-current={active ? "page" : undefined}
               className={cn(
-                "flex items-center gap-3 rounded-[10px] px-3 py-2 text-sm font-medium transition-colors duration-300",
+                "flex items-center gap-3 rounded-full px-3.5 py-2 text-sm font-medium transition-colors duration-300",
                 active
-                  ? "bg-brand-soft text-brand-strong"
+                  ? "bg-[image:linear-gradient(90deg,var(--brand-soft),var(--warm-soft))] text-brand-strong"
                   : "text-ink-2 hover:bg-paper-2 hover:text-ink",
               )}
             >
@@ -98,7 +98,7 @@ export function TabBar({ base }: { base: string }) {
               )}
             >
               {tabOnly ? (
-                <span className="grid size-7 place-items-center rounded-full bg-ink text-page">
+                <span className="grid size-7 place-items-center rounded-full bg-[image:var(--grad-brand)] text-white">
                   <Icon className="size-4" aria-hidden />
                 </span>
               ) : (

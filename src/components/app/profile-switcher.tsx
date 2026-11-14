@@ -80,7 +80,7 @@ export function ProfileSwitcher({
             aria-pressed={active}
             onClick={() => pick(p.id)}
             className={cn(
-              "flex w-full cursor-pointer items-center gap-3 rounded-[10px] px-3 py-2 text-left text-sm transition-colors duration-300",
+              "flex w-full cursor-pointer items-center gap-3 rounded-full px-3 py-2 text-left text-sm transition-colors duration-300",
               active ? "font-medium text-ink" : "text-ink-2 hover:bg-paper-2 hover:text-ink",
             )}
           >
@@ -88,7 +88,7 @@ export function ProfileSwitcher({
               aria-hidden
               className={cn(
                 "grid size-6 shrink-0 place-items-center rounded-full text-[0.6875rem] font-medium",
-                active ? "bg-ink text-page" : "bg-paper-3 text-ink-2",
+                active ? "bg-[image:var(--grad-brand)] text-white" : "bg-paper-3 text-ink-2",
               )}
             >
               {p.name.trim().charAt(0).toUpperCase()}

@@ -13,9 +13,18 @@ import { RangeBar } from "@/components/charts/range-bar";
   on the server and inside client lists alike.
 */
 
-export function MarkerCard({ d, href }: { d: MarkerDigest; href: string }) {
+export function MarkerCard({
+  d,
+  href,
+  className,
+}: {
+  d: MarkerDigest;
+  href: string;
+  /** e.g. "glass" to float the card over artwork. */
+  className?: string;
+}) {
   return (
-    <Link href={href} className="card row-link group flex h-full flex-col gap-4 p-5">
+    <Link href={href} className={cn("card row-link group flex h-full flex-col gap-4 p-5", className)}>
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="row-title truncate text-[0.9375rem] font-medium text-ink">{d.name}</p>

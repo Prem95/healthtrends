@@ -1,13 +1,13 @@
 import { cn } from "@/lib/utils";
 
 /**
- * Wordmark: an ink tile holding one plotted line that settles into range,
- * beside the name. The mark is the product in miniature.
+ * Wordmark: a tile in the brand gradient (evergreen into orange) holding one
+ * plotted line that settles into range, beside the name.
  */
 export function Logo({ className, compact = false }: { className?: string; compact?: boolean }) {
   return (
     <span className={cn("inline-flex select-none items-center gap-2.5", className)}>
-      <span className="grid size-8 place-items-center rounded-[9px] bg-ink text-page">
+      <span className="grid size-8 place-items-center rounded-[10px] bg-[image:var(--grad-brand)] text-white">
         <svg viewBox="0 0 24 24" className="size-5" fill="none" aria-hidden>
           <path
             d="M4 15.5 8.5 9l4 5 3-3.5H20"
