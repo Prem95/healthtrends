@@ -15,6 +15,11 @@ import { GRID } from "@/components/site/layout";
 type Vars = React.CSSProperties & Record<`--${string}`, string>;
 export const at = (ms: number): Vars => ({ "--d": `${ms}ms` });
 
+/** The cobalt full stop that closes a one-word display title. */
+export function Dot() {
+  return <span className="stop">.</span>;
+}
+
 /* ------------------------------------------------------------- stat row */
 
 export type StatItem = {
@@ -143,7 +148,7 @@ export function Quote({
         <span className="figure block text-[5rem] leading-[0.6] text-brand" aria-hidden>
           &ldquo;
         </span>
-        <blockquote className="display mt-4 text-display-l text-ink">{quote}</blockquote>
+        <blockquote className="display mt-4 text-display-m text-ink">{quote}</blockquote>
         <figcaption className="mt-8 flex flex-wrap items-baseline gap-x-3 gap-y-1">
           <span className="text-[0.9375rem] font-medium text-ink">{source}</span>
           {meta && <span className="text-sm text-ink-3">{meta}</span>}
@@ -249,14 +254,16 @@ export function Faq({
 
 /* ------------------------------------------------------------- CTA band */
 
-/** The closing band: cobalt, full bleed, one claim and one action. */
+/** The closing band: cobalt, full bleed, one word, one line and one action. */
 export function CtaBand({
   title,
+  lede,
   action,
   secondary,
   note,
 }: {
   title: React.ReactNode;
+  lede?: string;
   action: { label: string; href: string };
   secondary?: { label: string; href: string };
   note?: string;
@@ -265,7 +272,10 @@ export function CtaBand({
     <section className="bg-brand text-white" aria-label="Get started">
       <div className="mx-auto w-full max-w-[1360px] px-[var(--gutter)] py-[var(--space-section)]">
         <Reveal anim effect="none" className={cn(GRID, "items-end")}>
-          <h2 className="display m-item text-display-l text-white lg:col-span-8">{title}</h2>
+          <div className="m-item lg:col-span-8">
+            <h2 className="display text-display-xl text-white">{title}</h2>
+            {lede && <p className="mt-6 max-w-[30rem] text-lede text-white/85">{lede}</p>}
+          </div>
           <div className="m-item flex flex-col items-start gap-4 lg:col-span-4 lg:items-end" style={at(150)}>
             <Button asChild size="lg" variant="light">
               <Link href={action.href}>{action.label}</Link>

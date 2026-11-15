@@ -236,7 +236,7 @@ function EmptyOverview({ name, ctx }: { name: string; ctx: ViewCtx }) {
         </svg>
         <p className="eyebrow mt-12">First entry</p>
         <h1 className="display mt-4 max-w-[16ch] text-display-m text-ink">
-          Start {name}&rsquo;s record with <em>any report.</em>
+          Start {name}&rsquo;s record with any report
         </h1>
         <p className="mt-4 max-w-md leading-relaxed text-ink-2">
           Grab a lab report, even an old one. Panel shortcuts pre-fill the rows, so a

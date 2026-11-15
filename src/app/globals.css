@@ -4,12 +4,13 @@
   bbiom design system — "the well-kept record".
 
   A lab report set by a good typographer: warm paper, near-black ink, one
-  editorial serif for headings and big readings, one clean sans for
-  everything else. Colour is rationed. The only vivid colours on a screen are
-  the status of a result (in range / borderline / out), which always travel
-  with a shape and a label, and one cobalt accent for interaction and a
-  single emphasised phrase. No gradients, no artwork: the product's own line
-  is the image. See design-notes.md for the reasoning.
+  contemporary display grotesk (Funnel Display) for one-word headings and
+  big readings, its text companion (Funnel Sans) for everything else, no
+  italics. Colour is rationed. The only vivid colours on a screen are the
+  status of a result (in range / borderline / out), which always travel
+  with a shape and a label, and one cobalt accent for interaction and the
+  full stop that closes each title. No gradients, no artwork: the product's
+  own line is the image. See design-notes.md for the reasoning.
 */
 
 :root {
@@ -29,8 +30,8 @@
   --line-strong: rgba(18, 21, 19, 0.17);
   --rule: rgba(18, 21, 19, 0.34);
 
-  /* The one accent: cobalt. Links, focus, the active item, one emphasised
-     phrase per page and the closing band. Never a data mark. */
+  /* The one accent: cobalt. Links, focus, the active item, the full stop
+     after each display title, and the closing band. Never a data mark. */
   --brand: #2b44c4; /* 6.9:1 on the canvas */
   --brand-strong: #1f33a0;
   --brand-soft: #e1e5f8;
@@ -138,8 +139,8 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
 
-  --font-sans: var(--font-google-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-newsreader), ui-serif, Georgia, serif;
+  --font-sans: var(--font-funnel-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-funnel-display), var(--font-funnel-sans), ui-sans-serif, system-ui, sans-serif;
 
   --radius-sm: 0.375rem;
   --radius-md: var(--radius);
@@ -155,18 +156,18 @@
 /* Type scale. Display sizes are fluid between 375px and 1440px; the body
    scale is fixed. Usage: text-display-xl, text-lede, … */
 @theme {
-  --text-display-xl: clamp(3rem, 1.55rem + 6.2vw, 7.25rem);
-  --text-display-xl--line-height: 0.98;
-  --text-display-xl--letter-spacing: -0.03em;
-  --text-display-l: clamp(2.375rem, 1.5rem + 3.6vw, 4.75rem);
-  --text-display-l--line-height: 1.02;
-  --text-display-l--letter-spacing: -0.025em;
-  --text-display-m: clamp(1.875rem, 1.35rem + 2vw, 3rem);
-  --text-display-m--line-height: 1.06;
-  --text-display-m--letter-spacing: -0.02em;
+  --text-display-xl: clamp(3.5rem, 1.6rem + 8.2vw, 9.5rem);
+  --text-display-xl--line-height: 0.92;
+  --text-display-xl--letter-spacing: -0.05em;
+  --text-display-l: clamp(2.75rem, 1.6rem + 4.6vw, 5.75rem);
+  --text-display-l--line-height: 0.96;
+  --text-display-l--letter-spacing: -0.045em;
+  --text-display-m: clamp(2.25rem, 1.5rem + 3vw, 4rem);
+  --text-display-m--line-height: 1;
+  --text-display-m--letter-spacing: -0.04em;
   --text-display-s: clamp(1.5rem, 1.25rem + 0.9vw, 2rem);
-  --text-display-s--line-height: 1.12;
-  --text-display-s--letter-spacing: -0.015em;
+  --text-display-s--line-height: 1.1;
+  --text-display-s--letter-spacing: -0.025em;
   --text-lede: clamp(1.125rem, 1.02rem + 0.45vw, 1.375rem);
   --text-lede--line-height: 1.45;
 }
@@ -204,19 +205,18 @@ body {
 @layer components {
 /* ---- Type ---- */
 
-/* Display: the serif (Newsreader's display cut), regular weight, sentence
-   case. One phrase per heading may be set in italic (<em>) — the second
-   voice of the page. */
+/* Display: Funnel Display, medium weight, upright. Marketing titles are
+   one word; `.stop` sets the cobalt full stop that closes them. */
 .display {
   font-family: var(--font-display);
-  font-weight: 400;
-  letter-spacing: -0.02em;
-  line-height: 1.04;
+  font-weight: 500;
+  font-style: normal;
+  letter-spacing: -0.03em;
+  line-height: 1.02;
   text-wrap: balance;
 }
-.display em {
-  font-style: italic;
-  letter-spacing: -0.025em;
+.stop {
+  color: var(--brand);
 }
 
 /* Big readings and statistics: the serif's lining figures, aligned. */
@@ -224,7 +224,7 @@ body {
   font-family: var(--font-display);
   font-weight: 400;
   font-variant-numeric: lining-nums tabular-nums;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.04em;
   line-height: 0.95;
 }
 

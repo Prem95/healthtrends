@@ -21,7 +21,7 @@ export function SiteFooter() {
         <div className="grid gap-12 lg:grid-cols-12">
           <div className="lg:col-span-5">
             <Logo />
-            <p className="display mt-6 max-w-[20ch] text-display-s text-ink">Your blood tests, as one record.</p>
+            <p className="mt-5 max-w-[22rem] text-lede text-ink-2">Your blood tests, as one record you can read.</p>
           </div>
           <nav aria-label="Footer" className="grid grid-cols-2 gap-8 sm:grid-cols-3 lg:col-span-6 lg:col-start-7">
             {COLUMNS.map((c) => (

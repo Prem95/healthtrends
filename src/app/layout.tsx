@@ -1,32 +1,21 @@
 import type { Metadata, Viewport } from "next";
-import { Google_Sans } from "next/font/google";
-import localFont from "next/font/local";
+import { Funnel_Display, Funnel_Sans } from "next/font/google";
 import "./globals.css";
 
-// Display: Newsreader (SIL OFL, fonts/OFL.txt), self-hosted as two static
-// instances pinned at its opsz-60 display cut — upright and italic, ~23 KB
-// each instead of ~140 KB variable files, so the headline paints fast on a
-// phone. Headings and big readings only, always weight 400.
-const newsreader = localFont({
-  variable: "--font-newsreader",
-  src: [
-    { path: "./fonts/newsreader-display-400.woff2", weight: "400", style: "normal" },
-    { path: "./fonts/newsreader-display-400-italic.woff2", weight: "400", style: "italic" },
-  ],
-  display: "swap",
-  fallback: ["Georgia", "Times New Roman", "serif"],
-  adjustFontFallback: "Times New Roman",
-});
-
-// Body and every control: a clean sans with tabular figures for columns.
-// next/font has no fallback metrics for this face, so name the system stack
-// directly rather than ask it to generate an adjusted fallback.
-const googleSans = Google_Sans({
-  variable: "--font-google-sans",
+// Display: Funnel Display (2024), a contemporary grotesk with a distinctive
+// cut, for one-word headings and big readings. Upright only — no italics.
+const funnelDisplay = Funnel_Display({
+  variable: "--font-funnel-display",
   subsets: ["latin"],
   display: "swap",
-  adjustFontFallback: false,
-  fallback: ["ui-sans-serif", "system-ui", "-apple-system", "Segoe UI", "Roboto", "sans-serif"],
+});
+
+// Body and every control: Funnel Sans, the display face's text companion.
+const funnelSans = Funnel_Sans({
+  variable: "--font-funnel-sans",
+  subsets: ["latin"],
+  style: ["normal"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -47,7 +36,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${newsreader.variable} ${googleSans.variable} h-full antialiased`}
+      className={`${funnelDisplay.variable} ${funnelSans.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">{children}</body>
     </html>

@@ -12,7 +12,7 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { MarkerCard } from "@/components/markers/marker-parts";
 import { Reveal } from "@/components/motion/reveal";
 import { Container, GRID, Section, SectionHeader } from "@/components/site/layout";
-import { CtaBand, Faq, Feature, Pricing, Quote, StatRow, TextLink, at } from "@/components/site/blocks";
+import { CtaBand, Dot, Faq, Feature, Pricing, Quote, StatRow, TextLink, at } from "@/components/site/blocks";
 import { MarkerShowcase, type ShowcaseMarker } from "@/components/site/marker-showcase";
 import { SiteFooter } from "@/components/site/site-footer";
 import { SiteNav } from "@/components/site/site-nav";
@@ -85,12 +85,12 @@ export default function Home() {
               <div className="lg:col-span-8">
                 <p className="eyebrow">Blood test tracker</p>
                 <h1 id="hero-title" className="display mt-6 text-display-xl text-ink">
-                  Every blood test, <em className="text-brand">on one line.</em>
+                  Bloodwork<Dot />
                 </h1>
               </div>
               <div className="lg:col-span-4 lg:col-start-9 lg:pb-2">
                 <p className="max-w-[34rem] text-lede text-ink-2">
-                  Type in your lab results. See each marker against your lab&rsquo;s own range, year after year.
+                  Every blood test on one line, read against your lab&rsquo;s own range.
                 </p>
                 <div className="mt-8 flex flex-wrap items-center gap-x-7 gap-y-4">
                   <Button asChild size="lg">
@@ -168,10 +168,10 @@ export default function Home() {
           <Container>
             <Feature
               id="how-title"
-              kicker="Overview"
+              kicker="How am I doing?"
               title={
                 <>
-                  How am I doing? <em>Answered first.</em>
+                  Overview<Dot />
                 </>
               }
               body="One figure for your latest test. Then only what needs a closer look."
@@ -209,10 +209,10 @@ export default function Home() {
             <Feature
               reverse
               id="ranges-title"
-              kicker="Ranges"
+              kicker="Your lab’s, not a textbook’s"
               title={
                 <>
-                  Your lab&rsquo;s range, <em>not a textbook one.</em>
+                  Ranges<Dot />
                 </>
               }
               body="Each result is read against the range printed on your report. No range on it? The standard one, or your own."
@@ -238,10 +238,10 @@ export default function Home() {
             <Reveal>
               <SectionHeader
                 id="trends-title"
-                kicker="Trends"
+                kicker="One marker, every year"
                 title={
                   <>
-                    One marker. <em>Every year.</em>
+                    Trends<Dot />
                   </>
                 }
                 lede="Point at any test to read it. Life events sit on the line, so you can see what moved it."
@@ -259,7 +259,7 @@ export default function Home() {
             <Quote
               quote={
                 <>
-                  Each result looked fine. <em>Together, a steady drift.</em>
+                  Each result looked fine. Together, a steady drift.
                 </>
               }
               source="Fasting glucose, sample profile"
@@ -289,10 +289,10 @@ export default function Home() {
             <Reveal>
               <SectionHeader
                 id="share-title"
-                kicker="Share"
+                kicker="For the doctor and the family"
                 title={
                   <>
-                    For the appointment. <em>For the family.</em>
+                    Sharing<Dot />
                   </>
                 }
                 lede="A one-page summary to hand your doctor, and a profile for everyone you look after."
@@ -333,10 +333,10 @@ export default function Home() {
             <Reveal>
               <SectionHeader
                 id="markers-title"
-                kicker="Catalog"
+                kicker={`${BUILTIN_COUNT} markers, ten body systems`}
                 title={
                   <>
-                    {BUILTIN_COUNT} markers, <em>ten body systems.</em>
+                    Markers<Dot />
                   </>
                 }
                 lede="Search by what your lab prints: A1c, LDL, TSH. Missing one? Add your own, with its unit and range."
@@ -352,9 +352,9 @@ export default function Home() {
         <Section id="privacy" tone="white" aria-labelledby="privacy-title">
           <Container className={GRID}>
             <Reveal className="lg:col-span-5">
-              <p className="eyebrow">Privacy</p>
+              <p className="eyebrow">Only yours</p>
               <h2 id="privacy-title" className="display mt-5 text-display-l text-ink">
-                Your results. <em>Only yours.</em>
+                Privacy<Dot />
               </h2>
               <p className="mt-6 max-w-[26rem] text-lede text-ink-2">
                 A record, not a diagnosis. Nothing is sold, shared or scored.
@@ -393,10 +393,10 @@ export default function Home() {
             <Reveal>
               <SectionHeader
                 id="pricing-title"
-                kicker="Pricing"
+                kicker="Free to track, Pro for more"
                 title={
                   <>
-                    Free to track. <em>Pro for more.</em>
+                    Pricing<Dot />
                   </>
                 }
                 lede="Pro adds the family, unlimited tests and the doctor summary. Cancel any time."
@@ -442,7 +442,11 @@ export default function Home() {
           <Container>
             <Faq
               id="faq-title"
-              title="Questions"
+              title={
+                <>
+                  Questions<Dot />
+                </>
+              }
               aside={
                 <p>
                   Still unsure? <TextLink href="/demo">Try the sample</TextLink>
@@ -454,7 +458,8 @@ export default function Home() {
         </Section>
 
         <CtaBand
-          title="Start with the report you have."
+          title="Begin."
+          lede="Bring the report you have, even an old one."
           action={{ label: "Start free", href: "/login" }}
           secondary={{ label: "See a sample", href: "/demo" }}
           note="Free for one profile. No card."

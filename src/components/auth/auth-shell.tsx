@@ -36,7 +36,7 @@ export function AuthShell({ children }: { children: React.ReactNode }) {
           className="relative flex h-full flex-col justify-center rounded-[28px] bg-page px-10 py-16 xl:px-16"
         >
           <p className="display max-w-[16ch] text-display-s text-ink">
-            Every blood test, <em className="text-brand">on one line.</em>
+            Bloodwork<span className="stop">.</span>
           </p>
           <div className="pointer-events-none mt-10 w-full max-w-md space-y-4">
             <StatusSummary digests={digests} />
