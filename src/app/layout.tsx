@@ -1,18 +1,21 @@
-import type { Metadata } from "next";
-import { Google_Sans, JetBrains_Mono } from "next/font/google";
+import type { Metadata, Viewport } from "next";
+import { Google_Sans, Newsreader } from "next/font/google";
 import "./globals.css";
 
-const googleSans = Google_Sans({
-  variable: "--font-google-sans",
+// Display: an editorial serif with optical sizes, so the hero and the big
+// readings get the high-contrast display cut. Headings and figures only.
+const newsreader = Newsreader({
+  variable: "--font-newsreader",
   subsets: ["latin"],
+  style: ["normal", "italic"],
+  axes: ["opsz"],
   display: "swap",
 });
 
-// Monospace is reserved for section kickers and the unit beside a reading.
-const jetBrainsMono = JetBrains_Mono({
-  variable: "--font-jetbrains-mono",
+// Body and every control: a clean sans with tabular figures for columns.
+const googleSans = Google_Sans({
+  variable: "--font-google-sans",
   subsets: ["latin"],
-  weight: ["400", "500"],
   display: "swap",
 });
 
@@ -20,6 +23,10 @@ export const metadata: Metadata = {
   title: "bbiom | Track your blood test results over time",
   description:
     "Keep every blood test in one place. bbiom plots each biomarker over the years against the reference range on your own lab report, so you can see what is in range, what is borderline and what has changed.",
+};
+
+export const viewport: Viewport = {
+  themeColor: "#f4f2ec",
 };
 
 export default function RootLayout({
@@ -30,7 +37,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${googleSans.variable} ${jetBrainsMono.variable} h-full antialiased`}
+      className={`${newsreader.variable} ${googleSans.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">{children}</body>
     </html>

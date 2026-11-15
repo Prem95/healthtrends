@@ -2,7 +2,7 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 
 /*
-  Form controls: white field on a hairline, evergreen border on focus. Labels
+  Form controls: white field on a hairline, cobalt border on focus. Labels
   are plain sentence-case sans so they read at arm's length.
 */
 const base =

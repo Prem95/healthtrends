@@ -1,26 +1,27 @@
 import { cn } from "@/lib/utils";
 
 /**
- * Wordmark: a tile in the brand gradient (evergreen into orange) holding one
- * plotted line that settles into range, beside the name.
+ * Wordmark: the name set in the display serif, after a small mark — a
+ * reference band with one reading inside it, the product in one glyph.
  */
 export function Logo({ className, compact = false }: { className?: string; compact?: boolean }) {
   return (
-    <span className={cn("inline-flex select-none items-center gap-2.5", className)}>
-      <span className="grid size-8 place-items-center rounded-[10px] bg-[image:var(--grad-brand)] text-white">
-        <svg viewBox="0 0 24 24" className="size-5" fill="none" aria-hidden>
-          <path
-            d="M4 15.5 8.5 9l4 5 3-3.5H20"
-            stroke="currentColor"
-            strokeWidth="1.9"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-          <circle cx="20" cy="10.5" r="1.9" fill="currentColor" />
-        </svg>
-      </span>
+    <span className={cn("inline-flex select-none items-center gap-2", className)}>
+      <svg viewBox="0 0 28 28" className="size-7 shrink-0" aria-hidden>
+        <rect x="1" y="1" width="26" height="26" rx="8" fill="var(--ink)" />
+        <rect x="5" y="11" width="18" height="7" rx="1.5" fill="var(--page-bg)" opacity="0.22" />
+        <path
+          d="M5 19.5 9.5 12l4.5 4 3.5-6.5L23 14"
+          fill="none"
+          stroke="var(--page-bg)"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <circle cx="23" cy="14" r="2" fill="var(--page-bg)" />
+      </svg>
       {!compact && (
-        <span className="text-[1.125rem] font-medium tracking-[-0.02em] text-ink">bbiom</span>
+        <span className="font-display text-[1.5rem] leading-none tracking-[-0.03em] text-ink">bbiom</span>
       )}
     </span>
   );
