@@ -17,27 +17,29 @@ and quiet confidence, never alarm.
 
 ### Aesthetic Direction
 **"The well-kept record": a lab report set by a good typographer.** Warm paper,
-near-black ink, an editorial serif for headings and big readings, a clean sans
-for everything else, one cobalt accent. The primary reference is Function
-Health's editorial serif on paper; from Levels we take the product's own line
-as the hero image. Product-led: every marketing picture is the real app
+near-black ink, one-word titles in a contemporary display grotesk closed by a
+cobalt full stop, a clean companion sans for everything else, no italics. The
+primary reference is Function Health's editorial calm on paper; from Levels we
+take the product's own line as the hero image. Product-led: every marketing picture is the real app
 component (or a chart drawn from the same data) over the sample profile, and
 the same screens are public at `/demo`. Full brief: `design-notes.md`.
 
 - **Colour is rationed.** Paper canvas `#F4F2EC`; white `#FFFFFF` for charts,
   tables and product panels; ink `#121513` (body `#454A47`, metadata
   `#616662`). **One accent, cobalt `#2B44C4`**: links, focus, the active item,
-  one italic phrase per heading, the closing band. No gradients, no artwork,
+  the full stop after each display title (`<Dot />`, `.stop`), the closing band. No gradients, no artwork,
   no glass. Ink sections use `data-theme="dark"` (every token re-stepped).
 - **Status colours stay reserved for data** — in range `#0A8F6C`, borderline
   `#D07C00`, out `#D1345B` (validated for colour-blind separation and ≥3:1 on
   white) — and status is **never colour alone**: each state has its own shape
   (dot / diamond / arrow up or down / hollow ring) and a plain label. The
   cobalt accent is never a data mark. Charts and tables sit on white.
-- **Type.** Display: Newsreader (optical sizes), weight 400, sentence case,
-  `.display` / `.figure`; one phrase per heading may be italic (`<em>`) — the
-  second voice. Body and UI: Google Sans, tabular figures in columns. Scale
-  tokens: `text-display-xl|l|m|s`, `text-lede` (fluid 375→1440px). **All UI
+- **Type.** Display: Funnel Display, weight 500 for titles (`.display`) and
+  400 for big readings (`.figure`), upright. **Marketing titles are one word**
+  with a cobalt full stop ("Bloodwork.", "Trends."); context goes in the
+  kicker above, one line below. Body and UI: Funnel Sans, tabular figures in
+  columns. **No italics anywhere.** Scale tokens: `text-display-xl|l|m|s`,
+  `text-lede` (fluid 375→1440px). **All UI
   text — nav, buttons, labels — is sentence-case sans, 12px minimum.** The
   only uppercase is the small `.eyebrow` kicker (sans, tracked, with a rule).
 - **Layout.** 1360px container, 12-column grid (`GRID`), `--gutter`,
@@ -54,7 +56,7 @@ the same screens are public at `/demo`. Full brief: `design-notes.md`.
   wipe), `.m-arc` (ring segments), `.m-grow` (bars), range-bar dots sliding to
   their value, `CountUp` figures — each staggered with `--d`.
 
-**Anti-references:** gradients of any kind, painted artwork or glass panels,
+**Anti-references:** italics, multi-phrase marketing titles, gradients of any kind, painted artwork or glass panels,
 a second accent hue, AI-purple meshes, flat single-colour hero blocks, bold
 display headlines, decorative use of status colours, uppercase buttons and
 nav, tiny (<12px) labels, pure `#000`/`#fff` page surfaces, stock photos of

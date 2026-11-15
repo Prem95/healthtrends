@@ -21,7 +21,7 @@ We captured six sites at desktop and mobile widths on 15 Nov 2026: WHOOP, Superp
 
 ## The direction
 
-**A lab report set by a good typographer.** The primary reference is Function Health, for its editorial serif on warm paper and its two-voice headings. We take one move from Levels: the product's own line is the hero image.
+**A lab report set by a good typographer.** The primary reference is Function Health, for its editorial calm on warm paper. We take one move from Levels: the product's own line is the hero image. Titles are a single word in a contemporary display grotesk, closed by a cobalt full stop.
 
 We are not averaging the references. Specifically:
 
@@ -31,20 +31,22 @@ We are not averaging the references. Specifically:
 
 ### Why this direction suits bbiom
 
-People open bbiom with a printout in hand, usually before or after an appointment. The page should feel like a calmer, clearer version of that printout: serif readings, ruled rows, hairlines and tabular figures. Most performance-wearable sites use loud grotesk faces and dark video, which signal effort and optimisation. A serif on paper signals a record you can trust.
+People open bbiom with a printout in hand, usually before or after an appointment. The page should feel like a calmer, clearer version of that printout: big readings, ruled rows, hairlines and tabular figures. Performance-wearable sites pair loud type with dark video, which signals effort and optimisation. One-word titles on paper, with the product's own data doing the talking, signal a record you can trust.
 
 ## Tokens
 
 - **Colour:**
   - Paper canvas `#F4F2EC`. White `#FFFFFF` for charts, tables and product panels.
   - Ink `#121513`, with `#454A47` for body copy (8:1) and `#616662` for metadata (4.9:1 on the canvas).
-  - Cobalt `#2B44C4` for links, focus, the active item, one italic phrase per heading and the closing band.
+  - Cobalt `#2B44C4` for links, focus, the active item, the full stop that closes each display title, and the closing band.
   - The status triad (`#0A8F6C` in range, `#D07C00` borderline, `#D1345B` out) is unchanged. It is used for data only, and every status also has its own shape and label.
   - Ink sections use `data-theme="dark"`, where every token, including the status hues, is re-stepped for the dark surface.
 - **Type:**
-  - Display: Newsreader with optical sizes, weight 400, sentence case. An italic second phrase is the page's second voice.
-  - Body and UI: Google Sans. Units and columns use tabular figures.
-  - Scale, fluid from 375px to 1440px: `display-xl` 48→116px, `display-l` 38→76px, `display-m` 30→48px, `display-s` 24→32px, `lede` 18→22px. Body text is 15–16px, and nothing is smaller than 12px.
+  - Display: Funnel Display (2024), weight 500 for titles and 400 for big readings, upright, tight tracking. Marketing titles are one word, closed by a cobalt full stop (`<Dot />`).
+  - Body and UI: Funnel Sans, the display face's text companion. Units and columns use tabular figures.
+  - No italics anywhere, and none are loaded.
+  - Scale, fluid from 375px to 1440px: `display-xl` 56→144px, `display-l` 44→92px, `display-m` 36→64px, `display-s` 24→32px, `lede` 18→22px. Body text is 15–16px, and nothing is smaller than 12px.
+  - Why Funnel: we compared it with Host Grotesk, Bricolage Grotesque, Mona Sans, Instrument Sans and Geist. Funnel had the most distinct letterforms at display size and still reads cleanly in UI text; Geist and Host read as generic, and Bricolage is overused.
 - **Spacing:** a 4px base. Sections use `--space-section` (80→152px) and the grid gutter is `--gutter` (16→40px). The container is 1360px with a 12-column grid.
 - **Radii:** inputs 10px, cards 16px, panels 22px, and every button and nav item is a pill.
 - **Shadows:** hairlines carry structure. There is one soft `--shadow-panel` for a product screen lifted off the page, and `--shadow-pop` for tooltips and menus.
@@ -66,9 +68,9 @@ People open bbiom with a printout in hand, usually before or after an appointmen
 
 ## Rules that keep it from going generic
 
-1. **One claim per section** and at most one line under it. Copy says only what the product does today.
+1. **One word per title** ("Bloodwork.", "Trends.", "Pricing."). The kicker above sets the context and at most one line goes below. Copy says only what the product does today.
 2. **No three-card rows.** Use asymmetric splits (7/5 or 5/7), rules and tables instead.
 3. **Status is the only vivid colour on data,** and it always comes with a shape and a word.
 4. **Charts sit on white,** never on the canvas tone or a wash.
-5. **Italic is a voice, not decoration:** one phrase per heading at most.
+5. **No italics.** Emphasis comes from size and the cobalt full stop, never a slanted voice.
 6. **No fake browser chrome or phone frames.** Product panels are real components on a white panel.
