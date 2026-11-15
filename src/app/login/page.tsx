@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, isSupabaseConfigured } from "@/lib/supabase/server";
 import { LoginForm } from "@/components/auth/login-form";
 import { AuthShell } from "@/components/auth/auth-shell";
 
@@ -11,6 +11,27 @@ export default async function LoginPage({
 }) {
   const { next: nextRaw, error } = await searchParams;
   const next = nextRaw && nextRaw.startsWith("/") ? nextRaw : "/app";
+
+  if (!isSupabaseConfigured()) {
+    return (
+      <AuthShell>
+        <p className="eyebrow">Sign in</p>
+        <h1 className="display mt-3 text-[2rem] text-ink sm:text-[2.5rem]">
+          Accounts open soon.
+        </h1>
+        <p className="mt-4 text-[0.9375rem] leading-relaxed text-ink-2">
+          Sign-in is not switched on for this site yet. The sample dashboard shows everything
+          the app does.
+        </p>
+        <Link
+          href="/demo"
+          className="mt-7 inline-flex rounded-full bg-ink px-5 py-3 text-sm font-medium text-page transition-colors duration-300 hover:bg-brand"
+        >
+          Open the sample dashboard
+        </Link>
+      </AuthShell>
+    );
+  }
 
   const supabase = await createClient();
   const {

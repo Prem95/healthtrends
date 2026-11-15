@@ -9,9 +9,24 @@ import { NextResponse, type NextRequest } from "next/server";
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });
 
+  // Not configured yet (e.g. a first deploy before the database exists): the
+  // public pages (landing, /demo) still work; the app itself sends people to
+  // sign-in, which explains that accounts are not open yet.
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!url || !anonKey) {
+    if (request.nextUrl.pathname.startsWith("/app")) {
+      const login = request.nextUrl.clone();
+      login.pathname = "/login";
+      login.search = "";
+      return NextResponse.redirect(login);
+    }
+    return response;
+  }
+
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    url,
+    anonKey,
     {
       cookies: {
         getAll() {

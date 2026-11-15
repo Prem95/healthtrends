@@ -1,0 +1,8 @@
+# Never upload local secrets or build output; the iOS guide is not part of the website.
+.env*
+!.env.example
+.next
+node_modules
+docs
+coverage
+*.p8
