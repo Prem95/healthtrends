@@ -15,7 +15,7 @@ import { cn } from "@/lib/utils";
 
 /*
   App navigation. Desktop: a labelled list in the sidebar, the current screen
-  on a soft evergreen fill. Mobile: a bottom tab bar with the same
+  on a soft cobalt fill. Mobile: a bottom tab bar with the same
   destinations and "Add" in the middle, since logging a test is the one thing
   people open the app on a phone to do.
 */
@@ -62,7 +62,7 @@ export function SideNav({ base }: { base: string }) {
               className={cn(
                 "flex items-center gap-3 rounded-full px-3.5 py-2 text-sm font-medium transition-colors duration-300",
                 active
-                  ? "bg-[image:linear-gradient(90deg,var(--brand-soft),var(--warm-soft))] text-brand-strong"
+                  ? "bg-brand-soft text-brand-strong"
                   : "text-ink-2 hover:bg-paper-2 hover:text-ink",
               )}
             >
@@ -98,7 +98,7 @@ export function TabBar({ base }: { base: string }) {
               )}
             >
               {tabOnly ? (
-                <span className="grid size-7 place-items-center rounded-full bg-[image:var(--grad-brand)] text-white">
+                <span className="grid size-7 place-items-center rounded-full bg-ink text-page">
                   <Icon className="size-4" aria-hidden />
                 </span>
               ) : (

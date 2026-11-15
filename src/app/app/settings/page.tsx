@@ -65,7 +65,7 @@ export default async function SettingsPage({
 
       {/* ---- Plan ---- */}
       <Section title="Plan">
-        <div className="card-wash p-5">
+        <div className="card-quiet p-5">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
               <p className="flex items-center gap-2.5 font-medium text-ink">

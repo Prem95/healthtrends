@@ -88,7 +88,7 @@ export function ProfileSwitcher({
               aria-hidden
               className={cn(
                 "grid size-6 shrink-0 place-items-center rounded-full text-[0.6875rem] font-medium",
-                active ? "bg-[image:var(--grad-brand)] text-white" : "bg-paper-3 text-ink-2",
+                active ? "bg-ink text-page" : "bg-paper-3 text-ink-2",
               )}
             >
               {p.name.trim().charAt(0).toUpperCase()}
