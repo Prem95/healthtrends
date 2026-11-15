@@ -79,50 +79,54 @@ export default function Home() {
       <main className="flex-1">
         {/* ------------------------------------------------------------ HERO */}
         <section aria-labelledby="hero-title" className="overflow-x-clip">
-          <Container className="pb-12 pt-12 sm:pb-16 sm:pt-16 lg:pt-20">
-            <Reveal anim effect="none" className={cn(GRID, "items-end gap-y-10")}>
+          <Container className="pb-10 pt-12 sm:pb-12 sm:pt-14 lg:pb-14 lg:pt-14">
+            {/* Static on purpose: the headline is the first paint. */}
+            <div className={cn(GRID, "items-end gap-y-8")}>
               <div className="lg:col-span-8">
-                <p className="eyebrow m-item">Blood test tracker</p>
-                <h1 id="hero-title" className="display m-item mt-6 text-display-xl text-ink" style={at(80)}>
+                <p className="eyebrow">Blood test tracker</p>
+                <h1 id="hero-title" className="display mt-6 text-display-xl text-ink">
                   Every blood test, <em className="text-brand">on one line.</em>
                 </h1>
-                <p className="m-item mt-7 max-w-[34rem] text-lede text-ink-2" style={at(200)}>
+              </div>
+              <div className="lg:col-span-4 lg:col-start-9 lg:pb-2">
+                <p className="max-w-[34rem] text-lede text-ink-2">
                   Type in your lab results. See each marker against your lab&rsquo;s own range, year after year.
                 </p>
-                <div className="m-item mt-9 flex flex-wrap items-center gap-x-7 gap-y-4" style={at(320)}>
+                <div className="mt-8 flex flex-wrap items-center gap-x-7 gap-y-4">
                   <Button asChild size="lg">
                     <Link href="/login">Start free</Link>
                   </Button>
                   <TextLink href="/demo">See a sample</TextLink>
                 </div>
               </div>
+            </div>
+          </Container>
 
-              {/* The reading the chart below ends on */}
-              <div className="m-item lg:col-span-3 lg:col-start-10" style={at(450)}>
-                <div className="border-t border-line-strong pt-5">
+          {/* The image: the whole history, edge to edge, on white */}
+          <div className="border-y border-line bg-paper">
+            <Container className="relative pb-12 pt-8 sm:pb-14 lg:pt-10">
+              <Reveal anim immediate effect="none">
+                {/* The reading the line ends on: above the chart on small
+                    screens, in the chart's empty top-right corner on wide ones */}
+                <div
+                  className="m-item mb-10 max-w-sm bg-paper lg:absolute lg:right-[var(--gutter)] lg:top-10 lg:z-10 lg:mb-0 lg:w-[17.5rem] lg:pb-4 lg:pl-6"
+                  style={at(600)}
+                >
                   <p className="flex items-baseline justify-between gap-3 text-sm">
                     <span className="font-medium text-ink">LDL cholesterol</span>
                     <span className="text-ink-3">{formatDate(latestDate)}</span>
                   </p>
-                  <p className="mt-4 flex items-baseline gap-2">
+                  <p className="mt-3 flex items-baseline gap-2">
                     <span className="figure text-[4rem] text-ink">{ldlNow.valueLabel}</span>
                     <span className="unit text-base">{ldlUnit}</span>
                   </p>
-                  <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2">
+                  <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2">
                     <StatusBadge status={ldlNow.status} />
                     <span className="text-sm text-ink-2 tnum">
                       ↓ {formatMeasured(ldlPeak - (ldlNow.value ?? 0))} since the 2023 peak
                     </span>
                   </div>
                 </div>
-              </div>
-            </Reveal>
-          </Container>
-
-          {/* The image: the whole history, edge to edge, on white */}
-          <div className="border-y border-line bg-paper">
-            <Container className="pb-12 pt-10 sm:pb-14">
-              <Reveal anim effect="none">
                 <TrendPanorama
                   points={ldl.points.map((p) => ({ date: p.date, value: p.value, status: p.status }))}
                   band={ldl.bandRange}

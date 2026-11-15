@@ -378,8 +378,6 @@ export function MarkerChart({
       <figure
         ref={wrapRef as React.RefObject<HTMLElement>}
         className="mt-5"
-        role="img"
-        aria-label={`${name} over time: ${data.length} measurements, latest ${toDisplay(latest.value)} ${unit} (${STATUS_LABEL[latest.status]})${target ? `, reference range ${target} ${unit}` : ""}`}
       >
         {data.length === 0 ? (
           <p className="card-inset px-4 py-10 text-center text-sm text-ink-3">
@@ -387,6 +385,8 @@ export function MarkerChart({
           </p>
         ) : (
           <svg
+            role="img"
+            aria-label={`${name} over time: ${data.length} measurements, latest ${toDisplay(latest.value)} ${unit} (${STATUS_LABEL[latest.status]})${target ? `, reference range ${target} ${unit}` : ""}`}
             width={W}
             height={H}
             viewBox={`0 0 ${W} ${H}`}

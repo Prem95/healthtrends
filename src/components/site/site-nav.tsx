@@ -35,7 +35,7 @@ export function SiteNav() {
         <Link href="/" aria-label="bbiom home" className="rounded-md">
           <Logo />
         </Link>
-        <nav className="hidden items-center gap-1 md:flex" aria-label="Sections">
+        <nav className="hidden items-center gap-1 lg:flex" aria-label="Sections">
           {NAV_LINKS.map(([label, href]) => (
             <a
               key={href}
@@ -59,7 +59,7 @@ export function SiteNav() {
             aria-expanded={open}
             aria-controls="site-menu"
             onClick={() => setOpen((v) => !v)}
-            className="grid size-10 cursor-pointer place-items-center rounded-full text-ink transition-colors duration-300 hover:bg-paper-2 md:hidden"
+            className="grid size-10 cursor-pointer place-items-center rounded-full text-ink transition-colors duration-300 hover:bg-paper-2 lg:hidden"
           >
             {open ? <X className="size-5" aria-hidden /> : <Menu className="size-5" aria-hidden />}
           </button>
@@ -68,7 +68,7 @@ export function SiteNav() {
       <nav
         id="site-menu"
         aria-label="Sections"
-        className={cn("border-t border-line px-[var(--gutter)] pb-4 pt-1 md:hidden", !open && "hidden")}
+        className={cn("border-t border-line px-[var(--gutter)] pb-4 pt-1 lg:hidden", !open && "hidden")}
       >
         {[...NAV_LINKS, ["Sample dashboard", "/demo"], ["Sign in", "/login"]].map(([label, href]) => (
           <a

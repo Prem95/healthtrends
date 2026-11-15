@@ -204,13 +204,12 @@ body {
 @layer components {
 /* ---- Type ---- */
 
-/* Display: the serif, regular weight, sentence case. Optical sizing picks
-   the display cut at large sizes. One phrase per heading may be set in
-   italic (<em>) — the second voice of the page. */
+/* Display: the serif (Newsreader's display cut), regular weight, sentence
+   case. One phrase per heading may be set in italic (<em>) — the second
+   voice of the page. */
 .display {
   font-family: var(--font-display);
   font-weight: 400;
-  font-optical-sizing: auto;
   letter-spacing: -0.02em;
   line-height: 1.04;
   text-wrap: balance;
@@ -224,7 +223,6 @@ body {
 .figure {
   font-family: var(--font-display);
   font-weight: 400;
-  font-optical-sizing: auto;
   font-variant-numeric: lining-nums tabular-nums;
   letter-spacing: -0.03em;
   line-height: 0.95;
