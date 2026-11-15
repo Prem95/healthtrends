@@ -3,6 +3,7 @@ import * as WebBrowser from 'expo-web-browser';
 import { useState } from 'react';
 import { Alert, Pressable, StyleSheet, Switch, Text, View } from 'react-native';
 
+import { CustomMarkersSection, ProfilesSection, SummaryRow } from '@/components/settings/settings-sections';
 import { Button, Card, Screen, SectionTitle } from '@/components/ui/primitives';
 import { useAppLock } from '@/lib/app-lock';
 import { deleteAccount, signOut, useAuth } from '@/lib/auth';
@@ -11,10 +12,11 @@ import { formatDate } from '@/lib/format';
 import { PRIVACY_URL, SUPPORT_URL, TERMS_URL } from '@/lib/links';
 import { usePurchases } from '@/lib/purchases';
 import { useEntitlement } from '@/lib/queries';
+import { DISCLAIMER } from '@/lib/summary';
 import { colors, space, type } from '@/theme/tokens';
 
 /*
-  Settings: account, plan, privacy, your data. The two things App Review looks
+  Settings: account, plan, profiles, your own markers, privacy, your data. The two things App Review looks
   for are both here and both free: a full export, and deleting the account
   from inside the app.
 */
@@ -95,6 +97,10 @@ export default function Settings() {
         </Card>
       </View>
 
+      <SummaryRow />
+      <ProfilesSection />
+      <CustomMarkersSection />
+
       <View>
         <SectionTitle title="Privacy" />
         <Card style={styles.rowCard}>
@@ -152,10 +158,7 @@ export default function Settings() {
         <Button label="Delete account" variant="danger" loading={working === 'delete'} onPress={confirmDelete} />
       </View>
 
-      <Text style={styles.disclaimer}>
-        This app tracks values you enter; it does not provide medical advice. Reference ranges vary by lab and
-        individual. Discuss results with your healthcare provider.
-      </Text>
+      <Text style={styles.disclaimer}>{DISCLAIMER}</Text>
     </Screen>
   );
 }

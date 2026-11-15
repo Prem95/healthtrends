@@ -118,7 +118,7 @@ Commit Part A.
 
 ---
 
-## Part B — The app (no accounts needed until B10)
+## Part B — The app (no accounts needed)
 
 ### B1. Create `mobile/`
 
@@ -153,105 +153,34 @@ when offline).
 cp .env.example .env.local
 ```
 
-Placeholder values are enough for B4–B9. Real values come in C1.
+Placeholder values are enough for Part B. Real values come in C1.
 
 **Check:**
 
 ```sh
 npm run typecheck
 npm run lint
+npm test
 npm run bundle:check && rm -rf dist
 ```
 
-All three pass; the bundle step prints an `.hbc` file of about 4 MB. Run these
-three after every step below.
+All four pass; the bundle step prints an `.hbc` file of about 4 MB.
 
-### B4. Markers tab — `02-ux.md` §5
+### B4. Unit tests and completeness gate
 
-Replace the stub `src/app/(app)/(tabs)/markers.tsx`. Copy
-`src/lib/commonality.ts` from the web into `mobile/src/lib/commonality.ts`
-and change its import to `@domain`. Use `useActiveProfile`,
-`useProfileRecord`, `useCatalog`, `useUnitPrefs`, `summarize` and `toDigest` as
-the Overview (`(tabs)/index.tsx`) does; render rows with `MarkerRow`; a
-`SectionList` for the groups; the segmented control as three pill `Pressable`s
-with `accessibilityRole="tab"` and `accessibilityState={{ selected }}`.
-Accept the `system` route param.
-
-**Check:** the B3 commands; `grep -n "ROUTE STUB" "src/app/(app)/(tabs)/markers.tsx"`
-returns nothing.
-
-### B5. Timeline tab — `02-ux.md` §7
-
-Replace the stub `src/app/(app)/(tabs)/timeline.tsx`, porting
-`src/components/views/timeline-view.tsx`. Writes go through `useRecordMutation`
-with `api.addLifeEvent`, `api.deleteLifeEvent`, `api.deleteSession`, so the
-record refetches afterwards. Confirm before every delete with `Alert.alert`
-(destructive style). Disable deleting when offline (`onlineManager.isOnline()`
-from React Query) with the line "Deleting needs a connection."
-
-**Check:** B3 commands; no `ROUTE STUB` in the file.
-
-### B6. Add results — `02-ux.md` §6
-
-Replace the stub `src/app/(app)/add-results.tsx` (already registered as a
-modal in `(app)/_layout.tsx`). Port the logic of
-`src/components/sessions/new-session-form.tsx` and the validation in
-`createSession` in `src/app/app/actions.ts`; the plausibility, unit and panel
-logic is already shared through `@domain` — import it, do not copy it. Save
-with `api.createSession()` (one atomic RPC). Map `ApiError.code`
-(`session_limit`, `invalid_results`, `too_many_results`, `date_in_future`) to
-the sentences in §6 "Errors"; on `session_limit` offer the paywall once.
-Numeric fields use `keyboardType="decimal-pad"`; parse them with the domain's
-`parseDecimal` (accepts `.` and `,`) and convert with `toCanonical`. After saving: success haptic, close the sheet,
-invalidate the profile record and the entitlement.
-
-**Check:** B3 commands; no `ROUTE STUB`; a unit test is not required, but walk
-the §6 check list in `12-qa.md` §4 on a device in C6.
-
-### B7. Marker detail additions — `02-ux.md` §8
-
-In `src/app/(app)/marker/[id].tsx`: the reference range card with **Set your
-own range** (`api.setCustomRange`, converting from the display unit to the
-canonical unit with `toCanonical` from `@domain`), swipe-to-delete on a
-history row (`api.deleteResult`, confirmed), and the ambiguous-sex note.
-
-**Check:** B3 commands.
-
-### B8. Settings additions — `02-ux.md` §9
-
-In `src/app/(app)/(tabs)/settings.tsx`, after Plan: **Profiles** (edit sheet
-with `api.updateProfile`; **Add a family member** via `useCreateProfile`,
-handling `profile_limit`), **Custom markers** (add `createCustomBiomarker` and
-`archiveOrDeleteBiomarker` to `src/lib/api.ts`, porting
-`createCustomBiomarker` and `deleteOrArchiveBiomarker` from
-`src/app/app/actions.ts`; a marker with results is archived, never deleted),
-and the **Doctor summary** row.
-
-**Check:** B3 commands.
-
-### B9. Doctor summary — `02-ux.md` §11
-
-Create `src/app/(app)/summary.tsx` and register it in `src/app/(app)/_layout.tsx`
-beside the other screens:
-
-```tsx
-<Stack.Screen name="summary" options={{ title: 'Doctor summary' }} />
-```
-
-Port `src/app/app/summary/page.tsx`. Share/print with `expo-print`
-(`printToFileAsync({ html })`) then `expo-sharing` (`shareAsync(uri, {
-mimeType: 'application/pdf', UTI: 'com.adobe.pdf' })`); escape every
-user-entered string inserted into the HTML. Not Pro → `router.replace('/paywall')`.
-
-**Check:** B3 commands, then the whole-app gate:
+Every screen in `02-ux.md` is already in `mobile/` — there is nothing to write
+in this part, only to confirm. From `mobile/`:
 
 ```sh
+npm test                                     # 16 passed: Add results checks, doctor summary, formatting
 grep -rn "ROUTE STUB\|not built yet" src     # nothing
 grep -rn "console\.\(log\|warn\|info\)" src  # nothing
 ```
 
-Commit Part B. The app is now complete in code; everything left needs
-accounts.
+**Check:** all three as shown. If you change a screen later, keep its
+behaviour in line with its `02-ux.md` section and re-run B3 and B4.
+
+Commit Part B. The app is complete in code; everything left needs accounts.
 
 ---
 

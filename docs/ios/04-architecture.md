@@ -62,6 +62,8 @@ Verified together (see the table in `README.md`). `npx expo install` keeps the
 | Art, blur, glass | `expo-image`, `expo-blur`, `expo-glass-effect`, `expo-linear-gradient` | SDK 58 |
 | Files, share, print | `expo-file-system`, `expo-sharing`, `expo-print` | SDK 58 |
 | Haptics | `expo-haptics` | ~58.0.8 |
+| Date picker | `@react-native-community/datetimepicker` (native compact picker) | 9.2.1 |
+| Unit tests (pure logic) | `vitest` | ^3.2.7 |
 | Dev builds | `expo-dev-client` | ~58.0.20 |
 | iOS minimum | 16.4 (the SDK 58 default) | |
 
@@ -92,11 +94,13 @@ healthtrends/
 │   ├─ eas.json               build and submit profiles
 │   ├─ metro.config.js        lets Metro read ../src/lib/domain
 │   ├─ tsconfig.json          @/* → src/*,  @domain → ../src/lib/domain
+│   ├─ vitest.config.ts       unit tests for src/lib (same aliases)
 │   ├─ assets/art/            the seven paintings (copied from public/art)
 │   └─ src/
 │       ├─ app/               routes only (expo-router)
-│       ├─ components/        ui/, charts/, markers/
-│       ├─ lib/               supabase, auth, api, queries, purchases, app-lock, …
+│       ├─ components/        ui/ (primitives, form, art, status), charts/, markers/, settings/
+│       ├─ lib/               supabase, auth, api, queries, purchases, app-lock,
+│       │                     entry (Add results checks), summary (doctor summary), …
 │       └─ theme/tokens.ts
 └─ docs/ios/                  this guide
 ```

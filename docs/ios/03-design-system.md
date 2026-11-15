@@ -143,10 +143,13 @@ chart.
 | `MarkerChart` | `components/charts/marker-chart.tsx` | The hero chart |
 | `MarkerCard`, `MarkerRow` | `components/markers/marker-parts.tsx` | Both open marker detail |
 | `StatusSummary` | `components/markers/status-summary.tsx` | The Overview headline |
+| `TextField`, `Choices`, `Segmented`, `DateField` | `components/ui/form.tsx` | Labelled input; pill options; pill segmented control; native compact date picker, never in the future |
+| `Sheet`, `FormError` | same | Page sheet with Cancel / title / action bar; inline error line |
+| `ProfilesSection`, `CustomMarkersSection`, `SummaryRow` | `components/settings/settings-sections.tsx` | The record-editing parts of Settings |
 
-Build new screens from these. If a screen needs something new (a text field
-with a label, a segmented control, a sheet header), add it to `primitives.tsx`
-in the same style rather than styling it inline in the screen.
+Build any new screen from these. If it needs something new, add it to
+`primitives.tsx` or `form.tsx` in the same style rather than styling it
+inline in the screen.
 
 ## 8. Charts
 

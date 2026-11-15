@@ -272,6 +272,43 @@ select _expect_error(
   $q$select public.create_session_with_results('bbbbbbbb-0000-0000-0000-000000000001', date '2026-01-01', repeat('x', 121))$q$,
   '%test_sessions_text_len%');
 
+-- ------------------------------------------ writes the app's Settings makes
+-- (as api.createCustomBiomarker / removeCustomBiomarker / updateProfile /
+-- addLifeEvent send them, user b on profile bbbbbbbb-…-1)
+insert into public.biomarkers (id, name, aliases, category, canonical_unit, alt_units, default_ranges, is_custom, user_id)
+  values ('custom-lpa-test1', 'Lipoprotein(a)', '{}', 'LIPIDS', 'nmol/L', '[]', '[{"max":75}]', true,
+          '00000000-0000-0000-0000-00000000000b');
+select _assert((select count(*) from public.biomarkers where id = 'custom-lpa-test1') = 1, 'own custom marker created and readable');
+select _expect_error(
+  $q$insert into public.biomarkers (id, name, aliases, category, canonical_unit, alt_units, default_ranges, is_custom, user_id)
+     values ('custom-x-test2', 'X', '{}', 'OTHER', 'U/L', '[]', '[]', true, '00000000-0000-0000-0000-00000000000a')$q$,
+  '%row-level security%');
+select _expect_error(
+  $q$insert into public.biomarkers (id, name, aliases, category, canonical_unit, alt_units, default_ranges, is_custom, user_id)
+     values ('custom-x-test3', 'X', '{}', 'OTHER', repeat('u', 33), '[]', '[]', true, '00000000-0000-0000-0000-00000000000b')$q$,
+  '%biomarkers_text_len%');
+select public.create_session_with_results('bbbbbbbb-0000-0000-0000-000000000001', date '2026-02-02', null, null, null, null,
+  '[{"biomarker_id":"custom-lpa-test1","value":80,"entered_unit":"nmol/L","lab_range":null,"flag_on_report":null,"note":null}]'::jsonb);
+update public.biomarkers set archived = true where id = 'custom-lpa-test1';
+select _assert((select archived from public.biomarkers where id = 'custom-lpa-test1'), 'custom marker with results archived');
+select _assert((select count(*) from public.test_results where biomarker_id = 'custom-lpa-test1') = 1, 'archiving keeps its results');
+insert into public.biomarkers (id, name, aliases, category, canonical_unit, alt_units, default_ranges, is_custom, user_id)
+  values ('custom-unused-test4', 'Unused', '{}', 'OTHER', 'U/L', '[]', '[]', true, '00000000-0000-0000-0000-00000000000b');
+delete from public.biomarkers where id = 'custom-unused-test4';
+select _assert((select count(*) from public.biomarkers where id = 'custom-unused-test4') = 0, 'unused custom marker deleted');
+update public.profiles set name = 'Robert', sex = 'M', date_of_birth = date '1970-05-01'
+  where id = 'bbbbbbbb-0000-0000-0000-000000000001';
+select _assert((select name from public.profiles where id = 'bbbbbbbb-0000-0000-0000-000000000001') = 'Robert', 'profile edited');
+insert into public.life_events (profile_id, date, label) values ('bbbbbbbb-0000-0000-0000-000000000001', date '2026-01-15', 'Started statin');
+select _assert((select count(*) from public.life_events where profile_id = 'bbbbbbbb-0000-0000-0000-000000000001') = 1, 'life event added');
+-- user a can see none of it
+select _become('00000000-0000-0000-0000-00000000000a');
+select _assert((select count(*) from public.biomarkers where id = 'custom-lpa-test1') = 0, 'another user cannot see a custom marker');
+select _assert((select count(*) from public.life_events where profile_id = 'bbbbbbbb-0000-0000-0000-000000000001') = 0, 'another user cannot see life events');
+update public.profiles set name = 'hacked' where id = 'bbbbbbbb-0000-0000-0000-000000000001';
+select _become('00000000-0000-0000-0000-00000000000b');
+select _assert((select name from public.profiles where id = 'bbbbbbbb-0000-0000-0000-000000000001') = 'Robert', 'another user cannot edit a profile');
+
 -- Signed-out clients have no privileges at all.
 select set_config('role', 'anon', true);
 select set_config('request.jwt.claims', '', true);

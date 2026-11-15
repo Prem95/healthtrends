@@ -301,3 +301,48 @@ export async function setCustomRange(profileId: string, biomarkerId: string, ran
         });
   fail(error);
 }
+
+/** A marker of the account's own. `range` is in `unit`, which becomes its canonical unit. */
+export async function createCustomBiomarker(input: {
+  name: string;
+  category: Biomarker['category'];
+  unit: string;
+  range: RefRange | null;
+}): Promise<string> {
+  const { data: userData } = await supabase.auth.getUser();
+  const userId = userData.user?.id;
+  if (!userId) throw new ApiError('not_signed_in');
+  const name = input.name.trim();
+  const id = `custom-${name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')}-${Math.random().toString(36).slice(2, 7)}`;
+  const { error } = await supabase.from('biomarkers').insert({
+    id,
+    name,
+    aliases: [],
+    category: input.category,
+    canonical_unit: input.unit.trim(),
+    alt_units: [],
+    default_ranges: input.range ? [input.range] : [],
+    is_custom: true,
+    user_id: userId,
+  });
+  fail(error);
+  return id;
+}
+
+/**
+ * Remove a custom marker. One with results is archived instead, so history and
+ * charts stay intact. Returns what happened.
+ */
+export async function removeCustomBiomarker(id: string): Promise<'archived' | 'deleted'> {
+  const { count, error } = await supabase
+    .from('test_results')
+    .select('id', { count: 'exact', head: true })
+    .eq('biomarker_id', id);
+  fail(error);
+  if ((count ?? 0) > 0) {
+    fail((await supabase.from('biomarkers').update({ archived: true }).eq('id', id)).error);
+    return 'archived';
+  }
+  fail((await supabase.from('biomarkers').delete().eq('id', id)).error);
+  return 'deleted';
+}

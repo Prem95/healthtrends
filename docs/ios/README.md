@@ -48,19 +48,15 @@ reference/
   mobile/                                             the Expo app foundation (becomes /mobile)
 ```
 
-`reference/mobile` is the app's foundation, not the whole app. Built and
-working: configuration, secure session storage, the Supabase client, all three
-sign-in methods, every data read and write, the purchase flow, app lock, export,
-the in-app privacy / terms / support links,
-the design tokens and components, the chart, and these screens: sign-in, code
-entry, first profile, Overview, marker detail, paywall, settings.
-
-Still to be built from `02-ux.md`, each with a web implementation in this
-repository to port from: the **Markers** list, the **Timeline**, **Add
-results** (these three exist as route stubs), the **Doctor summary**, and three
-additions to existing screens — profiles and custom markers in Settings, and
-"set your own range" plus deleting a result in marker detail. The plan has a
-step for each.
+`reference/mobile` is the whole app in code: configuration, secure session
+storage, the Supabase client, all three sign-in methods, every data read and
+write, the purchase flow, app lock, export, the in-app privacy / terms /
+support links, the design tokens and components, the chart, and every screen
+in `02-ux.md` — sign-in, code entry, first profile, Overview, Markers, Add
+results, Timeline, marker detail (with your own range and deleting a result),
+Settings (with profiles and custom markers), the doctor summary and the
+paywall. What remains needs your accounts: deploying, Apple setup, a device
+build, testing on a phone, and release (`11-build-plan.md` Part C).
 
 ## What was verified, and what was not
 
@@ -71,12 +67,13 @@ supabase-js 2.119).
 | Checked | How | Result |
 | --- | --- | --- |
 | Migration 0006 applies after 0001–0005, and applies twice | Postgres (PGlite) with Supabase's roles | pass |
-| Plan limits, entitlement rules, atomic save, RLS, constraints | `mobile_test.sql`, 50+ assertions | pass |
+| Plan limits, entitlement rules, atomic save, RLS, constraints, and the exact writes the app's screens make (custom markers, archiving, profile edits, life events) | `mobile_test.sql`, 70+ assertions | pass |
 | The existing `supabase/tests/rls_test.sql` still passes | same database | pass |
 | Three Edge Functions typecheck | `deno check` (Deno 2.9) | pass |
 | Edge Functions behave correctly | 17 Deno tests, with Apple / Stripe / Supabase faked | pass |
 | Mobile app typechecks | `tsc --noEmit` | pass |
 | Mobile app lints | `expo lint` | pass |
+| Add results checks (units, decimal comma, report ranges, wrong-unit detection, duplicates) and the doctor summary (window, flagging, HTML escaping) | 16 unit tests, `npm test` (vitest) | pass |
 | Mobile app bundles for iOS, including the code shared with the web | `expo export --platform ios` | pass |
 | Native iOS project generates with the right entitlements, Info.plist and privacy manifest | `expo prebuild --platform ios` | pass |
 | `expo-doctor` | 18 of 20 checks | pass; the other 2 need network access that was blocked where this was written — re-run it |
@@ -85,7 +82,8 @@ supabase-js 2.119).
 | App installs reproducibly | `reference/mobile/package-lock.json` is the lockfile of the verified install; `npm ci` | — |
 
 **Not verified, because it cannot be without your Apple account and a Mac or
-Expo build:** the compiled native app running on a device, a real StoreKit
+Expo build:** the compiled native app running on a device (including how each
+screen looks at large text sizes and how the keyboard behaves in Add results), a real StoreKit
 purchase, Apple's real server responses and notifications, Sign in with Apple
 against Apple's servers, and App Review. `12-qa.md` is the script for exactly
 those. Treat the first sandbox purchase as the real test of `07-payments.md`.

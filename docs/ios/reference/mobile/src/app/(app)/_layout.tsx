@@ -32,8 +32,9 @@ export default function AppLayout() {
         <Stack.Protected guard={hasProfile}>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="marker/[id]" options={{ title: '' }} />
-          <Stack.Screen name="add-results" options={{ presentation: 'modal', title: 'Add results' }} />
+          <Stack.Screen name="add-results" options={{ presentation: 'modal', headerShown: false }} />
           <Stack.Screen name="paywall" options={{ presentation: 'modal', headerShown: false }} />
+          <Stack.Screen name="summary" options={{ title: 'Doctor summary' }} />
         </Stack.Protected>
         <Stack.Protected guard={!hasProfile}>
           <Stack.Screen name="onboarding" options={{ headerShown: false }} />
