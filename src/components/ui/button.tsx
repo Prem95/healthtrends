@@ -3,21 +3,17 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 /*
-  Buttons are sentence-case sans pills, 500 weight. Primary is ink with a
-  faint top sheen (one per view) and turns evergreen on hover; secondary is a
-  hairline outline; ghost is text only. `light` and `glass` are the pair used
-  on top of artwork.
+  Buttons are sentence-case sans pills, 500 weight. Primary is solid ink and
+  turns cobalt on hover (one per view); secondary is a hairline outline;
+  ghost is text only. `light` is the primary for an ink or cobalt band.
 */
 const buttonVariants = cva(
   "inline-flex cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-full font-medium transition-[background-color,color,border-color] duration-300 disabled:pointer-events-none disabled:opacity-50 [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
       variant: {
-        primary:
-          "bg-ink bg-[image:linear-gradient(180deg,rgba(255,255,255,0.14),rgba(255,255,255,0))] text-page hover:bg-brand",
-        light: "bg-white text-ink hover:bg-brand-soft",
-        glass:
-          "border border-white/25 bg-white/15 text-white backdrop-blur-md hover:bg-white/25",
+        primary: "bg-ink text-page hover:bg-brand",
+        light: "bg-[#f4f2ec] text-[#121513] hover:bg-white",
         secondary:
           "border border-line-strong bg-paper text-ink hover:border-brand hover:text-brand",
         ghost: "text-ink-2 hover:bg-paper-2 hover:text-ink",
@@ -27,9 +23,9 @@ const buttonVariants = cva(
         link: "h-auto p-0 text-brand underline underline-offset-4 hover:text-brand-strong",
       },
       size: {
-        sm: "h-8 px-3.5 text-[0.8125rem]",
-        md: "h-10 px-5 text-sm",
-        lg: "h-12 px-7 text-[0.9375rem]",
+        sm: "h-9 px-4 text-[0.8125rem]",
+        md: "h-11 px-5 text-sm",
+        lg: "h-[3.25rem] px-7 text-[0.9375rem]",
         icon: "size-9 text-sm",
       },
     },
