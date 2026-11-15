@@ -1,0 +1,7 @@
+# Append to supabase/config.toml.
+# iap-confirm and delete-account keep the platform JWT check (default
+# verify_jwt = true) and are additionally verified by withSupabase({ auth: 'user' }).
+# Apple cannot send a Supabase JWT, so its webhook must opt out.
+
+[functions.app-store-notifications]
+verify_jwt = false
