@@ -447,6 +447,83 @@ body {
   }
 }
 
+/* Landing choreography. Parts animate only inside a Reveal with `anim`
+   (.m-anim) and only once it is in view: until then their animations sit
+   paused on the first frame. Same gate as above, so reduced motion, no
+   scripts and print all get the finished state. Hook classes on shared
+   parts (.spark-*, .rb-*, .ss-seg) are inert everywhere else. */
+@media (prefers-reduced-motion: no-preference) and (scripting: enabled) {
+  .m-anim .m-item {
+    animation: mFadeUp 0.6s var(--ease) both;
+    animation-delay: var(--d, 0ms);
+  }
+  .m-anim .m-fade {
+    animation: mFade 0.6s var(--ease) both;
+    animation-delay: var(--d, 0ms);
+  }
+  .m-anim .m-pop {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: mkPop 0.35s var(--ease) both;
+    animation-delay: var(--d, 0ms);
+  }
+  .m-anim :is(.m-draw, .spark-line) {
+    stroke-dasharray: 1;
+    animation: mkDraw 1.1s var(--ease) both;
+    animation-delay: var(--d, 150ms);
+  }
+  .m-anim .spark-dot {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: mkPop 0.35s var(--ease) both;
+    animation-delay: calc(var(--d, 150ms) + 1s);
+  }
+  .m-anim :is(.m-grow, .rb-band, .ss-seg) {
+    transform-origin: left center;
+    animation: mGrow 0.9s var(--ease) both;
+    animation-delay: var(--d, 100ms);
+  }
+  .m-anim .rb-dot {
+    animation: mSlide 1s var(--ease) both;
+    animation-delay: calc(var(--d, 0ms) + 250ms);
+  }
+  .m-anim:not(.inview)
+    :is(.m-item, .m-fade, .m-pop, .m-draw, .spark-line, .spark-dot, .m-grow, .rb-band, .ss-seg, .rb-dot, .mk-line, .mk-dot) {
+    animation-play-state: paused;
+  }
+  /* A gentle lift on the step cards; no shadow, no bounce. */
+  .m-lift {
+    transition: transform 0.3s var(--ease);
+  }
+  .m-lift:hover {
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes mFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+@keyframes mFade {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes mGrow {
+  from {
+    transform: scaleX(0);
+  }
+}
+/* From the start of the track to wherever the value sits (its inline left). */
+@keyframes mSlide {
+  from {
+    left: 0%;
+    opacity: 0;
+  }
+}
+
 @keyframes mkDraw {
   from {
     stroke-dashoffset: 1;
@@ -495,5 +572,8 @@ body {
   .reveal {
     opacity: 1 !important;
     transform: none !important;
+  }
+  .m-anim * {
+    animation: none !important;
   }
 }

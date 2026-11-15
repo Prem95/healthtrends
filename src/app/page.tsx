@@ -13,15 +13,11 @@ import {
 import { BUILTIN_BIOMARKERS, BUILTIN_COUNT } from "@/lib/catalog";
 import { getDemoData } from "@/lib/demo";
 import { toDigest } from "@/lib/digest";
-import {
-  CATEGORY_LABEL,
-  formatInUnit,
-  type ResultStatus,
-} from "@/lib/domain";
-import { CATEGORY_COMMON_ORDER, sortByCommonality } from "@/lib/commonality";
+import { CATEGORY_LABEL, type ResultStatus } from "@/lib/domain";
+import { CATEGORY_COMMON_ORDER } from "@/lib/commonality";
 import { PLAN_LIMITS } from "@/lib/plan-limits";
 import type { BiomarkerSummary } from "@/lib/analytics";
-import { cn, formatDate } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { Logo } from "@/components/brand/logo";
 import { DISCLAIMER_TEXT } from "@/components/disclaimer";
 import { Art, type ArtName } from "@/components/ui/art";
@@ -29,8 +25,9 @@ import { Button } from "@/components/ui/button";
 import { StatusBadge, StatusGlyph } from "@/components/ui/status-badge";
 import { RangeBar } from "@/components/charts/range-bar";
 import { Sparkline } from "@/components/charts/sparkline";
+import { CountUp } from "@/components/motion/count-up";
 import { Reveal } from "@/components/motion/reveal";
-import { MarkerCard, MarkerList, MarkerRow } from "@/components/markers/marker-parts";
+import { MarkerCard } from "@/components/markers/marker-parts";
 import { StatusSummary } from "@/components/markers/status-summary";
 import { MarkerShowcase, type ShowcaseMarker } from "@/components/landing/marker-showcase";
 import { NAV_LINKS } from "@/components/landing/nav-links";
@@ -46,7 +43,10 @@ import { SiteNav } from "@/components/landing/site-nav";
 
 const WRAP = "mx-auto w-full max-w-[1280px] px-4 sm:px-6";
 const H2 = "display text-[clamp(1.875rem,1.2rem+2.4vw,3rem)] text-ink";
-const LEAD = "mt-4 max-w-[40rem] text-lg leading-relaxed text-ink-2";
+const SECTION = "py-14 sm:py-20";
+
+type Vars = React.CSSProperties & Record<`--${string}`, string>;
+const at = (ms: number): Vars => ({ "--d": `${ms}ms` });
 
 export default function Home() {
   const demo = getDemoData();
@@ -54,30 +54,11 @@ export default function Home() {
   const byId = new Map(digests.map((d) => [d.id, d]));
   const d = (id: string) => byId.get(id)!;
   const summary = (id: string) => demo.summaries.find((s) => s.biomarker.id === id)!;
-  const lastTest = demo.sessions[0];
 
   const showcase: ShowcaseMarker[] = [
-    {
-      id: "ldl-cholesterol",
-      label: "LDL",
-      story:
-        "Five years of slow climb that no single report made obvious, then back under 100 within a year of starting a statin.",
-      events: ["Started statin"],
-    },
-    {
-      id: "fasting-glucose",
-      label: "Glucose",
-      story:
-        "Every result looked fine on its own. Lined up, they show a steady drift that crossed the upper limit in 2025.",
-      events: [],
-    },
-    {
-      id: "vitamin-d",
-      label: "Vitamin D",
-      story:
-        "Low for years, into range on a supplement, and sliding again after stopping. The two notes on the line explain both turns.",
-      events: ["Started vitamin D", "Stopped vitamin D"],
-    },
+    { id: "ldl-cholesterol", label: "LDL", story: "Climbed for years. Back under 100 after a statin.", events: ["Started statin"] },
+    { id: "fasting-glucose", label: "Glucose", story: "Each result looked fine. Together, a steady drift.", events: [] },
+    { id: "vitamin-d", label: "Vitamin D", story: "Up on a supplement. Down again after stopping.", events: ["Started vitamin D", "Stopped vitamin D"] },
   ].map(({ id, label, story, events }) => {
     const s = summary(id);
     return {
@@ -94,12 +75,11 @@ export default function Home() {
 
   const systems = CATEGORY_COMMON_ORDER.map((category) => ({
     category,
-    names: sortByCommonality(BUILTIN_BIOMARKERS.filter((b) => b.category === category)).map(
-      (b) => b.name,
-    ),
+    count: BUILTIN_BIOMARKERS.filter((b) => b.category === category).length,
   }));
+  const maxCount = Math.max(...systems.map((s) => s.count));
 
-  const checks = ["Free for one profile", "No card needed", "Export or delete any time"];
+  const checks = ["Free for one profile", "No card", "Export any time"];
 
   return (
     <div id="top" className="flex min-h-[100dvh] flex-col text-ink">
@@ -116,69 +96,64 @@ export default function Home() {
               flip
               priority
               sizes="100vw"
-              className="flex min-h-[620px] flex-col p-5 sm:min-h-[700px] sm:p-10 lg:hidden"
+              className="flex min-h-[600px] flex-col p-5 sm:min-h-[680px] sm:p-10 lg:hidden"
             >
-              <Link
-                href="/demo/biomarkers/ldl-cholesterol"
-                className="glass mb-10 block w-full max-w-[19rem] self-end rounded-2xl p-4"
-              >
-                <span className="flex items-center justify-between gap-3">
-                  <span className="text-sm font-medium text-ink">LDL cholesterol</span>
-                  <StatusBadge status={d("ldl-cholesterol").status} />
-                </span>
-                <span className="mt-2 flex items-end justify-between gap-3">
-                  <span className="flex items-baseline gap-1.5">
-                    <span className="text-[2rem] font-medium leading-none tracking-[-0.03em] text-ink">
-                      {d("ldl-cholesterol").valueLabel}
-                    </span>
-                    <span className="unit">{d("ldl-cholesterol").unit}</span>
+              <Reveal anim delay={250} className="mb-10 w-full max-w-[19rem] self-end">
+                <Link href="/demo/biomarkers/ldl-cholesterol" className="glass block rounded-2xl p-4">
+                  <span className="flex items-center justify-between gap-3">
+                    <span className="text-sm font-medium text-ink">LDL cholesterol</span>
+                    <StatusBadge status={d("ldl-cholesterol").status} />
                   </span>
-                  <Sparkline values={d("ldl-cholesterol").spark} tone="var(--borderline)" width={110} height={34} />
-                </span>
-                <span className="mt-2 block text-xs text-ink-3">Down 54 since 2023 · sample data</span>
-              </Link>
+                  <span className="mt-2 flex items-end justify-between gap-3">
+                    <span className="flex items-baseline gap-1.5">
+                      <span className="text-[2rem] font-medium leading-none tracking-[-0.03em] text-ink">
+                        {d("ldl-cholesterol").valueLabel}
+                      </span>
+                      <span className="unit">{d("ldl-cholesterol").unit}</span>
+                    </span>
+                    <Sparkline values={d("ldl-cholesterol").spark} tone="var(--borderline)" width={110} height={34} />
+                  </span>
+                </Link>
+              </Reveal>
               <div className="mt-auto" />
-              <p className="eyebrow text-white/75">Blood test tracker</p>
-              <h1 className="display mt-4 text-[2.5rem] leading-[1.04] tracking-[-0.035em] text-white sm:text-[3.5rem]">
-                Every blood test you&rsquo;ve had, on one clear timeline.
-              </h1>
-              <ul className="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-sm text-white/85">
-                {checks.map((t) => (
-                  <li key={t} className="inline-flex items-center gap-1.5">
-                    <Check className="size-4" aria-hidden />
-                    {t}
-                  </li>
-                ))}
-              </ul>
-              <div className="mt-7 flex flex-wrap gap-3">
-                <Button asChild size="lg" variant="light">
-                  <Link href="/login">Start free</Link>
-                </Button>
-                <Button asChild size="lg" variant="glass">
-                  <Link href="/demo">See the sample dashboard</Link>
-                </Button>
-              </div>
+              <Reveal anim>
+                <h1 className="display text-[2.5rem] leading-[1.04] tracking-[-0.035em] text-white sm:text-[3.5rem]">
+                  Every blood test. One clear line.
+                </h1>
+                <p className="m-item mt-4 text-lg text-white/85" style={at(150)}>
+                  Add your results. Watch each marker over time.
+                </p>
+                <div className="m-item mt-6 flex flex-wrap gap-3" style={at(300)}>
+                  <Button asChild size="lg" variant="light">
+                    <Link href="/login">Start free</Link>
+                  </Button>
+                  <Button asChild size="lg" variant="glass">
+                    <Link href="/demo">See a sample</Link>
+                  </Button>
+                </div>
+                <ul className="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-sm text-white/80">
+                  {checks.map((t, i) => (
+                    <li key={t} className="m-item inline-flex items-center gap-1.5" style={at(450 + i * 90)}>
+                      <Check className="size-4" aria-hidden />
+                      {t}
+                    </li>
+                  ))}
+                </ul>
+              </Reveal>
             </Art>
-            <p className="mt-6 max-w-[38rem] px-1 text-lg leading-relaxed text-ink-2 lg:hidden">
-              bbiom keeps your lab results in one place and draws each biomarker across the
-              years, judged against the range on your own report.
-            </p>
 
             {/* Desktop: words on one side, the painting and the product on the other */}
-            <div className="hidden min-h-[min(840px,calc(100dvh-92px))] grid-cols-2 gap-4 lg:grid">
-              <div className="card-wash flex flex-col rounded-[28px] p-12 xl:p-14">
-                <p className="eyebrow">Blood test tracker</p>
+            <div className="hidden min-h-[min(780px,calc(100dvh-92px))] grid-cols-2 gap-4 lg:grid">
+              <Reveal anim effect="none" className="card-wash flex flex-col rounded-[28px] p-12 xl:p-14">
+                <p className="eyebrow m-item">Blood test tracker</p>
                 <div className="mt-auto pt-16">
-                  <h1 className="display text-[clamp(2.5rem,0.8rem+3vw,4rem)] leading-[1.04] tracking-[-0.035em] text-ink">
-                    Every blood test you&rsquo;ve had,{" "}
-                    <span className="text-grad">on one clear timeline.</span>
+                  <h1 className="display m-item text-[clamp(2.75rem,0.8rem+3.4vw,4.5rem)] leading-[1.02] tracking-[-0.035em] text-ink" style={at(100)}>
+                    Every blood test. <span className="text-grad">One clear line.</span>
                   </h1>
-                  <p className="mt-6 max-w-[34rem] text-lg leading-relaxed text-ink-2">
-                    bbiom keeps your lab results in one place and draws each biomarker across
-                    the years, judged against the range on your own report. See what is in
-                    range, what is close to a limit, and which way it is heading.
+                  <p className="m-item mt-5 text-xl text-ink-2" style={at(250)}>
+                    Add your results. Watch each marker over time.
                   </p>
-                  <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3">
+                  <div className="m-item mt-8 flex flex-wrap items-center gap-x-6 gap-y-3" style={at(400)}>
                     <Button asChild size="lg">
                       <Link href="/login">Start free</Link>
                     </Button>
@@ -186,40 +161,39 @@ export default function Home() {
                       href="/demo"
                       className="inline-flex items-center gap-1.5 text-[0.9375rem] font-medium text-ink underline decoration-line-strong underline-offset-[6px] transition-colors duration-300 hover:text-brand hover:decoration-brand"
                     >
-                      Explore the sample dashboard <ArrowRight className="size-4" aria-hidden />
+                      See a sample <ArrowRight className="size-4" aria-hidden />
                     </Link>
                   </div>
                 </div>
-                <dl className="mt-12 grid grid-cols-2 gap-x-10 gap-y-5 border-t border-line pt-7">
-                  {(
-                    [
-                      [`${BUILTIN_COUNT} markers`, "Built in, plus any you add"],
-                      ["Your lab's range", "Not a textbook one"],
-                      ["Trends", "From your second test on"],
-                      ["CSV and JSON", "Export any time, free"],
-                    ] as const
-                  ).map(([t, sub]) => (
-                    <div key={t}>
-                      <dt className="text-[0.9375rem] font-medium text-ink">{t}</dt>
-                      <dd className="mt-0.5 text-sm text-ink-3">{sub}</dd>
+                <dl className="mt-12 grid grid-cols-3 gap-6 border-t border-line pt-7">
+                  {[
+                    { label: "markers", value: <CountUp value={BUILTIN_COUNT} delay={550} /> },
+                    { label: "body systems", value: <CountUp value={CATEGORY_COMMON_ORDER.length} delay={650} /> },
+                    { label: "to start", value: "$0" },
+                  ].map(({ label, value }, i) => (
+                    <div key={label} className="m-item flex flex-col-reverse" style={at(550 + i * 100)}>
+                      <dt className="mt-1.5 text-sm text-ink-3">{label}</dt>
+                      <dd className="text-[2rem] font-medium leading-none tracking-[-0.03em] text-ink">{value}</dd>
                     </div>
                   ))}
                 </dl>
-              </div>
+              </Reveal>
 
               <Art name="hero" priority className="flex items-center justify-center p-10 xl:p-14">
-                <div className="w-full max-w-[27rem] space-y-4">
-                  <StatusSummary digests={digests} className="glass" />
-                  <MarkerCard
-                    d={d("ldl-cholesterol")}
-                    href="/demo/biomarkers/ldl-cholesterol"
-                    className="glass h-auto"
-                  />
-                </div>
+                <Reveal anim className="w-full max-w-[27rem] space-y-4" delay={150}>
+                  <StatusSummary digests={digests} className="glass" countUp />
+                  <div className="m-item" style={at(350)}>
+                    <MarkerCard
+                      d={d("ldl-cholesterol")}
+                      href="/demo/biomarkers/ldl-cholesterol"
+                      className="glass h-auto"
+                    />
+                  </div>
+                </Reveal>
                 <p className="absolute inset-x-8 bottom-6 flex items-center justify-between text-sm text-white/85">
                   <span>Sample data</span>
                   <Link href="/demo" className="inline-flex items-center gap-1.5 font-medium text-white hover:underline">
-                    Open the live dashboard <ArrowRight className="size-4" aria-hidden />
+                    Open it <ArrowRight className="size-4" aria-hidden />
                   </Link>
                 </p>
               </Art>
@@ -227,94 +201,40 @@ export default function Home() {
           </div>
         </section>
 
-        {/* ------------------------------------------------------- DASHBOARD */}
-        <section className="py-16 sm:py-24">
-          <div className={WRAP}>
-            <Reveal className="mx-auto max-w-2xl text-center">
-              <p className="eyebrow">The dashboard</p>
-              <h2 className={cn(H2, "mt-4")}>
-                Open it and know <span className="text-ink-3">where you stand.</span>
-              </h2>
-              <p className={cn(LEAD, "mx-auto")}>
-                One count at the top, then only the markers that deserve a second look. No
-                scores, no alarm.
-              </p>
-            </Reveal>
-            <Reveal delay={100} className="mt-10 sm:mt-12">
-              <Art name="wide" sizes="100vw" className="p-3 sm:p-8 lg:p-12">
-                <div className="glass rounded-[22px] p-3 sm:p-5">
-                  <div className="flex flex-wrap items-baseline justify-between gap-2 px-2 pb-4 pt-1 sm:px-1">
-                    <p className="text-sm text-ink-2">
-                      <span className="font-medium text-ink">Overview</span> · {demo.profile.name}{" "}
-                      · last test {formatDate(lastTest.date)}
-                    </p>
-                    <p className="text-xs text-ink-3">Sample data</p>
-                  </div>
-                  <div className="grid gap-3 sm:gap-4 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
-                    <StatusSummary digests={digests} />
-                    <div className="grid gap-3 sm:grid-cols-2 sm:gap-4">
-                      <MarkerCard d={d("fasting-glucose")} href="/demo/biomarkers/fasting-glucose" />
-                      <div className="hidden h-full sm:block">
-                        <MarkerCard d={d("vitamin-d")} href="/demo/biomarkers/vitamin-d" />
-                      </div>
-                    </div>
-                  </div>
-                  <MarkerList className="mt-3 hidden sm:mt-4 sm:block">
-                    {["ldl-cholesterol", "hba1c", "tsh"].map((id) => (
-                      <MarkerRow key={id} d={d(id)} href={`/demo/biomarkers/${id}`} />
-                    ))}
-                  </MarkerList>
-                </div>
-              </Art>
-            </Reveal>
-          </div>
-        </section>
-
         {/* ---------------------------------------------------- HOW IT WORKS */}
-        <section id="how" className="scroll-mt-20 py-16 sm:py-24">
+        <section id="how" className={cn("scroll-mt-20", SECTION)}>
           <div className={WRAP}>
-            <Reveal className="mx-auto max-w-2xl text-center">
-              <h2 className={H2}>How it works</h2>
-              <p className={cn(LEAD, "mx-auto")}>
-                It starts with the report you already have, <span className="text-ink-3">then the
-                picture builds itself.</span>
-              </p>
+            <Reveal className="text-center">
+              <h2 className={H2}>
+                Add. See. <span className="text-ink-3">Follow.</span>
+              </h2>
             </Reveal>
 
-            <ol className="mt-12 grid gap-10 lg:grid-cols-3 lg:gap-5">
-              <Step
-                n="1"
-                art="step1"
-                title="Add a report"
-                body="Type in the numbers from any lab report, new or old. Panel shortcuts fill in the rows, so twenty results take about three minutes."
-              >
-                <div className="glass-dark flex w-full max-w-[21rem] items-center gap-4 rounded-2xl p-4">
-                  <span className="grid size-12 shrink-0 place-items-center rounded-xl bg-white/15">
-                    <ClipboardList className="size-5" />
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block text-[1.0625rem] font-medium leading-tight">
-                      Lipid panel added
-                    </span>
-                    <span className="mt-1 block truncate text-sm text-white/70">
-                      5 results · {formatDate(lastTest.date)}
-                    </span>
-                  </span>
-                  <span className="grid size-7 shrink-0 place-items-center rounded-full bg-white text-ink">
-                    <Check className="size-4" />
-                  </span>
+            <ol className="mt-10 grid gap-8 lg:grid-cols-3 lg:gap-5">
+              <Step n="1" art="step1" title="Add a report" body="Type the numbers. Panels fill the rows.">
+                <div className="glass-dark w-full max-w-[20rem] space-y-2 rounded-2xl p-3">
+                  {(
+                    [
+                      ["Lipid panel", "5 results"],
+                      ["Blood count", "9 results"],
+                      ["Thyroid", "3 results"],
+                    ] as const
+                  ).map(([name, meta], i) => (
+                    <div key={name} className="m-item flex items-center gap-3 rounded-xl bg-white/10 p-3" style={at(i * 280)}>
+                      <ClipboardList className="size-4 shrink-0 opacity-80" />
+                      <span className="flex-1 text-[0.9375rem] font-medium">{name}</span>
+                      <span className="text-xs text-white/70">{meta}</span>
+                      <span className="m-pop grid size-6 place-items-center rounded-full bg-white text-ink" style={at(i * 280 + 350)}>
+                        <Check className="size-3.5" />
+                      </span>
+                    </div>
+                  ))}
                 </div>
               </Step>
-              <Step
-                n="2"
-                art="step2"
-                title="See where each result sits"
-                body="Every value lands on a bar against its reference range: the one printed on your report if you enter it, a standard one if you don't."
-                delay={80}
-              >
-                <div className="glass w-full max-w-[21rem] space-y-3.5 rounded-2xl p-4">
-                  {[d("hdl-cholesterol"), d("hba1c"), d("vitamin-d")].map((m) => (
-                    <div key={m.id}>
+              <Step n="2" art="step2" title="See where it sits" body="Every value against your lab's range." delay={100}>
+                <div className="glass w-full max-w-[20rem] space-y-4 rounded-2xl p-4">
+                  {[d("hdl-cholesterol"), d("hba1c"), d("vitamin-d")].map((m, i) => (
+                    <div key={m.id} style={at(i * 220)}>
                       <div className="flex items-center justify-between gap-3">
                         <p className="truncate text-sm font-medium text-ink">
                           {m.name.replace(" (25-OH)", "").replace(" Cholesterol", "")}
@@ -322,36 +242,22 @@ export default function Home() {
                             {m.valueLabel} {m.unit}
                           </span>
                         </p>
-                        <StatusBadge status={m.status} />
+                        <span className="m-fade" style={at(i * 220 + 900)}>
+                          <StatusBadge status={m.status} />
+                        </span>
                       </div>
-                      <RangeBar
-                        value={m.value!}
-                        min={m.rangeMin}
-                        max={m.rangeMax}
-                        status={m.status}
-                        className="mt-2.5"
-                      />
+                      <RangeBar value={m.value!} min={m.rangeMin} max={m.rangeMax} status={m.status} className="mt-2.5" />
                     </div>
                   ))}
                 </div>
               </Step>
-              <Step
-                n="3"
-                art="step3"
-                title="Watch the line build"
-                body="From the second test on, each marker becomes a line. Note a new medication or a change of diet and see what the numbers did afterwards."
-                delay={160}
-              >
-                <div className="glass w-full max-w-[21rem] rounded-2xl p-4">
+              <Step n="3" art="step3" title="Follow the line" body="From the second test, a trend." delay={200}>
+                <div className="glass w-full max-w-[20rem] rounded-2xl p-4">
                   <p className="flex items-baseline justify-between text-sm">
                     <span className="font-medium text-ink">LDL cholesterol</span>
-                    <span className="text-xs text-ink-3">2019 to 2026</span>
+                    <span className="text-xs text-ink-3">2019–2026</span>
                   </p>
-                  <MiniTrend
-                    s={summary("ldl-cholesterol")}
-                    eventDate="2023-04-03"
-                    eventLabel="Started statin"
-                  />
+                  <MiniTrend s={summary("ldl-cholesterol")} eventDate="2023-04-03" eventLabel="Started statin" />
                 </div>
               </Step>
             </ol>
@@ -359,104 +265,58 @@ export default function Home() {
         </section>
 
         {/* ---------------------------------------------------------- TRENDS */}
-        <section id="trends" className="scroll-mt-20 py-16 sm:py-24">
+        <section id="trends" className={cn("scroll-mt-20", SECTION)}>
           <div className={WRAP}>
-            <div className="grid gap-10 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-12">
-              <Reveal className="lg:sticky lg:top-28 lg:h-fit">
-                <p className="eyebrow">Trends</p>
-                <h2 className={cn(H2, "mt-4")}>
-                  One marker. Every year. <span className="text-ink-3">One line.</span>
-                </h2>
-                <p className={LEAD}>
-                  A single result tells you where you stood that day. The line tells you where
-                  you are going, which is usually the question you walked in with.
-                </p>
-                <dl className="mt-8 space-y-5">
-                  {(
-                    [
-                      [
-                        "The band is the reference range",
-                        "Shaded behind the line, so in or out is a glance, not arithmetic.",
-                      ],
-                      [
-                        "Each point is one test",
-                        "Shaped and coloured by where it fell, against the range that applied that day.",
-                      ],
-                      [
-                        "Life events sit on the line",
-                        "A change in direction has its reason written beside it.",
-                      ],
-                      [
-                        "Units switch, values don't change",
-                        `mg/dL or mmol/L: ${d("ldl-cholesterol").valueLabel} mg/dL is ${formatInUnit(summary("ldl-cholesterol").biomarker, d("ldl-cholesterol").value!, "mmol/L")} mmol/L, converted for you.`,
-                      ],
-                    ] as const
-                  ).map(([t, body]) => (
-                    <div key={t} className="border-t border-line pt-4">
-                      <dt className="font-medium text-ink">{t}</dt>
-                      <dd className="mt-1 text-[0.9375rem] leading-relaxed text-ink-2">{body}</dd>
-                    </div>
-                  ))}
-                </dl>
-              </Reveal>
-              <Reveal delay={100} className="min-w-0">
-                <Art name="cta" ribbed className="p-3 sm:p-6 lg:p-8">
-                  <div className="rounded-2xl shadow-[var(--shadow-float)]">
-                    <MarkerShowcase markers={showcase} />
-                  </div>
-                </Art>
-              </Reveal>
-            </div>
+            <Reveal className="mx-auto max-w-2xl text-center">
+              <p className="eyebrow">Trends</p>
+              <h2 className={cn(H2, "mt-4")}>
+                One marker. <span className="text-ink-3">Every year.</span>
+              </h2>
+            </Reveal>
+            <Reveal anim effect="none" className="mt-6 flex flex-wrap justify-center gap-2">
+              {["Your lab's range, shaded", "Life events on the line", "mg/dL ⇄ mmol/L"].map((t, i) => (
+                <span key={t} className="m-item chip" style={at(i * 100)}>
+                  {t}
+                </span>
+              ))}
+            </Reveal>
+            <Reveal anim delay={100} className="mx-auto mt-8 max-w-4xl">
+              <Art name="cta" ribbed className="p-3 sm:p-6 lg:p-8">
+                <div className="rounded-2xl shadow-[var(--shadow-float)]">
+                  <MarkerShowcase markers={showcase} />
+                </div>
+              </Art>
+            </Reveal>
           </div>
         </section>
 
         {/* -------------------------------------------------- READING RESULTS */}
-        <section className="py-16 sm:py-24">
+        <section className={SECTION}>
           <div className={WRAP}>
-            <Reveal>
-              <p className="eyebrow">Reading a result</p>
-              <h2 className={cn(H2, "mt-4 max-w-[18ch]")}>
-                Four states, <span className="text-ink-3">in plain words.</span>
+            <Reveal className="text-center">
+              <h2 className={H2}>
+                Four states. <span className="text-ink-3">Plain words.</span>
               </h2>
-              <p className={LEAD}>
-                Just where a number sits against its range, said the way you would say it out
-                loud. Each state has its own shape as well as its own colour.
-              </p>
             </Reveal>
-            <Reveal delay={80} className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <Reveal anim effect="none" className="mt-10 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
               {(
                 [
-                  ["IN_RANGE", "In range", "Inside the reference range, with room to spare.", "var(--in-range-soft)"],
-                  [
-                    "BORDERLINE_HIGH",
-                    "Borderline",
-                    "Still inside, but within 10% of a limit. Worth watching, not a verdict.",
-                    "var(--borderline-soft)",
-                  ],
-                  [
-                    "HIGH",
-                    "High or low",
-                    "Outside the range. The arrow points the way it has gone.",
-                    "var(--out-soft)",
-                  ],
-                  [
-                    "NO_RANGE",
-                    "No range",
-                    "Tracked and plotted, but not judged until a range is known.",
-                    "var(--paper-3)",
-                  ],
+                  ["IN_RANGE", "In range", "Inside, with room.", "var(--in-range-soft)"],
+                  ["BORDERLINE_HIGH", "Borderline", "Inside, near a limit.", "var(--borderline-soft)"],
+                  ["HIGH", "High or low", "Outside. The arrow shows which way.", "var(--out-soft)"],
+                  ["NO_RANGE", "No range", "Tracked, not judged.", "var(--paper-3)"],
                 ] as [ResultStatus, string, string, string][]
-              ).map(([status, title, body, tint]) => (
+              ).map(([status, title, body, tint], i) => (
                 <div
                   key={status}
-                  className="card rounded-[20px] p-6"
-                  style={{ background: `linear-gradient(168deg, ${tint} 0%, var(--paper) 58%)` }}
+                  className="m-item card rounded-[20px] p-5 sm:p-6"
+                  style={{ ...at(i * 120), background: `linear-gradient(168deg, ${tint} 0%, var(--paper) 58%)` }}
                 >
-                  <span className="grid size-10 place-items-center rounded-full bg-paper">
-                    <StatusGlyph status={status} size={16} />
+                  <span className="m-pop grid size-11 place-items-center rounded-full bg-paper" style={at(i * 120 + 250)}>
+                    <StatusGlyph status={status} size={18} />
                   </span>
                   <p className="mt-5 text-lg font-medium text-ink">{title}</p>
-                  <p className="mt-1.5 text-[0.9375rem] leading-relaxed text-ink-2">{body}</p>
+                  <p className="mt-1 text-[0.9375rem] text-ink-2">{body}</p>
                 </div>
               ))}
             </Reveal>
@@ -464,46 +324,34 @@ export default function Home() {
         </section>
 
         {/* --------------------------------------------------------- MARKERS */}
-        <section id="markers" className="scroll-mt-20 py-16 sm:py-24">
+        <section id="markers" className={cn("scroll-mt-20", SECTION)}>
           <div className={WRAP}>
-            <Reveal>
-              <p className="eyebrow">What you can track</p>
-              <h2 className={cn(H2, "mt-4 max-w-[20ch]")}>
-                {BUILTIN_COUNT} blood markers{" "}
-                <span className="text-ink-3">across ten body systems.</span>
+            <Reveal className="text-center">
+              <h2 className={H2}>
+                <CountUp value={BUILTIN_COUNT} /> markers.{" "}
+                <span className="text-ink-3">Ten body systems.</span>
               </h2>
-              <p className={LEAD}>
-                The ones on an ordinary annual check come first. Each has its usual units, its
-                standard range, and the abbreviations labs print, so{" "}
-                <span className="whitespace-nowrap">&ldquo;A1c&rdquo;</span> and{" "}
-                <span className="whitespace-nowrap">&ldquo;HbA1c&rdquo;</span> find the same thing.
-              </p>
+              <p className="mt-4 text-lg text-ink-2">Search by what your lab prints: A1c, LDL, TSH.</p>
             </Reveal>
-            <Reveal delay={80} className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {systems.map(({ category, names }) => (
-                <div key={category} className="card rounded-[20px] p-6">
+            <Reveal anim effect="none" className="mx-auto mt-10 grid max-w-5xl grid-cols-2 gap-3 lg:grid-cols-3">
+              {systems.map(({ category, count }, i) => (
+                <div key={category} className="m-item card rounded-[18px] px-4 py-3.5 sm:px-5 sm:py-4" style={at(i * 60)}>
                   <div className="flex items-baseline justify-between gap-3">
-                    <h3 className="font-medium text-ink">{CATEGORY_LABEL[category]}</h3>
-                    <p className="rounded-full bg-paper-2 px-2 py-0.5 text-xs text-ink-3 tnum">
-                      {names.length}
-                    </p>
+                    <h3 className="text-[0.9375rem] font-medium leading-snug text-ink">{CATEGORY_LABEL[category]}</h3>
+                    <p className="text-sm text-ink-3 tnum">{count}</p>
                   </div>
-                  <p className="mt-2.5 text-[0.9375rem] leading-relaxed text-ink-2">
-                    {names.slice(0, 5).join(", ")}
-                    {names.length > 5 && (
-                      <span className="text-ink-3"> and {names.length - 5} more</span>
-                    )}
-                  </p>
+                  <div className="mt-3 h-1 rounded-full bg-paper-3" aria-hidden>
+                    <div
+                      className="m-grow h-full rounded-full bg-ink-3"
+                      style={{ ...at(i * 60 + 200), width: `${(count / maxCount) * 100}%` }}
+                    />
+                  </div>
                 </div>
               ))}
-              <div className="card-wash p-6 sm:col-span-2">
-                <h3 className="flex items-center gap-2 font-medium text-ink">
-                  <Plus className="size-4" aria-hidden /> Not on the list?
-                </h3>
-                <p className="mt-2.5 max-w-[34rem] text-[0.9375rem] leading-relaxed text-ink-2">
-                  Add your own marker with its unit and range, and it is tracked exactly like
-                  the built-in ones. If your lab uses a different range, set it once for that
-                  marker or enter it with a result.
+              <div className="m-item card-wash col-span-2 flex items-center gap-3 px-5 py-4" style={at(systems.length * 60)}>
+                <Plus className="size-4 shrink-0 text-ink-2" aria-hidden />
+                <p className="font-medium text-ink">
+                  Missing one? <span className="font-normal text-ink-2">Add your own, with its unit and range.</span>
                 </p>
               </div>
             </Reveal>
@@ -511,86 +359,67 @@ export default function Home() {
         </section>
 
         {/* ------------------------------------------------------- REAL LIFE */}
-        <section className="py-16 sm:py-24">
+        <section className={SECTION}>
           <div className={WRAP}>
-            <Reveal>
-              <p className="eyebrow">Made for real life</p>
-              <h2 className={cn(H2, "mt-4 max-w-[20ch]")}>
-                For the appointment,{" "}
-                <span className="text-ink-3">and for the people you look after.</span>
+            <Reveal className="text-center">
+              <h2 className={H2}>
+                For your doctor. <span className="text-ink-3">For your family.</span>
               </h2>
             </Reveal>
             <div className="mt-10 grid gap-5 lg:grid-cols-2">
-              <Reveal className="card flex flex-col rounded-[24px] p-6 sm:p-8">
-                <h3 className="text-xl font-medium tracking-[-0.01em] text-ink">
-                  One page for your doctor
-                </h3>
-                <p className="mt-2 max-w-[30rem] text-[0.9375rem] leading-relaxed text-ink-2">
-                  What is outside its range comes first, then every latest result with its date
-                  and reference. It prints as plain ink on paper, ready to hand over.
-                </p>
-                <div className="card-wash mt-6 p-4" aria-hidden>
+              <Reveal anim className="card m-lift flex flex-col rounded-[24px] p-6 sm:p-8">
+                <h3 className="text-xl font-medium tracking-[-0.01em] text-ink">One page for the appointment</h3>
+                <div className="card-wash mt-5 p-4" aria-hidden>
                   <p className="flex items-center gap-2 text-xs font-medium text-ink-3">
                     <FileText className="size-3.5" /> Flagged for discussion
                   </p>
                   <ul className="mt-2 divide-y divide-line">
-                    {[d("fasting-glucose"), d("vitamin-d"), d("alt")].map((m) => (
-                      <li key={m.id} className="flex items-center justify-between gap-3 py-2.5">
-                        <span className="truncate text-sm font-medium text-ink">
-                          {m.name.replace(" (25-OH)", "")}
-                        </span>
+                    {[d("fasting-glucose"), d("vitamin-d"), d("alt")].map((m, i) => (
+                      <li key={m.id} className="m-item flex items-center justify-between gap-3 py-2.5" style={at(200 + i * 150)}>
+                        <span className="truncate text-sm font-medium text-ink">{m.name.replace(" (25-OH)", "")}</span>
                         <span className="flex shrink-0 items-center gap-3">
                           <span className="text-sm text-ink tnum">
                             {m.valueLabel} <span className="unit">{m.unit}</span>
                           </span>
-                          <span className="hidden w-[8.25rem] sm:block">
-                            <StatusBadge status={m.status} />
-                          </span>
+                          <StatusBadge status={m.status} />
                         </span>
                       </li>
                     ))}
                   </ul>
                 </div>
-                <p className="mt-4 text-xs text-ink-3">Included in Pro.</p>
+                <p className="mt-4 text-xs text-ink-3">Pro · prints as plain ink on paper</p>
               </Reveal>
 
-              <Reveal delay={80} className="card flex flex-col rounded-[24px] p-6 sm:p-8">
-                <h3 className="text-xl font-medium tracking-[-0.01em] text-ink">
-                  The whole household in one account
-                </h3>
-                <p className="mt-2 max-w-[30rem] text-[0.9375rem] leading-relaxed text-ink-2">
-                  Keep a parent&rsquo;s results next to your own. Each profile has its own
-                  history, and its own ranges where they differ by sex.
-                </p>
-                <div className="card-wash mt-6 space-y-1 p-3" aria-hidden>
-                  {[
-                    ["Alex", "22 markers · last test Sep 2026", true],
-                    ["Mum", "31 markers · last test Jun 2026", false],
-                    ["Dad", "18 markers · last test Feb 2026", false],
-                  ].map(([name, meta, active]) => (
+              <Reveal anim delay={100} className="card m-lift flex flex-col rounded-[24px] p-6 sm:p-8">
+                <h3 className="text-xl font-medium tracking-[-0.01em] text-ink">Everyone in one account</h3>
+                <div className="card-wash mt-5 space-y-1 p-3" aria-hidden>
+                  {(
+                    [
+                      ["Alex", "22 markers", true],
+                      ["Mum", "31 markers", false],
+                      ["Dad", "18 markers", false],
+                    ] as const
+                  ).map(([name, meta, active], i) => (
                     <div
-                      key={name as string}
-                      className={cn(
-                        "flex items-center gap-3 rounded-xl px-3 py-2",
-                        active && "bg-paper ring-1 ring-line-strong",
-                      )}
+                      key={name}
+                      className={cn("m-item flex items-center gap-3 rounded-xl px-3 py-2.5", active && "bg-paper ring-1 ring-line-strong")}
+                      style={at(200 + i * 150)}
                     >
                       <span
                         className={cn(
-                          "grid size-7 place-items-center rounded-full text-xs font-medium",
+                          "m-pop grid size-8 place-items-center rounded-full text-xs font-medium",
                           active ? "bg-[image:var(--grad-brand)] text-white" : "bg-paper-3 text-ink-2",
                         )}
+                        style={at(300 + i * 150)}
                       >
-                        {(name as string).charAt(0)}
+                        {name.charAt(0)}
                       </span>
                       <span className="text-sm font-medium text-ink">{name}</span>
-                      <span className="ml-auto truncate text-xs text-ink-3">{meta}</span>
+                      <span className="ml-auto text-xs text-ink-3">{meta}</span>
                     </div>
                   ))}
                 </div>
-                <p className="mt-4 text-xs text-ink-3">
-                  One profile is free. Pro covers up to {PLAN_LIMITS.pro.maxProfiles}.
-                </p>
+                <p className="mt-4 text-xs text-ink-3">1 profile free · up to {PLAN_LIMITS.pro.maxProfiles} on Pro</p>
               </Reveal>
             </div>
           </div>
@@ -601,115 +430,91 @@ export default function Home() {
           <div className={WRAP}>
             <Art name="deep" sizes="100vw" className="px-6 py-14 text-white sm:px-12 sm:py-20">
               <Reveal>
-                <p className="eyebrow text-white/65">Privacy and ownership</p>
-                <h2 className="display mt-4 max-w-[18ch] text-[clamp(1.875rem,1.2rem+2.4vw,3rem)] text-white">
-                  These are your results. <span className="text-white/60">They stay yours.</span>
+                <h2 className="display max-w-[18ch] text-[clamp(1.875rem,1.2rem+2.4vw,3rem)] text-white">
+                  Your results. <span className="text-white/60">Only yours.</span>
                 </h2>
               </Reveal>
-              <Reveal delay={80} className="mt-10 grid gap-4 sm:grid-cols-2">
+              <Reveal anim effect="none" className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 {(
                   [
-                    [
-                      Lock,
-                      "Private to your account",
-                      "Every profile, test and result is tied to your sign-in at the database level, not just hidden in the interface.",
-                    ],
-                    [
-                      ShieldCheck,
-                      "No ad or analytics scripts",
-                      "bbiom loads no third-party trackers on any page. Sign-in is a one-time email link or Google, with no password to leak.",
-                    ],
-                    [
-                      Download,
-                      "Export everything, free",
-                      "Download your full history as CSV or JSON whenever you want, on every plan.",
-                    ],
-                    [
-                      Trash2,
-                      "Delete means delete",
-                      "Closing your account removes every profile, test, result and note, and your sign-in with them.",
-                    ],
+                    [Lock, "Private by default", "Locked to your account in the database."],
+                    [ShieldCheck, "No trackers", "No ads. No analytics scripts."],
+                    [Download, "Export, free", "CSV or JSON, any time."],
+                    [Trash2, "Delete is delete", "Everything goes, sign-in too."],
                   ] as const
-                ).map(([Icon, title, body]) => (
-                  <div key={title} className="glass-dark flex gap-4 rounded-[20px] p-5 sm:p-6">
-                    <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-white/12">
+                ).map(([Icon, title, body], i) => (
+                  <div key={title} className="m-item glass-dark rounded-[20px] p-5" style={at(i * 120)}>
+                    <span className="m-pop grid size-10 place-items-center rounded-xl bg-white/12" style={at(i * 120 + 200)}>
                       <Icon className="size-5" aria-hidden />
                     </span>
-                    <div>
-                      <h3 className="font-medium">{title}</h3>
-                      <p className="mt-1.5 text-[0.9375rem] leading-relaxed text-white/75">{body}</p>
-                    </div>
+                    <h3 className="mt-4 font-medium">{title}</h3>
+                    <p className="mt-1 text-sm text-white/75">{body}</p>
                   </div>
                 ))}
               </Reveal>
-              <p className="mt-10 max-w-[40rem] text-[0.9375rem] leading-relaxed text-white/70">
-                bbiom is a record, not a diagnosis. It shows the numbers you enter and how they
-                have moved, so the conversation with your doctor starts further along.
-              </p>
+              <p className="mt-10 text-[0.9375rem] text-white/70">A record, not a diagnosis.</p>
             </Art>
           </div>
         </section>
 
         {/* --------------------------------------------------------- PRICING */}
-        <section id="pricing" className="scroll-mt-20 py-16 sm:py-24">
+        <section id="pricing" className={cn("scroll-mt-20", SECTION)}>
           <div className={WRAP}>
-            <Reveal className="mx-auto max-w-2xl text-center">
-              <p className="eyebrow">Pricing</p>
-              <h2 className={cn(H2, "mt-4")}>
-                Free to track. <span className="text-ink-3">Pro when you need more.</span>
+            <Reveal className="text-center">
+              <h2 className={H2}>
+                Free to track. <span className="text-ink-3">Pro for more.</span>
               </h2>
             </Reveal>
-            <Reveal delay={80} className="mx-auto mt-10 grid max-w-5xl gap-5 lg:grid-cols-2">
-              <PlanCard
-                name="Free"
-                price="$0"
-                note="No card, no trial clock."
-                cta="Start free"
-                features={[
-                  "1 profile",
-                  `Up to ${PLAN_LIMITS.free.maxSessions} tests`,
-                  `All ${BUILTIN_COUNT} markers, plus your own`,
-                  "Trends, ranges, life events, unit switching",
-                  "CSV and JSON export",
-                ]}
-              />
-              <PlanCard
-                name="Pro"
-                price="$4.99"
-                per="a month"
-                note="Or $39 a year. Cancel any time and keep your data."
-                cta="Start free, upgrade inside"
-                featured
-                features={[
-                  `Up to ${PLAN_LIMITS.pro.maxProfiles} profiles for family`,
-                  "Unlimited tests",
-                  "Doctor-ready printable summary",
-                  "Everything in Free",
-                ]}
-              />
+            <Reveal anim effect="none" className="mx-auto mt-10 grid max-w-4xl gap-5 lg:grid-cols-2">
+              <div className="m-item flex" style={at(0)}>
+                <PlanCard
+                  name="Free"
+                  price="$0"
+                  note="No card."
+                  cta="Start free"
+                  features={[
+                    "1 profile",
+                    `${PLAN_LIMITS.free.maxSessions} tests`,
+                    `All ${BUILTIN_COUNT} markers, plus your own`,
+                    "Trends, ranges, units",
+                    "Export",
+                  ]}
+                />
+              </div>
+              <div className="m-item flex" style={at(150)}>
+                <PlanCard
+                  name="Pro"
+                  price="$4.99"
+                  per="a month"
+                  note="Or $39 a year. Cancel any time."
+                  cta="Start free, upgrade later"
+                  featured
+                  features={[
+                    `${PLAN_LIMITS.pro.maxProfiles} profiles`,
+                    "Unlimited tests",
+                    "Doctor summary",
+                    "Everything in Free",
+                  ]}
+                />
+              </div>
             </Reveal>
           </div>
         </section>
 
         {/* ------------------------------------------------------------- FAQ */}
-        <section className="py-16 sm:py-24">
-          <div className={cn(WRAP, "grid gap-10 lg:grid-cols-[minmax(0,4fr)_minmax(0,8fr)]")}>
-            <Reveal>
-              <p className="eyebrow">Questions</p>
-              <h2 className={cn(H2, "mt-4")}>
-                Before <span className="text-ink-3">you start.</span>
-              </h2>
+        <section className={SECTION}>
+          <div className={cn(WRAP, "max-w-3xl")}>
+            <Reveal className="text-center">
+              <h2 className={H2}>Questions</h2>
             </Reveal>
-            <Reveal delay={80} className="card rounded-[24px] px-6 sm:px-8">
+            <Reveal delay={80} className="card mt-8 rounded-[24px] px-6 sm:px-8">
               {FAQ.map(([q, a]) => (
                 <details key={q} name="faq" className="acc border-t border-line first:border-t-0">
                   <summary className="flex items-center justify-between gap-6 py-5">
                     <span className="text-[1.0625rem] font-medium text-ink">{q}</span>
                     <Plus className="acc-mark size-5 shrink-0 text-ink-3" aria-hidden />
                   </summary>
-                  <p className="max-w-[40rem] pb-6 text-[0.9375rem] leading-relaxed text-ink-2">
-                    {a}
-                  </p>
+                  <p className="pb-5 text-[0.9375rem] text-ink-2">{a}</p>
                 </details>
               ))}
             </Reveal>
@@ -719,27 +524,18 @@ export default function Home() {
         {/* ------------------------------------------------------- FINAL CTA */}
         <section className="pb-16 sm:pb-24">
           <div className={WRAP}>
-            <Art
-              name="cta"
-              scrim
-              sizes="100vw"
-              className="px-6 py-20 text-center text-white sm:px-12 sm:py-28"
-            >
-              <Reveal>
-                <h2 className="display mx-auto max-w-[18ch] text-[clamp(2rem,1.2rem+3.2vw,3.75rem)] text-white">
-                  Start with the report you already have.
+            <Art name="cta" scrim sizes="100vw" className="px-6 py-20 text-center text-white sm:px-12 sm:py-28">
+              <Reveal anim effect="none">
+                <h2 className="display m-item mx-auto max-w-[16ch] text-[clamp(2rem,1.2rem+3.2vw,3.75rem)] text-white">
+                  Start with the report you have.
                 </h2>
-                <p className="mx-auto mt-5 max-w-[32rem] text-lg leading-relaxed text-white/85">
-                  One report takes about three minutes. The second one gives you your first
-                  trend.
-                </p>
-                <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+                <div className="m-item mt-8 flex flex-wrap items-center justify-center gap-3" style={at(200)}>
                   <Button asChild size="lg" variant="light">
                     <Link href="/login">Start free</Link>
                   </Button>
                   <Button asChild size="lg" variant="glass">
                     <Link href="/demo">
-                      Explore the sample dashboard <ArrowRight aria-hidden />
+                      See a sample <ArrowRight aria-hidden />
                     </Link>
                   </Button>
                 </div>
@@ -755,27 +551,17 @@ export default function Home() {
           <div className="flex flex-col gap-8 md:flex-row md:items-start md:justify-between">
             <div>
               <Logo />
-              <p className="mt-4 max-w-xs text-sm leading-relaxed text-ink-2">
-                Your blood tests, kept in one place and read as trends.
-              </p>
+              <p className="mt-4 max-w-xs text-sm text-ink-2">Your blood tests, as trends.</p>
             </div>
             <nav className="flex flex-wrap gap-x-7 gap-y-3" aria-label="Footer">
-              {[...NAV_LINKS, ["Sample dashboard", "/demo"], ["Sign in", "/login"]].map(
-                ([label, href]) => (
-                  <a
-                    key={href}
-                    href={href}
-                    className="text-sm text-ink-2 transition-colors duration-300 hover:text-brand"
-                  >
-                    {label}
-                  </a>
-                ),
-              )}
+              {[...NAV_LINKS, ["Sample dashboard", "/demo"], ["Sign in", "/login"]].map(([label, href]) => (
+                <a key={href} href={href} className="text-sm text-ink-2 transition-colors duration-300 hover:text-brand">
+                  {label}
+                </a>
+              ))}
             </nav>
           </div>
-          <p className="mt-10 max-w-2xl border-t border-line pt-6 text-xs leading-relaxed text-ink-3">
-            {DISCLAIMER_TEXT}
-          </p>
+          <p className="mt-10 max-w-2xl border-t border-line pt-6 text-xs leading-relaxed text-ink-3">{DISCLAIMER_TEXT}</p>
           <p className="mt-3 text-xs text-ink-3">© {new Date().getFullYear()} bbiom</p>
         </div>
       </footer>
@@ -784,30 +570,11 @@ export default function Home() {
 }
 
 const FAQ: [string, string][] = [
-  [
-    "Do I have to type my results in?",
-    "Yes. You enter the values from your report by hand. Panel shortcuts add the rows for common panels in one tap, you can enter values in the unit your lab printed, and bbiom warns you when a number looks like a slipped decimal or the wrong unit before it saves.",
-  ],
-  [
-    "Which reference range does it use?",
-    "The most specific one it has. A range you enter alongside a result (the one printed on that report) always wins for that result. Otherwise it uses a range you have set for that marker, and failing that the standard range for the profile's sex.",
-  ],
-  [
-    "What does borderline mean?",
-    "The value is inside its reference range but within 10% of one of the limits. It is a prompt to keep an eye on the trend, not a finding.",
-  ],
-  [
-    "My lab reports in different units.",
-    "Enter each result in whichever unit the report uses. Common conversions such as mg/dL and mmol/L are built in, and you can switch the unit a marker is shown in at any time without re-entering anything.",
-  ],
-  [
-    "Is this medical advice?",
-    "No. bbiom records the values you enter and shows how they compare with a reference range over time. Ranges vary by lab and by person, so talk through your results with your healthcare provider.",
-  ],
-  [
-    "What happens to my data if I stop using it?",
-    "You can export everything as CSV or JSON for free, on any plan. Deleting your account removes all profiles, tests, results and notes along with your sign-in.",
-  ],
+  ["Do I type my results in?", "Yes. Panel shortcuts fill the rows, and likely typos are flagged before saving."],
+  ["Which range does it use?", "The one on your report first, then one you set, then the standard range."],
+  ["My lab uses other units.", "Enter what your lab printed. bbiom converts."],
+  ["Is this medical advice?", "No. It is a record. Talk your results through with your doctor."],
+  ["What if I leave?", "Export everything for free, or delete it all."],
 ];
 
 /* A numbered step: a painted card holding one frosted piece of the product,
@@ -828,7 +595,7 @@ function Step({
   children: React.ReactNode;
 }) {
   return (
-    <Reveal as="li" delay={delay} className="flex flex-col">
+    <Reveal as="li" anim delay={delay} className="m-lift flex flex-col">
       <Art
         name={art}
         sizes="(min-width: 1024px) 33vw, 100vw"
@@ -841,10 +608,8 @@ function Step({
           {children}
         </div>
       </Art>
-      <h3 className="mt-6 text-center text-xl font-medium tracking-[-0.01em] text-ink">{title}</h3>
-      <p className="mx-auto mt-2 max-w-[26rem] text-center text-[0.9375rem] leading-relaxed text-ink-2">
-        {body}
-      </p>
+      <h3 className="mt-5 text-center text-xl font-medium tracking-[-0.01em] text-ink">{title}</h3>
+      <p className="mx-auto mt-1.5 max-w-[26rem] text-center text-[0.9375rem] text-ink-2">{body}</p>
     </Reveal>
   );
 }
@@ -892,11 +657,16 @@ function MiniTrend({
         opacity={0.12}
       />
       <line x1={pad.l} x2={W - pad.r} y1={y(max)} y2={y(max)} stroke="var(--in-range)" strokeOpacity={0.5} />
-      <line x1={ex} x2={ex} y1={pad.t - 6} y2={H - pad.b} stroke="var(--chart-axis)" />
-      <text x={ex + 5} y={pad.t - 9} fontSize={11} fill="var(--ink-2)">
-        {eventLabel}
-      </text>
+      <g className="m-fade" style={{ "--d": "700ms" } as React.CSSProperties}>
+        <line x1={ex} x2={ex} y1={pad.t - 6} y2={H - pad.b} stroke="var(--chart-axis)" />
+        <text x={ex + 5} y={pad.t - 9} fontSize={11} fill="var(--ink-2)">
+          {eventLabel}
+        </text>
+      </g>
       <polyline
+        className="m-draw"
+        pathLength={1}
+        style={{ "--d": "200ms" } as React.CSSProperties}
         points={pts.map((p) => `${x(p.t).toFixed(1)},${y(p.value).toFixed(1)}`).join(" ")}
         fill="none"
         stroke="var(--chart-line)"
@@ -904,9 +674,11 @@ function MiniTrend({
         strokeLinejoin="round"
         strokeLinecap="round"
       />
-      {pts.map((p) => (
+      {pts.map((p, i) => (
         <circle
           key={p.resultId}
+          className="m-pop"
+          style={{ "--d": `${200 + Math.round((i / Math.max(1, pts.length - 1)) * 1000)}ms` } as React.CSSProperties}
           cx={x(p.t)}
           cy={y(p.value)}
           r={5}
@@ -972,10 +744,10 @@ function PlanCard({
     </>
   );
   return featured ? (
-    <Art name="deep" className="flex flex-col p-7 text-white sm:p-9">
+    <Art name="deep" className="flex w-full flex-col p-7 text-white sm:p-9">
       {body}
     </Art>
   ) : (
-    <div className="card flex flex-col rounded-[28px] p-7 text-ink sm:p-9">{body}</div>
+    <div className="card flex w-full flex-col rounded-[28px] p-7 text-ink sm:p-9">{body}</div>
   );
 }

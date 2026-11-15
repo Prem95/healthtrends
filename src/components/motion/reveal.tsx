@@ -49,12 +49,15 @@ export function Reveal({
   className,
   delay = 0,
   effect = "fade",
+  anim = false,
   children,
 }: {
   as?: "div" | "section" | "header" | "span" | "li" | "ul";
   className?: string;
   delay?: number;
   effect?: "fade" | "none";
+  /** Play the choreography of the parts inside (.m-anim in globals.css) once in view. */
+  anim?: boolean;
   children: React.ReactNode;
 }) {
   const { ref, inView } = useInView<HTMLElement>();
@@ -62,7 +65,7 @@ export function Reveal({
     <Tag
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       ref={ref as any}
-      className={cn(effect === "fade" && "reveal", inView && "inview", className)}
+      className={cn(effect === "fade" && "reveal", anim && "m-anim", inView && "inview", className)}
       style={delay ? ({ "--rv-delay": `${delay}ms` } as React.CSSProperties) : undefined}
     >
       {children}

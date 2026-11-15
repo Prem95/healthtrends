@@ -2,6 +2,7 @@ import { cn } from "@/lib/utils";
 import { statusTone, type ResultStatus } from "@/lib/domain";
 import type { MarkerDigest } from "@/lib/digest";
 import { StatusGlyph } from "@/components/ui/status-badge";
+import { CountUp } from "@/components/motion/count-up";
 
 /*
   The headline read of a profile: how many markers are in range on their
@@ -21,9 +22,12 @@ export function countStatuses(digests: MarkerDigest[]) {
 export function StatusSummary({
   digests,
   className,
+  countUp = false,
 }: {
   digests: MarkerDigest[];
   className?: string;
+  /** Count the headline figure up when it comes into view (landing page). */
+  countUp?: boolean;
 }) {
   const c = countStatuses(digests);
   const parts = [
@@ -38,7 +42,7 @@ export function StatusSummary({
       <p className="text-sm text-ink-3">Latest result for each marker</p>
       <p className="mt-2 flex flex-wrap items-baseline gap-x-3 gap-y-1">
         <span className="text-[3.25rem] font-medium leading-none tracking-[-0.035em] text-ink">
-          {c.inRange}
+          {countUp ? <CountUp value={c.inRange} /> : c.inRange}
         </span>
         <span className="text-lg text-ink-2">
           of {c.total} marker{c.total === 1 ? "" : "s"} in range
@@ -54,7 +58,7 @@ export function StatusSummary({
         {parts.map((p) => (
           <span
             key={p.label}
-            className="h-full rounded-full"
+            className="ss-seg h-full rounded-full"
             style={{ flexGrow: p.n, flexBasis: 0, background: p.color }}
           />
         ))}

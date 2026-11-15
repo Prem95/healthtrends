@@ -37,6 +37,8 @@ export function Sparkline({
       aria-hidden
     >
       <polyline
+        className="spark-line"
+        pathLength={1}
         points={pts.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(" ")}
         fill="none"
         stroke="var(--neutral-status)"
@@ -44,7 +46,7 @@ export function Sparkline({
         strokeLinecap="round"
         strokeLinejoin="round"
       />
-      <circle cx={lx} cy={ly} r="4.5" fill={tone} stroke="var(--paper)" strokeWidth="2" />
+      <circle className="spark-dot" cx={lx} cy={ly} r="4.5" fill={tone} stroke="var(--paper)" strokeWidth="2" />
     </svg>
   );
 }

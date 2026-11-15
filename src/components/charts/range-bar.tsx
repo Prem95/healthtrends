@@ -81,12 +81,12 @@ export function RangeBar({
     <div className={cn("w-full", className)} aria-hidden>
       <div className="relative h-1.5 w-full rounded-full bg-paper-3">
         <div
-          className="absolute inset-y-0 rounded-full bg-in-range/30"
+          className="rb-band absolute inset-y-0 rounded-full bg-in-range/30"
           style={{ left: `${left}%`, right: `${100 - right}%` }}
         />
         <div
           className={cn(
-            "absolute top-1/2 size-3 -translate-x-1/2 -translate-y-1/2 rounded-full ring-2 ring-paper transition-[left] duration-300",
+            "rb-dot absolute top-1/2 size-3 -translate-x-1/2 -translate-y-1/2 rounded-full ring-2 ring-paper transition-[left] duration-300",
             DOT_TONE[tone],
           )}
           style={{ left: `${dot}%` }}

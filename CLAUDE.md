@@ -54,7 +54,11 @@ real app component over sample data, and the same screens are public at
   art panels and hero cards. Typeset punctuation: en-dashes in ranges,
   `10³/µL` superscripts (`prettyUnit`), tabular numerals in columns.
 - **Motion.** One easing curve, `cubic-bezier(0.22, 1, 0.36, 1)`; nothing
-  bounces. The artwork is static.
+  bounces. The artwork is static. Motion shows what the product does: on the
+  landing page, parts play once in view inside `<Reveal anim>` (`.m-anim`) —
+  `.m-item` fade-up, `.m-pop`, `.m-draw` (a line drawing), `.m-grow` (a bar
+  filling), range-bar dots sliding to their value, `CountUp` figures — each
+  staggered with `--d`. Copy stays short: a headline, then at most one line.
 
 **Anti-references:** a second gradient palette, AI-purple meshes, flat
 single-colour hero blocks, serif or bold display headlines, decorative use of
@@ -81,8 +85,8 @@ parallax, health "scores" or alarm language.
 5. **Plain words, honest claims.** "In range / Borderline / High / Low", "your
    lab's range, not a textbook one". Marketing copy states only what the
    product does today (no PDF import, no diagnosis).
-6. **Quiet, single-curve motion.** Fade-up on entry (once), a line that
-   draws, 0.25–0.3s hovers. Motion is armed only under
+6. **Quiet, single-curve motion.** Fade-up on entry (once), lines that
+   draw, bars that fill, numbers that count up, 0.25–0.3s hovers. Motion is armed only under
    `prefers-reduced-motion: no-preference` *and* `scripting: enabled`, so
    content is never hidden from anyone.
 
