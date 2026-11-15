@@ -20,7 +20,7 @@ export function MarkerCard({
 }: {
   d: MarkerDigest;
   href: string;
-  /** e.g. "glass" to float the card over artwork. */
+  /** Extra classes for the card surface. */
   className?: string;
 }) {
   return (
@@ -35,7 +35,7 @@ export function MarkerCard({
 
       <div className="flex items-end justify-between gap-4">
         <p className="flex items-baseline gap-1.5">
-          <span className="text-[2rem] font-medium leading-none tracking-[-0.03em] text-ink">
+          <span className="figure text-[2.375rem] text-ink">
             {d.valueLabel}
           </span>
           <span className="unit">{d.unit}</span>

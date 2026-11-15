@@ -1,39 +1,41 @@
 @import "tailwindcss";
 
 /*
-  bbiom design system — "clear chart".
+  bbiom design system — "the well-kept record".
 
-  A health record people read at home, so legibility comes first: a warm paper
-  canvas, white cards on hairlines, evergreen ink, and sentence-case sans for
-  every control. The only vivid colour on any screen is the status of a
-  result (in range / borderline / out), and it always travels with a shape and
-  a label. Warmth comes from one gradient family — evergreen into orange —
-  used as painted artwork (public/art), soft washes and frosted glass, never
-  on data. One easing curve. Swap the tokens in :root to rebrand.
+  A lab report set by a good typographer: warm paper, near-black ink, one
+  contemporary display grotesk (Funnel Display) for one-word headings and
+  big readings, its text companion (Funnel Sans) for everything else, no
+  italics. Colour is rationed. The only vivid colours on a screen are the
+  status of a result (in range / borderline / out), which always travel
+  with a shape and a label, and one cobalt accent for interaction and the
+  full stop that closes each title. No gradients, no artwork: the product's
+  own line is the image. See design-notes.md for the reasoning.
 */
 
 :root {
   /* Surfaces */
-  --page-bg: #f5f4ef; /* warm paper canvas, never pure #fff */
-  --paper: #ffffff; /* card */
-  --paper-2: #f3f2ec; /* inset: inputs, tracks, table heads */
-  --paper-3: #e9e8e0; /* strongest inset / neutral chips */
+  --page-bg: #f4f2ec; /* warm paper canvas, never pure #fff */
+  --paper: #ffffff; /* cards, charts and tables sit on white */
+  --paper-2: #ece9e1; /* inset: inputs, tracks, table heads */
+  --paper-3: #e2ded4; /* strongest inset / neutral chips */
 
-  /* Ink: evergreen-black, never pure #000 */
-  --ink: #13231f;
-  --ink-2: #40504b; /* body copy */
-  --ink-3: #62706b; /* metadata — 4.9:1 on the canvas */
+  /* Ink: near-black with a faint green cast, never pure #000 */
+  --ink: #121513;
+  --ink-2: #454a47; /* body copy — 8:1 on the canvas */
+  --ink-3: #616662; /* metadata — 4.9:1 on the canvas, 4.6:1 on inset */
 
   /* Hairlines */
-  --line: rgba(19, 35, 31, 0.1);
-  --line-strong: rgba(19, 35, 31, 0.16);
-  --rule: rgba(19, 35, 31, 0.3);
+  --line: rgba(18, 21, 19, 0.1);
+  --line-strong: rgba(18, 21, 19, 0.17);
+  --rule: rgba(18, 21, 19, 0.34);
 
-  /* Brand / interaction: deep evergreen. Links, focus, active nav. */
-  --brand: #0f5c4d;
-  --brand-strong: #0a4438;
-  --brand-soft: #dcebe6;
-  --brand-tint: #edf4f1;
+  /* The one accent: cobalt. Links, focus, the active item, the full stop
+     after each display title, and the closing band. Never a data mark. */
+  --brand: #2b44c4; /* 6.9:1 on the canvas */
+  --brand-strong: #1f33a0;
+  --brand-soft: #e1e5f8;
+  --brand-tint: #eef0fa;
 
   /* Status triad — data only. Validated for CVD separation and ≥3:1 on white
      (dataviz validator); always paired with a glyph + label, never alone. */
@@ -47,22 +49,24 @@
   --out-ink: #ad2247;
   --neutral-status: #84908c;
 
-  /* Warm partner to the evergreen: brand surfaces and artwork only, never
-     data (amber "borderline" is a status; this orange is not). */
-  --warm: #ee7420;
-  --warm-strong: #c9480f;
-  --warm-soft: #fdebd9;
-
-  /* The one gradient family: evergreen into orange. */
-  --grad-brand: linear-gradient(118deg, #0c5348 0%, #1c8c74 40%, #f3a23a 80%, #ea6a1f 100%);
-  --grad-wash: radial-gradient(120% 140% at 0% 0%, rgba(28, 140, 116, 0.1), transparent 55%),
-    radial-gradient(120% 140% at 100% 100%, rgba(238, 116, 32, 0.12), transparent 55%);
-  --shadow-float: 0 28px 60px -30px rgba(6, 33, 29, 0.5);
+  /* Elevation: hairlines do most of the work. One soft shadow for a product
+     panel lifted off the page, one for menus. */
+  --shadow-panel: 0 1px 0 rgba(18, 21, 19, 0.04), 0 32px 64px -32px rgba(18, 21, 19, 0.3);
+  --shadow-pop: 0 12px 32px -12px rgba(18, 21, 19, 0.28);
 
   /* Chart chrome */
-  --chart-line: #2a3a36;
-  --chart-grid: rgba(19, 35, 31, 0.09);
-  --chart-axis: rgba(19, 35, 31, 0.22);
+  --chart-line: #1d2220;
+  --chart-grid: rgba(18, 21, 19, 0.08);
+  --chart-axis: rgba(18, 21, 19, 0.24);
+
+  /* Spacing: a 4px base. Sections breathe; components stay tight. */
+  --space-section: clamp(5rem, 2.5rem + 6.5vw, 9.5rem);
+  --gutter: clamp(1rem, 0.4rem + 2.6vw, 2.5rem);
+
+  /* Radii: soft, not bubbly. Pills for every button and nav item. */
+  --r-input: 10px;
+  --r-card: 16px;
+  --r-panel: 22px;
 
   --ease: cubic-bezier(0.22, 1, 0.36, 1); /* the one easing curve */
 
@@ -72,25 +76,25 @@
 }
 
 /*
-  Dark surface. Used for the one inverted band on the landing page; set
-  data-theme="dark" on any root to flip a whole surface. Status hues are
-  re-stepped for the dark card, not auto-inverted.
+  Ink surface. Set data-theme="dark" on a section to flip it: the landing
+  page's full-bleed chart band and the closing band use it. Status hues are
+  re-stepped for the dark surface, not auto-inverted.
 */
 [data-theme="dark"] {
-  --page-bg: #0f1c19;
-  --paper: #162521;
-  --paper-2: #1b2c27;
-  --paper-3: #23362f;
-  --ink: #f1f3ee;
-  --ink-2: #c3ccc6;
-  --ink-3: #94a19b;
-  --line: rgba(241, 243, 238, 0.1);
-  --line-strong: rgba(241, 243, 238, 0.16);
-  --rule: rgba(241, 243, 238, 0.3);
-  --brand: #8fd6c1;
-  --brand-strong: #b4e6d6;
-  --brand-soft: rgba(143, 214, 193, 0.16);
-  --brand-tint: rgba(143, 214, 193, 0.08);
+  --page-bg: #121513;
+  --paper: #1a1e1c;
+  --paper-2: #222724;
+  --paper-3: #2b312e;
+  --ink: #f2f1ec;
+  --ink-2: #c6c9c4;
+  --ink-3: #979c97;
+  --line: rgba(242, 241, 236, 0.1);
+  --line-strong: rgba(242, 241, 236, 0.17);
+  --rule: rgba(242, 241, 236, 0.32);
+  --brand: #a3b2ff;
+  --brand-strong: #c2ccff;
+  --brand-soft: rgba(163, 178, 255, 0.16);
+  --brand-tint: rgba(163, 178, 255, 0.08);
   --in-range: #35b88f;
   --in-range-soft: rgba(53, 184, 143, 0.16);
   --borderline: #e9a13a;
@@ -100,9 +104,10 @@
   --out-soft: rgba(236, 101, 133, 0.16);
   --out-ink: #f38ba4;
   --neutral-status: #7f8c87;
-  --chart-line: #dfe5df;
-  --chart-grid: rgba(241, 243, 238, 0.1);
-  --chart-axis: rgba(241, 243, 238, 0.24);
+  --chart-line: #e6e8e3;
+  --chart-grid: rgba(242, 241, 236, 0.09);
+  --chart-axis: rgba(242, 241, 236, 0.26);
+  --shadow-panel: 0 32px 64px -32px rgba(0, 0, 0, 0.6);
   background: var(--page-bg);
   color: var(--ink);
 }
@@ -131,22 +136,40 @@
   --color-out-soft: var(--out-soft);
   --color-out-ink: var(--out-ink);
   --color-neutral-status: var(--neutral-status);
-  --color-warm: var(--warm);
-  --color-warm-strong: var(--warm-strong);
-  --color-warm-soft: var(--warm-soft);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
 
-  --font-sans: var(--font-google-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-google-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-jetbrains-mono), ui-monospace, "SF Mono", Menlo, monospace;
+  --font-sans: var(--font-funnel-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-funnel-display), var(--font-funnel-sans), ui-sans-serif, system-ui, sans-serif;
 
   --radius-sm: 0.375rem;
   --radius-md: var(--radius);
   --radius-lg: 1rem;
 
+  --shadow-panel: var(--shadow-panel);
+  --shadow-pop: var(--shadow-pop);
+
   /* Tailwind transition utilities ride the house curve. */
   --default-transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Type scale. Display sizes are fluid between 375px and 1440px; the body
+   scale is fixed. Usage: text-display-xl, text-lede, … */
+@theme {
+  --text-display-xl: clamp(3.5rem, 1.6rem + 8.2vw, 9.5rem);
+  --text-display-xl--line-height: 0.92;
+  --text-display-xl--letter-spacing: -0.05em;
+  --text-display-l: clamp(2.75rem, 1.6rem + 4.6vw, 5.75rem);
+  --text-display-l--line-height: 0.96;
+  --text-display-l--letter-spacing: -0.045em;
+  --text-display-m: clamp(2.25rem, 1.5rem + 3vw, 4rem);
+  --text-display-m--line-height: 1;
+  --text-display-m--letter-spacing: -0.04em;
+  --text-display-s: clamp(1.5rem, 1.25rem + 0.9vw, 2rem);
+  --text-display-s--line-height: 1.1;
+  --text-display-s--letter-spacing: -0.025em;
+  --text-lede: clamp(1.125rem, 1.02rem + 0.45vw, 1.375rem);
+  --text-lede--line-height: 1.45;
 }
 
 * {
@@ -159,13 +182,7 @@ html {
 }
 
 body {
-  /* Paper, warmed at the top by the two brand hues. */
-  background:
-    radial-gradient(1100px 620px at -5% -10%, rgba(28, 140, 116, 0.11), transparent 62%),
-    radial-gradient(1000px 640px at 105% -5%, rgba(238, 116, 32, 0.12), transparent 60%),
-    var(--page-bg);
-  background-repeat: no-repeat;
-  background-color: var(--page-bg);
+  background: var(--page-bg);
   color: var(--ink);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
@@ -179,8 +196,8 @@ body {
 
 :focus-visible {
   outline: 2px solid var(--brand);
-  outline-offset: 2px;
-  border-radius: 4px;
+  outline-offset: 3px;
+  border-radius: 6px;
 }
 
 /* Component classes live in the components layer so Tailwind utilities on the
@@ -188,23 +205,47 @@ body {
 @layer components {
 /* ---- Type ---- */
 
-/* Display headings: one grotesque, weight 500 at most, sentence case. */
+/* Display: Funnel Display, medium weight, upright. Marketing titles are
+   one word; `.stop` sets the cobalt full stop that closes them. */
 .display {
   font-family: var(--font-display);
   font-weight: 500;
-  letter-spacing: -0.025em;
-  line-height: 1.08;
+  font-style: normal;
+  letter-spacing: -0.03em;
+  line-height: 1.02;
   text-wrap: balance;
 }
+.stop {
+  color: var(--brand);
+}
 
-/* Section kicker: the only uppercase mono on a screen, used sparingly. */
+/* Big readings and statistics: the serif's lining figures, aligned. */
+.figure {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-variant-numeric: lining-nums tabular-nums;
+  letter-spacing: -0.04em;
+  line-height: 0.95;
+}
+
+/* Section kicker: small uppercase sans with a short rule before it. */
 .eyebrow {
-  font-family: var(--font-mono);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+  font-family: var(--font-sans);
   font-size: 0.75rem;
   font-weight: 500;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--ink-3);
+}
+.eyebrow::before {
+  content: "";
+  width: 1.25rem;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.6;
 }
 
 /* Columns of numbers align; standalone readings keep proportional figures. */
@@ -214,8 +255,9 @@ body {
 
 /* Small data unit beside a reading (mg/dL, %, …). */
 .unit {
-  font-family: var(--font-mono);
-  font-size: 0.75em;
+  font-family: var(--font-sans);
+  font-size: max(0.75rem, 0.6em);
+  font-weight: 400;
   color: var(--ink-3);
   letter-spacing: 0;
 }
@@ -225,80 +267,26 @@ body {
 .card {
   background: var(--paper);
   border: 1px solid var(--line-strong);
-  border-radius: 16px;
+  border-radius: var(--r-card);
 }
-/* A card with the brand wash: faint green from one corner, orange from the
-   other. For summary surfaces, not for tables or charts. */
-.card-wash {
-  background: var(--grad-wash), var(--paper);
+/* A summary surface: the canvas tone, set into the page. Not for charts or
+   tables, which stay on white. */
+.card-quiet {
+  background: color-mix(in srgb, var(--paper-2) 55%, var(--paper));
+  border: 1px solid var(--line);
+  border-radius: var(--r-card);
+}
+/* A product screen lifted off the page: white, hairline, one soft shadow. */
+.panel {
+  background: var(--paper);
   border: 1px solid var(--line-strong);
-  border-radius: 20px;
+  border-radius: var(--r-panel);
+  box-shadow: var(--shadow-panel);
 }
 
-/* Painted artwork panel: the image fills it, content sits on top. */
-.art {
-  position: relative;
-  isolation: isolate;
-  overflow: hidden;
-  border-radius: 28px;
-  background: #0c5348;
-}
-.art > img {
-  z-index: -2;
-}
-/* Fluted-glass ribs over the art. */
-.art--ribbed::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background: repeating-linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0.11) 0px,
-    rgba(255, 255, 255, 0) 10px,
-    rgba(6, 33, 29, 0.09) 23px,
-    rgba(6, 33, 29, 0) 24px
-  );
-}
-/* Scrim for white type on art. */
-.art--scrim::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background: linear-gradient(180deg, rgba(6, 33, 29, 0.04), rgba(6, 33, 29, 0.4));
-}
-
-/* Frosted glass over artwork. Light glass carries ink; dark glass, white. */
-.glass {
-  background: rgba(255, 255, 255, 0.78);
-  -webkit-backdrop-filter: blur(22px) saturate(1.3);
-  backdrop-filter: blur(22px) saturate(1.3);
-  border: 1px solid rgba(255, 255, 255, 0.6);
-  box-shadow: var(--shadow-float);
-}
-.glass-dark {
-  background: rgba(8, 30, 26, 0.5);
-  -webkit-backdrop-filter: blur(22px) saturate(1.2);
-  backdrop-filter: blur(22px) saturate(1.2);
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  color: #ffffff;
-}
-@supports not (backdrop-filter: blur(1px)) {
-  .glass {
-    background: rgba(255, 255, 255, 0.95);
-  }
-  .glass-dark {
-    background: rgba(8, 30, 26, 0.86);
-  }
-}
-
-/* Gradient ink for one emphasised phrase per page. */
-.text-grad {
-  background: var(--grad-brand);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+/* Horizontal rule that runs the width of its container. */
+.rule-t {
+  border-top: 1px solid var(--line-strong);
 }
 
 .card-inset {
@@ -487,8 +475,19 @@ body {
     animation: mSlide 1s var(--ease) both;
     animation-delay: calc(var(--d, 0ms) + 250ms);
   }
+  /* A wide line wipes in from the left (fluid charts, whose strokes do not
+     scale, cannot use a dash draw). */
+  .m-anim .m-wipe {
+    animation: mWipe 1.6s var(--ease) both;
+    animation-delay: var(--d, 200ms);
+  }
+  /* Ring segments draw around the circle. */
+  .m-anim .m-arc {
+    animation: mArc 1.1s var(--ease) both;
+    animation-delay: var(--d, 150ms);
+  }
   .m-anim:not(.inview)
-    :is(.m-item, .m-fade, .m-pop, .m-draw, .spark-line, .spark-dot, .m-grow, .rb-band, .ss-seg, .rb-dot, .mk-line, .mk-dot) {
+    :is(.m-item, .m-fade, .m-pop, .m-draw, .m-wipe, .m-arc, .spark-line, .spark-dot, .m-grow, .rb-band, .ss-seg, .rb-dot, .mk-line, .mk-dot) {
     animation-play-state: paused;
   }
   /* A gentle lift on the step cards; no shadow, no bounce. */
@@ -504,6 +503,19 @@ body {
   from {
     opacity: 0;
     transform: translateY(10px);
+  }
+}
+@keyframes mWipe {
+  from {
+    clip-path: inset(-10% 100% -10% 0);
+  }
+  to {
+    clip-path: inset(-10% 0 -10% 0);
+  }
+}
+@keyframes mArc {
+  from {
+    stroke-dashoffset: var(--len, 100);
   }
 }
 @keyframes mFade {

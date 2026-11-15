@@ -1,5 +1,11 @@
 import { clsx, type ClassValue } from "clsx";
-import { twMerge } from "tailwind-merge";
+import { extendTailwindMerge } from "tailwind-merge";
+
+// Teach the merger the custom type scale (globals.css @theme), so
+// `text-display-l` is read as a font size and survives next to `text-ink`.
+const twMerge = extendTailwindMerge({
+  extend: { theme: { text: ["display-xl", "display-l", "display-m", "display-s", "lede"] } },
+});
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));

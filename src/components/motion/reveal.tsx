@@ -10,13 +10,13 @@ import { cn } from "@/lib/utils";
 */
 
 /** Adds .inview once when the element enters the viewport (top < 90% vh). */
-function useInView<T extends HTMLElement>() {
+function useInView<T extends HTMLElement>(initial = false) {
   const ref = useRef<T | null>(null);
-  const [inView, setInView] = useState(false);
+  const [inView, setInView] = useState(initial);
 
   useEffect(() => {
     const el = ref.current;
-    if (!el) return;
+    if (!el || initial) return;
     if (typeof IntersectionObserver === "undefined") {
       const raf = requestAnimationFrame(() => setInView(true));
       return () => cancelAnimationFrame(raf);
@@ -34,7 +34,7 @@ function useInView<T extends HTMLElement>() {
     );
     io.observe(el);
     return () => io.disconnect();
-  }, []);
+  }, [initial]);
 
   return { ref, inView };
 }
@@ -50,6 +50,7 @@ export function Reveal({
   delay = 0,
   effect = "fade",
   anim = false,
+  immediate = false,
   children,
 }: {
   as?: "div" | "section" | "header" | "span" | "li" | "ul";
@@ -58,9 +59,12 @@ export function Reveal({
   effect?: "fade" | "none";
   /** Play the choreography of the parts inside (.m-anim in globals.css) once in view. */
   anim?: boolean;
+  /** Above the fold: render already in view, so the CSS plays on load without
+      waiting for scripts to hydrate (keeps first paint fast on slow phones). */
+  immediate?: boolean;
   children: React.ReactNode;
 }) {
-  const { ref, inView } = useInView<HTMLElement>();
+  const { ref, inView } = useInView<HTMLElement>(immediate);
   return (
     <Tag
       // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -12,7 +12,6 @@ import {
 import { CATEGORY_COMMON_ORDER } from "@/lib/commonality";
 import type { ViewCtx } from "@/lib/view-context";
 import { formatDate, monthsSince } from "@/lib/utils";
-import { Art } from "@/components/ui/art";
 import { Button } from "@/components/ui/button";
 import { StatusGlyph } from "@/components/ui/status-badge";
 import { StatusSummary } from "@/components/markers/status-summary";
@@ -229,31 +228,29 @@ function SystemCard({
 function EmptyOverview({ name, ctx }: { name: string; ctx: ViewCtx }) {
   return (
     <Reveal>
-      <Art
-        name="hero"
-        scrim
-        flip
-        priority
-        sizes="100vw"
-        className="flex min-h-[60vh] flex-col justify-end p-7 text-white sm:p-12"
-      >
-        <p className="eyebrow text-white/75">First entry</p>
-        <h1 className="display mt-3 max-w-[16ch] text-[2rem] text-white sm:text-[3rem]">
+      <div className="panel flex min-h-[60vh] flex-col justify-end overflow-hidden p-7 sm:p-12">
+        <svg viewBox="0 0 400 120" className="mb-auto h-auto w-full max-w-md text-ink-3" aria-hidden>
+          <rect x="0" y="40" width="400" height="44" fill="var(--in-range)" opacity="0.09" />
+          <line x1="0" x2="400" y1="40" y2="40" stroke="var(--in-range)" strokeOpacity="0.5" />
+          <path d="M8 96 C 90 92, 120 30, 200 58 S 320 70, 392 50" fill="none" stroke="currentColor" strokeWidth="2" strokeDasharray="4 6" strokeLinecap="round" />
+        </svg>
+        <p className="eyebrow mt-12">First entry</p>
+        <h1 className="display mt-4 max-w-[16ch] text-display-m text-ink">
           Start {name}&rsquo;s record with any report
         </h1>
-        <p className="mt-4 max-w-md leading-relaxed text-white/85">
+        <p className="mt-4 max-w-md leading-relaxed text-ink-2">
           Grab a lab report, even an old one. Panel shortcuts pre-fill the rows, so a
           20-marker report takes about three minutes to enter. Trends appear once a marker
           has two results.
         </p>
         {!ctx.readOnly && (
-          <Button asChild size="lg" variant="light" className="mt-8 self-start">
+          <Button asChild size="lg" className="mt-8 self-start">
             <Link href="/app/sessions/new">
               <Plus aria-hidden /> Add your first results
             </Link>
           </Button>
         )}
-      </Art>
+      </div>
     </Reveal>
   );
 }

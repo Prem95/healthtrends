@@ -38,10 +38,10 @@ export function StatusSummary({
   ].filter((p) => p.n > 0);
 
   return (
-    <div className={cn("card-wash @container p-6 sm:p-7", className)}>
+    <div className={cn("card @container p-6 sm:p-7", className)}>
       <p className="text-sm text-ink-3">Latest result for each marker</p>
       <p className="mt-2 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-        <span className="text-[3.25rem] font-medium leading-none tracking-[-0.035em] text-ink">
+        <span className="figure text-[3.5rem] text-ink">
           {countUp ? <CountUp value={c.inRange} /> : c.inRange}
         </span>
         <span className="text-lg text-ink-2">

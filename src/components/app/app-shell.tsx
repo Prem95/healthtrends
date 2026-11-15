@@ -106,7 +106,7 @@ export function AppShell({
         </header>
 
         {demo && (
-          <div className="border-b border-line bg-[image:linear-gradient(90deg,var(--brand-soft),var(--warm-soft))] print:hidden">
+          <div className="border-b border-line bg-brand-tint print:hidden">
             <p className="mx-auto flex max-w-5xl flex-wrap items-center gap-x-3 gap-y-1 px-5 py-2.5 text-sm text-ink-2 sm:px-8">
               <span className="font-medium text-ink">Sample dashboard.</span>
               <span className="hidden sm:inline">
