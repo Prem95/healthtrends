@@ -73,13 +73,19 @@ supabase-js 2.119).
 | Edge Functions behave correctly | 17 Deno tests, with Apple / Stripe / Supabase faked | pass |
 | Mobile app typechecks | `tsc --noEmit` | pass |
 | Mobile app lints | `expo lint` | pass |
-| Add results checks (units, decimal comma, report ranges, wrong-unit detection, duplicates) and the doctor summary (window, flagging, HTML escaping) | 16 unit tests, `npm test` (vitest) | pass |
+| Every screen renders and works when operated like a user would — Add results (panels, units, decimal comma, wrong-unit question, duplicate warning, Free limit, offline), Markers, Timeline, marker detail (delete, own range), Settings (profiles, custom markers, links), doctor summary (Pro gate, PDF), Overview, onboarding, paywall — with the network layer replaced by fixtures | 53 tests in 9 suites, `npm test` (Jest with Expo's preset, React Native Testing Library) | pass |
+| The checks behind them as pure functions (entry, summary window and escaping, formatting) | included above | pass |
 | Mobile app bundles for iOS, including the code shared with the web | `expo export --platform ios` | pass |
 | Native iOS project generates with the right entitlements, Info.plist and privacy manifest | `expo prebuild --platform ios` | pass |
 | `expo-doctor` | 18 of 20 checks | pass; the other 2 need network access that was blocked where this was written — re-run it |
 | Web app still typechecks with the App Store-aware `getPlan` | `tsc --noEmit` | pass |
 | The test commands in `11-build-plan.md` A4–A5 work with the files at their final paths in `supabase/` | copied in, ran, removed again | pass |
 | App installs reproducibly | `reference/mobile/package-lock.json` is the lockfile of the verified install; `npm ci` | — |
+
+The screen tests caught two real problems, both fixed before this was
+published: Add results used `InputAccessoryView`, which React Native 0.88
+deprecates, and VoiceOver would have read a decorative "›" as part of three
+Settings rows' names.
 
 **Not verified, because it cannot be without your Apple account and a Mac or
 Expo build:** the compiled native app running on a device (including how each

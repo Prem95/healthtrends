@@ -11,7 +11,7 @@ import { router, usePreventRemove } from 'expo-router';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Alert,
-  InputAccessoryView,
+  Keyboard,
   KeyboardAvoidingView,
   Pressable,
   ScrollView,
@@ -40,8 +40,6 @@ import {
 import { formatRange, prettyUnit, todayISO } from '@/lib/format';
 import { useActiveProfile, useCatalog, useProfileRecord, useRecordMutation, useUnitPrefs } from '@/lib/queries';
 import { colors, radius, space, type } from '@/theme/tokens';
-
-const ACCESSORY = 'add-results-keys';
 
 const SAVE_ERROR: Record<string, string> = {
   date_in_future: 'That date is in the future. Check the collection date.',
@@ -136,7 +134,7 @@ export default function AddResults() {
     const idx = rows.findIndex((r) => r.key === focused);
     const next = rows[idx + 1];
     if (next) inputs.current.get(next.key)?.focus();
-    else inputs.current.get(focused ?? '')?.blur();
+    else Keyboard.dismiss();
   }
 
   /** Walk the checks in order; each confirmation re-enters with the updated rows. */
@@ -363,8 +361,8 @@ export default function AddResults() {
                         value={row.value}
                         onChangeText={(value) => updateRow(row.key, { value, confirmed: false })}
                         onFocus={() => setFocused(row.key)}
+                        onBlur={() => setFocused((f) => (f === row.key ? null : f))}
                         keyboardType="decimal-pad"
-                        inputAccessoryViewID={ACCESSORY}
                         placeholder="Value"
                         placeholderTextColor={colors.ink3}
                         accessibilityLabel={`${b.name} value in ${prettyUnit(row.unit)}`}
@@ -402,7 +400,6 @@ export default function AddResults() {
                           value={row.refMin}
                           onChangeText={(refMin) => updateRow(row.key, { refMin, confirmed: false })}
                           keyboardType="decimal-pad"
-                          inputAccessoryViewID={ACCESSORY}
                           placeholder="low"
                           placeholderTextColor={colors.ink3}
                           accessibilityLabel={`${b.name} lowest value of the report's range`}
@@ -413,7 +410,6 @@ export default function AddResults() {
                           value={row.refMax}
                           onChangeText={(refMax) => updateRow(row.key, { refMax, confirmed: false })}
                           keyboardType="decimal-pad"
-                          inputAccessoryViewID={ACCESSORY}
                           placeholder="high"
                           placeholderTextColor={colors.ink3}
                           accessibilityLabel={`${b.name} highest value of the report's range`}
@@ -449,6 +445,18 @@ export default function AddResults() {
       </ScrollView>
 
       <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, space.md) }]}>
+        {focused && (
+          // The decimal keypad has no return key: this bar, pinned above the
+          // keyboard with the Save button, walks the value fields.
+          <View style={styles.keys}>
+            <Pressable onPress={() => Keyboard.dismiss()} hitSlop={10} accessibilityRole="button">
+              <Text style={styles.keysText}>Done</Text>
+            </Pressable>
+            <Pressable onPress={focusNext} hitSlop={10} accessibilityRole="button" accessibilityLabel="Next value">
+              <Text style={[styles.keysText, { fontWeight: '600' }]}>Next</Text>
+            </Pressable>
+          </View>
+        )}
         <FormError>{saveError}</FormError>
         {hasErrors && <Text style={styles.footHint}>Some values are not numbers yet.</Text>}
         {!hasErrors && count === 0 && (
@@ -464,16 +472,6 @@ export default function AddResults() {
         />
       </View>
 
-      <InputAccessoryView nativeID={ACCESSORY}>
-        <View style={styles.accessory}>
-          <Pressable onPress={() => inputs.current.get(focused ?? '')?.blur()} hitSlop={10} accessibilityRole="button">
-            <Text style={styles.accessoryText}>Done</Text>
-          </Pressable>
-          <Pressable onPress={focusNext} hitSlop={10} accessibilityRole="button">
-            <Text style={[styles.accessoryText, { fontWeight: '600' }]}>Next</Text>
-          </Pressable>
-        </View>
-      </InputAccessoryView>
     </KeyboardAvoidingView>
   );
 }
@@ -584,14 +582,6 @@ const styles = StyleSheet.create({
     borderTopColor: colors.line,
   },
   footHint: { ...type.footnote, color: colors.ink3, textAlign: 'center' },
-  accessory: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: space.lg,
-    paddingVertical: space.sm,
-    backgroundColor: colors.paper2,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: colors.lineStrong,
-  },
-  accessoryText: { ...type.body, color: colors.brand },
+  keys: { flexDirection: 'row', justifyContent: 'space-between', minHeight: 36, alignItems: 'center' },
+  keysText: { ...type.body, color: colors.brand },
 });

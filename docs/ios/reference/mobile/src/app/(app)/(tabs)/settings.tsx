@@ -142,6 +142,7 @@ export default function Settings() {
                 WebBrowser.openBrowserAsync(link.url);
               }}
               accessibilityRole="link"
+              accessibilityLabel={link.label}
               style={({ pressed }) => [styles.linkRow, i > 0 && styles.linkDivider, pressed && { opacity: 0.6 }]}
             >
               <Text style={styles.linkText}>{link.label}</Text>

@@ -172,7 +172,7 @@ Every screen in `02-ux.md` is already in `mobile/` — there is nothing to write
 in this part, only to confirm. From `mobile/`:
 
 ```sh
-npm test                                     # 16 passed: Add results checks, doctor summary, formatting
+npm test                                     # 53 passed, 9 suites: every screen operated, plus the pure logic
 grep -rn "ROUTE STUB\|not built yet" src     # nothing
 grep -rn "console\.\(log\|warn\|info\)" src  # nothing
 ```

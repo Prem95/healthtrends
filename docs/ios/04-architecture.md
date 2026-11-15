@@ -63,7 +63,7 @@ Verified together (see the table in `README.md`). `npx expo install` keeps the
 | Files, share, print | `expo-file-system`, `expo-sharing`, `expo-print` | SDK 58 |
 | Haptics | `expo-haptics` | ~58.0.8 |
 | Date picker | `@react-native-community/datetimepicker` (native compact picker) | 9.2.1 |
-| Unit tests (pure logic) | `vitest` | ^3.2.7 |
+| Tests | `jest` + `jest-expo` (simulated native modules) + `@testing-library/react-native` | ^30.5 / ~58.0.14 / ^14.1 |
 | Dev builds | `expo-dev-client` | ~58.0.20 |
 | iOS minimum | 16.4 (the SDK 58 default) | |
 
@@ -94,7 +94,8 @@ healthtrends/
 │   ├─ eas.json               build and submit profiles
 │   ├─ metro.config.js        lets Metro read ../src/lib/domain
 │   ├─ tsconfig.json          @/* → src/*,  @domain → ../src/lib/domain
-│   ├─ vitest.config.ts       unit tests for src/lib (same aliases)
+│   ├─ jest.config.js         Expo's Jest preset; aliases from tsconfig
+│   ├─ __tests__/             lib/ (pure logic), screens/ (every screen, operated), support/ (fixtures, mocks)
 │   ├─ assets/art/            the seven paintings (copied from public/art)
 │   └─ src/
 │       ├─ app/               routes only (expo-router)

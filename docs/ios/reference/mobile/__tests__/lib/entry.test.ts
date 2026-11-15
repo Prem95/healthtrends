@@ -1,5 +1,5 @@
 import type { Biomarker } from '@domain';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it } from '@jest/globals';
 
 import { findDuplicates, newRow, panelRowsToAdd, prepareRows, type EntryRow } from '@/lib/entry';
 

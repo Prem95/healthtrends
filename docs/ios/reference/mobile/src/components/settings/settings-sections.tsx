@@ -37,6 +37,7 @@ export function ProfilesSection() {
             key={p.id}
             onPress={() => setEditing(p)}
             accessibilityRole="button"
+            accessibilityLabel={`${p.name}, ${SEX_LABEL[p.sex]}`}
             accessibilityHint="Edit this profile"
             style={({ pressed }) => [styles.row, i < list.length - 1 && styles.divider, pressed && styles.pressed]}
           >
