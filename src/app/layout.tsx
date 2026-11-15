@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Google_Sans, Newsreader, JetBrains_Mono } from "next/font/google";
+import { Google_Sans, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
 const googleSans = Google_Sans({
@@ -8,28 +8,18 @@ const googleSans = Google_Sans({
   display: "swap",
 });
 
-// Editorial display serif for the marketing surfaces (headlines + italic accents).
-const newsreader = Newsreader({
-  variable: "--font-newsreader",
-  subsets: ["latin"],
-  style: ["normal", "italic"],
-  weight: ["400", "500", "600"],
-  display: "swap",
-});
-
-// Instrument-grade monospace for all landing metadata, labels, nav and buttons
-// (the Alethia system runs every uppercase micro-label through it).
+// Monospace is reserved for section kickers and the unit beside a reading.
 const jetBrainsMono = JetBrains_Mono({
   variable: "--font-jetbrains-mono",
   subsets: ["latin"],
-  weight: ["400", "500", "700"],
+  weight: ["400", "500"],
   display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "bbiom | See how your body changes over the years",
+  title: "bbiom | Track your blood test results over time",
   description:
-    "Log each blood test once and watch every marker as a line across the years, using the normal range from your own report. See how your body has actually changed over time.",
+    "Keep every blood test in one place. bbiom plots each biomarker over the years against the reference range on your own lab report, so you can see what is in range, what is borderline and what has changed.",
 };
 
 export default function RootLayout({
@@ -40,7 +30,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${googleSans.variable} ${newsreader.variable} ${jetBrainsMono.variable} h-full antialiased`}
+      className={`${googleSans.variable} ${jetBrainsMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">{children}</body>
     </html>

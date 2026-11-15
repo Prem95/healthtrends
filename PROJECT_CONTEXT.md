@@ -4,10 +4,10 @@ Personal lab-test history tracker as hosted SaaS. Specs: `~/Downloads/PRD-health
 
 ## Status (2026-07-13)
 S1–S4 code-complete, built locally, NOT deployed. Verified: build/lint/tsc clean, 28/28 domain vitest, RLS tests pass on local Supabase stack, live E2E smoke (auth redirect, magic link, onboarding, dashboard trend/range flags, export gates, webhook signature rejection, security headers).
-Design: whole product on the Alethia system, LIGHT theme everywhere (2026-07-14, user-directed). App surfaces (2026-07-13 rebuild from `design_handoff_alethia_design_system 6` "Marker" screens) use the same `.aurora` light tokens as the landing via `data-theme="light"`; the dark variant stays tokenized in `.aurora[data-theme="dark"]` (unused). Custom SVG marker chart (recharts now landing-only), mono control language, mobile bottom tab bar. Screenshot-verified in both themes.
+Design (2026-11-14, full redesign): "Clear chart" system replaces Alethia everywhere — see CLAUDE.md Design Context. Product-led landing built from real app components over sample data; public read-only sample dashboard at `/demo` (closes the §9.6 demo-fixture gap); app shell with desktop sidebar + mobile tab bar; overview leads with "N of M in range", attention cards, body-system cards. Product screens are shared views (`src/components/views/`) rendered by `/app` and `/demo` through `ViewCtx`. Status = shape + label + colour (validated palette). Custom SVG charts only; `recharts` and `motion` dependencies removed. Gradient pass (same day, user-directed from Superpower + painterly split-hero references): one evergreen→orange gradient family as painted artwork (`public/art`, generator in `scripts/art`), frosted-glass product cards on it, soft washes, pill buttons. Screenshot-verified at 1440px and 390px.
 
 ## Stack
-Next.js 16 (App Router, TS) · Supabase (Postgres/Auth/RLS, @supabase/ssr) · Stripe (Checkout + Portal + webhook, Free/Pro $4.99mo|$39yr) · Tailwind + shadcn/ui · Recharts · Zod · vitest.
+Next.js 16 (App Router, TS) · Supabase (Postgres/Auth/RLS, @supabase/ssr) · Stripe (Checkout + Portal + webhook, Free/Pro $4.99mo|$39yr) · Tailwind v4 · lucide-react · Zod · vitest.
 
 ## Key structure
 - `supabase/migrations/` — 0001 schema (6 PRD tables + watched_biomarkers + stripe_events idempotency), 0002 RLS (forced, owns_profile() chain to auth.uid()), 0003 seed (71 built-in biomarkers, generated via `npm run gen:seed` from `scripts/biomarker-catalog.mjs`)
@@ -22,7 +22,7 @@ Next.js 16 (App Router, TS) · Supabase (Postgres/Auth/RLS, @supabase/ssr) · St
 4. Vercel import + env vars (previews → test-mode Stripe + separate Supabase)
 
 ## Known gaps
-Compare view (B3); edit-in-place for saved results; unit display preference UI (D3); borderline-threshold settings UI; demo fixture (§9.6); auth rate limiting; nightly Stripe reconciliation. ⚠️ unverified: Stripe webhook happy path (needs `stripe listen`), account-deletion E2E (needs real Stripe key).
+Borderline rule over-flags narrow two-sided ranges: margin is 10% of the *boundary value*, so e.g. sodium 135–145 or calcium 8.6–10.3 can never be plain "in range" (every in-range value is within 10% of a limit). Spec'd + tested (PRD C3), so left as is; consider capping the margin by range width. Compare view (B3); edit-in-place for saved results; borderline-threshold settings UI; auth rate limiting; nightly Stripe reconciliation. ⚠️ unverified: Stripe webhook happy path (needs `stripe listen`), account-deletion E2E (needs real Stripe key).
 
 ## Related
 Prototype (Target A, single-file HTML, M1–M4 complete): `/Users/prem/healthtrends-artifact/dist/healthtrends.html`.

@@ -1,9 +1,8 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, isSupabaseConfigured } from "@/lib/supabase/server";
 import { LoginForm } from "@/components/auth/login-form";
-import { Logo } from "@/components/brand/logo";
-import { Reveal } from "@/components/motion/reveal";
+import { AuthShell } from "@/components/auth/auth-shell";
 
 export default async function LoginPage({
   searchParams,
@@ -12,6 +11,27 @@ export default async function LoginPage({
 }) {
   const { next: nextRaw, error } = await searchParams;
   const next = nextRaw && nextRaw.startsWith("/") ? nextRaw : "/app";
+
+  if (!isSupabaseConfigured()) {
+    return (
+      <AuthShell>
+        <p className="eyebrow">Sign in</p>
+        <h1 className="display mt-3 text-[2rem] text-ink sm:text-[2.5rem]">
+          Accounts open soon.
+        </h1>
+        <p className="mt-4 text-[0.9375rem] leading-relaxed text-ink-2">
+          Sign-in is not switched on for this site yet. The sample dashboard shows everything
+          the app does.
+        </p>
+        <Link
+          href="/demo"
+          className="mt-7 inline-flex rounded-full bg-ink px-5 py-3 text-sm font-medium text-page transition-colors duration-300 hover:bg-brand"
+        >
+          Open the sample dashboard
+        </Link>
+      </AuthShell>
+    );
+  }
 
   const supabase = await createClient();
   const {
@@ -27,64 +47,32 @@ export default async function LoginPage({
         : null;
 
   return (
-    <div
-      data-theme="light"
-      className="aurora relative flex min-h-[100dvh] flex-col overflow-hidden bg-page text-ink"
-    >
-      {/* Drifting media layer — the frost below is only alive because this moves */}
-      <div className="au-media" aria-hidden />
+    <AuthShell>
+      <p className="eyebrow">Sign in or sign up</p>
+      <h1 className="display mt-3 text-[2rem] text-ink sm:text-[2.5rem]">
+        Open your record.
+      </h1>
+      <p className="mt-4 text-[0.9375rem] leading-relaxed text-ink-2">
+        There are no passwords here. Enter your email and we send a one-time link. The same
+        form creates your account if you are new.
+      </p>
 
-      <header className="relative z-10 border-b border-line px-6 py-4">
-        <Link href="/">
-          <Logo />
+      {errorText && (
+        <p className="mt-5 rounded-lg bg-out-soft px-4 py-3 text-sm text-out-ink">{errorText}</p>
+      )}
+
+      <div className="mt-7">
+        <LoginForm next={next} />
+      </div>
+
+      <p className="mt-8 text-xs leading-relaxed text-ink-3">
+        bbiom tracks values you enter and does not provide medical advice. Discuss results
+        with your healthcare provider.{" "}
+        <Link href="/demo" className="text-brand underline underline-offset-4 hover:text-brand-strong">
+          Look at a sample dashboard first
         </Link>
-      </header>
-      <main className="relative z-10 flex flex-1 items-center justify-center px-4 py-12 sm:px-6">
-        <Reveal effect="none" className="au-glass w-full max-w-md p-8 sm:p-10">
-          <p
-            className="au-eyebrow au-reveal inview"
-            style={{ "--rv-delay": "100ms" } as React.CSSProperties}
-          >
-            Sign in
-          </p>
-          <h1 className="au-hl mt-3 text-4xl text-ink">
-            <span className="au-lmask">
-              <span style={{ transitionDelay: "250ms" }}>Open your</span>
-            </span>
-            <span className="au-lmask">
-              <span style={{ transitionDelay: "350ms" }}>
-                <span className="em">logbook</span>.
-              </span>
-            </span>
-          </h1>
-          <p
-            className="au-reveal inview mt-4 max-w-[400px] text-sm leading-relaxed text-ink-2"
-            style={{ "--rv-delay": "500ms" } as React.CSSProperties}
-          >
-            There are no passwords here. Enter your email and we send a one-time link.
-            The same form signs you up if you are new.
-          </p>
-
-          {errorText && (
-            <p className="mt-4 rounded-[8px] border border-out/25 bg-out-soft px-3 py-2 text-sm text-out">
-              {errorText}
-            </p>
-          )}
-
-          <div
-            className="au-reveal inview mt-8"
-            style={{ "--rv-delay": "650ms" } as React.CSSProperties}
-          >
-            <LoginForm next={next} />
-          </div>
-
-          <p className="au-mono mt-8 text-[10px] leading-[1.7] text-ink-3">
-            bbiom tracks values you enter · no medical advice
-            <br />
-            discuss results with your healthcare provider
-          </p>
-        </Reveal>
-      </main>
-    </div>
+        .
+      </p>
+    </AuthShell>
   );
 }

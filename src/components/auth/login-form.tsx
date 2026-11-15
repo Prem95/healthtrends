@@ -9,7 +9,7 @@ import { Input, Label } from "@/components/ui/input";
 function SubmitButton() {
   const { pending } = useFormStatus();
   return (
-    <Button type="submit" className="w-full" disabled={pending}>
+    <Button type="submit" size="lg" className="w-full" disabled={pending}>
       {pending ? "Sending…" : "Email me a sign-in link"}
     </Button>
   );
@@ -20,8 +20,8 @@ export function LoginForm({ next }: { next: string }) {
 
   if (state.ok) {
     return (
-      <div className="au-card p-6">
-        <p className="au-eyebrow text-brand">Link sent</p>
+      <div className="card p-6" role="status">
+        <p className="eyebrow">Link sent</p>
         <p className="mt-3 font-medium text-ink">Check your inbox</p>
         <p className="mt-1 text-sm leading-relaxed text-ink-2">
           We sent a sign-in link to <span className="text-ink">{state.email}</span>. It works
@@ -46,11 +46,11 @@ export function LoginForm({ next }: { next: string }) {
             placeholder="you@example.com"
           />
         </div>
-        {state.error && <p className="text-sm text-out">{state.error}</p>}
+        {state.error && <p className="text-sm text-out-ink">{state.error}</p>}
         <SubmitButton />
       </form>
 
-      <div className="au-mono flex items-center gap-3 text-[10px] text-ink-3">
+      <div className="flex items-center gap-3 text-xs text-ink-3">
         <span className="h-px flex-1 bg-line-strong" />
         or
         <span className="h-px flex-1 bg-line-strong" />
@@ -58,7 +58,7 @@ export function LoginForm({ next }: { next: string }) {
 
       <form action={signInWithGoogle}>
         <input type="hidden" name="next" value={next} />
-        <Button type="submit" variant="secondary" className="w-full">
+        <Button type="submit" variant="secondary" size="lg" className="w-full">
           <GoogleGlyph />
           Continue with Google
         </Button>
